@@ -1,0 +1,418 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{8df7eee0-6d9b-4edd-86b6-2007723fd5fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External">
+      <UniqueIdentifier>{ac351c2e-7f0b-4e99-b551-bdd878bbef1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\EASTL">
+      <UniqueIdentifier>{2b6f8b43-02c5-440c-a487-544abbab2530}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Core">
+      <UniqueIdentifier>{54b19a84-a00b-41cd-9b8c-d40ca3608c34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RHI">
+      <UniqueIdentifier>{f49f4364-3851-465c-a88d-706d8e3858fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\EASTL\Source">
+      <UniqueIdentifier>{3738024a-fef6-4148-b988-1b4bb33a2089}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RHI\DX12">
+      <UniqueIdentifier>{a440f550-19b4-47f2-a59c-98b91bc71598}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Utils">
+      <UniqueIdentifier>{bc14f876-0f84-4fed-ad5e-2a4db6aab24e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\fmt">
+      <UniqueIdentifier>{5e47c009-51b2-414b-ace6-98c430494bb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\fmt\src">
+      <UniqueIdentifier>{2d6564fa-a356-4865-a837-0b7c991df704}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\rpmalloc">
+      <UniqueIdentifier>{7685a7a5-5c09-4b5e-8f58-87c1e0ffc4a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\d3d12ma">
+      <UniqueIdentifier>{0047bd7f-fc44-473d-b081-ce39d670b37c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\MicroProfile">
+      <UniqueIdentifier>{b80f8e4f-9c95-4120-8a4b-c4618b2fba40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Windows">
+      <UniqueIdentifier>{5272e8a5-14c2-4b79-b5bd-d5a89038e026}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\imgui">
+      <UniqueIdentifier>{7bf9d177-cd99-405f-afba-853d839c029a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\enkiTS">
+      <UniqueIdentifier>{2a3a9165-29c9-4c93-8583-4def6ac2926b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\simpleini">
+      <UniqueIdentifier>{7d524ac7-79b3-4529-a1f1-f8324a50808e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource">
+      <UniqueIdentifier>{e660821b-46b2-4f44-9052-433c0177cf84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Renderer">
+      <UniqueIdentifier>{4ee46afd-a57f-4163-b1b3-70ed8a174021}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\xxHash">
+      <UniqueIdentifier>{626b9a87-9897-426f-bee2-069516562ecc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Renderer\RenderGraph">
+      <UniqueIdentifier>{01790ccf-31c3-4330-b49b-d3de11a0d77d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\RHI\RHI.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\RHIDevice.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\RHIDefines.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\DX12\D3D12Device.h">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\DX12\D3D12Headers.h">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\DX12\ags.h">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utils\assert.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utils\log.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utils\fmt.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utils\string.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utils\linear_allocator.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="External\rpmalloc\rpmalloc.h">
+      <Filter>External\rpmalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="External\rpmalloc\rpnew.h">
+      <Filter>External\rpmalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utils\memory.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="External\d3d12ma\D3D12MemAlloc.h">
+      <Filter>External\d3d12ma</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\RHIBuffer.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\RHIResource.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\DX12\D3D12Buffer.h">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\RHIHeap.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\DX12\D3D12Heap.h">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utils\math.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\DX12\PixRuntime.h">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="External\microprofile\microprofile.h">
+      <Filter>External\MicroProfile</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imgui.h">
+      <Filter>External\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imgui_impl_win32.h">
+      <Filter>External\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imgui_internal.h">
+      <Filter>External\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imstb_rectpack.h">
+      <Filter>External\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imstb_textedit.h">
+      <Filter>External\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imstb_truetype.h">
+      <Filter>External\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Engine.h">
+      <Filter>Source\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="External\enkiTS\LockLessMultiReadPipe.h">
+      <Filter>External\enkiTS</Filter>
+    </ClInclude>
+    <ClInclude Include="External\enkiTS\TaskScheduler.h">
+      <Filter>External\enkiTS</Filter>
+    </ClInclude>
+    <ClInclude Include="External\enkiTS\TaskScheduler_c.h">
+      <Filter>External\enkiTS</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utils\profiler.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utils\system.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="External\simpleini\ConvertUTF.h">
+      <Filter>External\simpleini</Filter>
+    </ClInclude>
+    <ClInclude Include="External\simpleini\SimpleIni.h">
+      <Filter>External\simpleini</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\RHIFence.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\DX12\D3D12Fence.h">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\RHISwapChain.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\RHITexture.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\DX12\D3D12Texture.h">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\DX12\D3D12SwapChain.h">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Renderer.h">
+      <Filter>Source\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\RHIShader.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\DX12\D3D12Shader.h">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="External\xxHash\xxhash.h">
+      <Filter>External\xxHash</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\RenderGraph\DirectedAcyclicGraph.h">
+      <Filter>Source\Renderer\RenderGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphHandle.h">
+      <Filter>Source\Renderer\RenderGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphPass.h">
+      <Filter>Source\Renderer\RenderGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\RHICommandList.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\RHIDescriptor.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\DX12\D3D12Descriptor.h">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\DX12\D3D12RayTracingTLAS.h">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\RHIRayTracingTLAS.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\RHIRayTracingBLAS.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\DX12\D3D12RayTracingBLAS.h">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphResourceAllocator.h">
+      <Filter>Source\Renderer\RenderGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphResource.h">
+      <Filter>Source\Renderer\RenderGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\RenderGraph\RenderGraph.h">
+      <Filter>Source\Renderer\RenderGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\RHIPipelineState.h">
+      <Filter>Source\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\DX12\D3D12PipelineState.h">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RHI\DX12\D3D12CommandList.h">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\RHI\RHI.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RHI\RHIDevice.cpp">
+      <Filter>Source\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="External\EASTL\source\allocator_eastl.cpp">
+      <Filter>External\EASTL\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\EASTL\source\assert.cpp">
+      <Filter>External\EASTL\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\EASTL\source\atomic.cpp">
+      <Filter>External\EASTL\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\EASTL\source\fixed_pool.cpp">
+      <Filter>External\EASTL\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\EASTL\source\hashtable.cpp">
+      <Filter>External\EASTL\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\EASTL\source\intrusive_list.cpp">
+      <Filter>External\EASTL\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\EASTL\source\numeric_limits.cpp">
+      <Filter>External\EASTL\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\EASTL\source\red_black_tree.cpp">
+      <Filter>External\EASTL\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\EASTL\source\string.cpp">
+      <Filter>External\EASTL\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\EASTL\source\thread_support.cpp">
+      <Filter>External\EASTL\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RHI\DX12\D3D12Device.cpp">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RHI\DX12\ags.cpp">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="External\fmt\src\format.cc">
+      <Filter>External\fmt\src</Filter>
+    </ClCompile>
+    <ClCompile Include="External\rpmalloc\rpmalloc.c">
+      <Filter>External\rpmalloc</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\eastl_allocator.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="External\d3d12ma\D3D12MemAlloc.cpp">
+      <Filter>External\d3d12ma</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RHI\DX12\D3D12Buffer.cpp">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RHI\DX12\D3D12Heap.cpp">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RHI\DX12\PixRuntime.cpp">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="External\microprofile\microprofile.cpp">
+      <Filter>External\MicroProfile</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui.cpp">
+      <Filter>External\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui_draw.cpp">
+      <Filter>External\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui_impl_win32.cpp">
+      <Filter>External\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui_tables.cpp">
+      <Filter>External\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui_widgets.cpp">
+      <Filter>External\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\Engine.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="External\enkiTS\TaskScheduler.cpp">
+      <Filter>External\enkiTS</Filter>
+    </ClCompile>
+    <ClCompile Include="External\enkiTS\TaskScheduler_c.cpp">
+      <Filter>External\enkiTS</Filter>
+    </ClCompile>
+    <ClCompile Include="External\simpleini\ConvertUTF.c">
+      <Filter>External\simpleini</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Windows\Main.cpp">
+      <Filter>Source\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RHI\DX12\D3D12Fence.cpp">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RHI\DX12\D3D12Texture.cpp">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RHI\DX12\D3D12SwapChain.cpp">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Renderer.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RHI\DX12\D3D12Shader.cpp">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="External\xxHash\xxhash.c">
+      <Filter>External\xxHash</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\RenderGraph\DirectedAcyclicGraph.cpp">
+      <Filter>Source\Renderer\RenderGraph</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RHI\DX12\D3D12Descriptor.cpp">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RHI\DX12\D3D12RayTracingTLAS.cpp">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RHI\DX12\D3D12RayTracingBLAS.cpp">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\RenderGraph\RenderGraphResourceAllocator.cpp">
+      <Filter>Source\Renderer\RenderGraph</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RHI\DX12\D3D12PipelineState.cpp">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RHI\DX12\D3D12CommandList.cpp">
+      <Filter>Source\RHI\DX12</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="External\EASTL\EASTL.natvis">
+      <Filter>External\EASTL</Filter>
+    </Natvis>
+    <Natvis Include="External\d3d12ma\D3D12MemAlloc.natvis">
+      <Filter>External\d3d12ma</Filter>
+    </Natvis>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Source\Windows\Resource.rc">
+      <Filter>Source\Windows</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="External\xxHash\LICENSE">
+      <Filter>External\xxHash</Filter>
+    </None>
+    <None Include="Source\Renderer\RenderGraph\RenderGraph.inl">
+      <Filter>Source\Renderer\RenderGraph</Filter>
+    </None>
+  </ItemGroup>
+</Project>
