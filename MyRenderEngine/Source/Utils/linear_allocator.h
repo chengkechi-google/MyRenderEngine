@@ -25,6 +25,11 @@ public:
         return (char*)m_pMemory + address;
     }
 
+    void Reset()
+    {
+        m_pointerOffset = 0;
+    }
+
 private:
     void* m_pMemory = nullptr;
     uint32_t m_memorySize = 0;

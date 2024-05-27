@@ -2,6 +2,9 @@
 #include "assert.h"
 #include "linalg/linalg.h"
 
+using namespace linalg;
+using namespace linalg::aliases;
+
 inline bool IsPow2(uint32_t x)
 {
     return (x & (x - 1)) == 0;

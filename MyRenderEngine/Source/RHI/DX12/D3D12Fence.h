@@ -10,7 +10,7 @@ public:
     D3D12Fence(D3D12Device *pDevice, eastl::string name);
     ~D3D12Fence();
 
-    virtual void* GetHandle() { return m_pFence; }
+    virtual void* GetHandle() const override { return m_pFence; }
     virtual void Wait(uint64_t value) override;
     virtual void Signal(uint64_t value) override; 
 

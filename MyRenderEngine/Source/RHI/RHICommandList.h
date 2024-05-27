@@ -28,7 +28,7 @@ public:
 
     virtual void BeginProfiling() = 0;
     virtual void EndProfiling() = 0;
-    virtual void BeginEvent() = 0;
+    virtual void BeginEvent(const eastl::string& eventName) = 0;
     virtual void EndEvent() = 0;
     
     virtual void CopyBufferToTexture(IRHITexture* pDstTexture, uint32_t mipLevel, uint32_t arraySize, IRHIBuffer* pSrcBuffer, uint32_t offset) = 0;
@@ -71,8 +71,8 @@ public:
     virtual void MultiDispatchIndirect(uint32_t maxCount, IRHIBuffer* pArgsBuffer, uint32_t argsBufferOffset, IRHIBuffer* pCountBuffer, uint32_t countBufferOffset) = 0;
     virtual void MultiDispatchMeshIndirect(uint32_t maxCount, IRHIBuffer* pArgsBuffer, uint32_t argsBufferOffset, IRHIBuffer* pCountBuffer, uint32_t countBufferOffset) = 0;
 
-    virtual void BuildRayTracingBLAS(IRHIRayTracingBLAS* pBLAS);
-    virtual void UpdateRayTracingBLAS(IRHIRayTracingBLAS* pBLAS, IRHIBuffer* vertexBuffer, uint32_t vertexBufferOffset) = 0;
+    virtual void BuildRayTracingBLAS(IRHIRayTracingBLAS* pBLAS) = 0;
+    virtual void UpdateRayTracingBLAS(IRHIRayTracingBLAS* pBLAS, IRHIBuffer* pVertexBuffer, uint32_t vertexBufferOffset) = 0;
     virtual void BuildRayTracingTLAS(IRHIRayTracingTLAS* pTLAS, const RHIRayTracingInstance* pInstances, uint32_t instanceCount) = 0;
 
 #if MICROPROFILE_GPU_TIMERS

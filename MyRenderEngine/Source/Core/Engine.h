@@ -1,9 +1,8 @@
 #pragma once
-#include "EASTL/unique_ptr.h"
-#include "EASTL/string.h"
+#include "Renderer/Renderer.h"
 #include "sigslot/signal.hpp"
 #include "simpleini/SimpleIni.h"
-#include "Renderer/Renderer.h"
+
 
 namespace enki
 {
@@ -17,6 +16,8 @@ public:
     void Init(const eastl::string& workPath, void* windowHandle, uint32_t windowWidth, uint32_t windowHeight);
     void Tick();
     void Shutdown();
+
+    Renderer* GetRenderer() const { return m_pRenderer.get(); }
     
     void* GetWindowHandle() const { return m_windowHandle; }
     const eastl::string& GetWorkPath() const { return m_workPath; }

@@ -2,6 +2,8 @@
 #include "D3D12Buffer.h"
 #include "D3D12Texture.h"
 #include "D3D12SwapChain.h"
+#include "D3D12Fence.h"
+#include "D3D12CommandList.h"
 #include "D3D12Heap.h"
 #include "D3D12Descriptor.h"
 #include "D3D12RayTracingBLAS.h"
@@ -154,8 +156,72 @@ D3D12Device::D3D12Device(const RHIDeviceDesc& desc)
 
 D3D12Device::~D3D12Device()
 {
+    for (uint32_t i = 0; i < RHI_MAX_INFLIGHT_FRAMES; ++i)
+    {
+        m_pConstantBufferAllocator[i].reset();
+    }
+
+    FlushDeferredDeletions();
+
+    m_pRTVAllocator.reset();
+    m_pDSVAllocator.reset();
+    m_pResourceDescriptorAllocator.reset();
+    m_pSamplerAllocator.reset();
+    m_pNonShaderVisibleUAVAllocator.reset();
+
+    
+    SAFE_RELEASE(m_pDrawSignature);
+    SAFE_RELEASE(m_pDrawIndexedSignature);
+    SAFE_RELEASE(m_pDispatchSignature);
+    SAFE_RELEASE(m_pDispatchMeshSignature);
+    SAFE_RELEASE(m_pMultiDrawSignature);
+    SAFE_RELEASE(m_pMultiDrawIndexedSignature);
+    SAFE_RELEASE(m_pMultiDispatchSignature);
+    SAFE_RELEASE(m_pMultiDispatchMeshSignature);
+    SAFE_RELEASE(m_pRootSignature);
+    SAFE_RELEASE(m_pResourceAllocator);
+    SAFE_RELEASE(m_pGraphicsQueue);
+    SAFE_RELEASE(m_pComputeQueue);
+    SAFE_RELEASE(m_pCopyQueue);
     SAFE_RELEASE(m_pDXGIAdapter);
     SAFE_RELEASE(m_pDXGIFactory);
+
+#if defined(_DEBUG)
+    ID3D12DebugDevice* pDebugDevice = nullptr;
+    m_pD3D12Device->QueryInterface(IID_PPV_ARGS(&pDebugDevice));
+#endif
+
+    if (m_vender == RHIVender::AMD)
+    {
+        ags::ReleaseDevice(m_pD3D12Device);
+    }
+    else
+    {
+        SAFE_RELEASE(m_pD3D12Device);
+    }
+
+#if defined(_DEBUG)
+    if (pDebugDevice)
+    {
+        pDebugDevice->ReportLiveDeviceObjects(D3D12_RLDO_SUMMARY | D3D12_RLDO_DETAIL | D3D12_RLDO_IGNORE_INTERNAL);
+        pDebugDevice->Release();
+    }
+#endif
+
+}
+
+void D3D12Device::BeginFrame()
+{
+    DoDeferredDeletion();
+    
+    uint32_t index = m_frameID % RHI_MAX_INFLIGHT_FRAMES;
+    m_pConstantBufferAllocator[index]->Reset();
+}
+
+void D3D12Device::EndFrame()
+{
+    ++ m_frameID;
+    m_pResourceAllocator->SetCurrentFrameIndex((UINT) m_frameID);
 }
 
 IRHISwapChain* D3D12Device::CreateSwapChain(const RHISwapChainDesc& desc, const eastl::string& name)
@@ -168,6 +234,30 @@ IRHISwapChain* D3D12Device::CreateSwapChain(const RHISwapChainDesc& desc, const 
     }
 
     return pSwapChain; 
+}
+
+IRHICommandList* D3D12Device::CreateCommandList(RHICommandQueue queueType, const eastl::string& name)
+{
+    D3D12CommandList* pCommandList = new D3D12CommandList(this, queueType, name);
+    if (!pCommandList->Create())
+    {
+        delete pCommandList;
+        return nullptr;
+    }
+
+    return pCommandList;
+}
+
+IRHIFence* D3D12Device::CreateFence(const eastl::string& name)
+{
+    D3D12Fence* pFence = new D3D12Fence(this, name);
+    if (!pFence->Create())
+    {
+        delete pFence;
+        return nullptr;
+    }
+
+    return pFence;
 }
 
 IRHIHeap* D3D12Device::CreatHeap(const RHIHeapDesc& desc, const eastl::string& name)
@@ -430,11 +520,24 @@ bool D3D12Device::Init()
     m_profileComputeQueue = MicroProfileInitGpuQueue("GPU compute queue");
     m_profileCopyQueue = MicroProfileInitGpuQueue("GPU copy queue");
 
+    // todo: maybe can add compute and copy queue
     MicroProfileGpuInitD3D12(m_pD3D12Device, 1, (void**) &m_pGraphicsQueue);
     MicroProfileSetCurrentNodeD3D12(0);
 #endif
  
     return true;
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS D3D12Device::AllocateConstantBuffer(const void* data, size_t dataSize)
+{
+    void* cpuAddress;
+    uint64_t gpuAddress;
+    
+    uint32_t index = m_frameID % RHI_MAX_INFLIGHT_FRAMES;
+    m_pConstantBufferAllocator[index]->Allocate((uint32_t) dataSize, &cpuAddress, &gpuAddress);
+
+    memcpy(cpuAddress, data, dataSize);
+    return gpuAddress;
 }
 
 void D3D12Device::FlushDeferredDeletions()
@@ -503,7 +606,7 @@ void D3D12Device::DoDeferredDeletion(bool forceDelete)
     while (!m_objectDeletionQueue.empty())
     {
         auto item = m_objectDeletionQueue.front();
-        if(!forceDelete && item.m_frame + m_desc.m_maxFrameDelay > m_frameID);
+        if(!forceDelete && item.m_frame + m_desc.m_maxFrameDelay > m_frameID)
         {
             break;
         }

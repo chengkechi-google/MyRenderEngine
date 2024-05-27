@@ -110,7 +110,7 @@ bool DirectedAcyclicGraph::IsEdgeValid(const DAGEdge* edge) const
     return !GetNode(edge->m_from)->IsCulled() && !GetNode(edge->m_to)->IsCulled();
 }
 
-void DirectedAcyclicGraph::GetIncomingEdges(const DAGNode* node, eastl::vector<DAGEdge*>& edges)
+void DirectedAcyclicGraph::GetIncomingEdges(const DAGNode* node, eastl::vector<DAGEdge*>& edges) const
 {
     edges.clear();
 
@@ -123,7 +123,7 @@ void DirectedAcyclicGraph::GetIncomingEdges(const DAGNode* node, eastl::vector<D
     }
 }
 
-void DirectedAcyclicGraph::GetOutgoingEdges(const DAGNode* node, eastl::vector<DAGEdge*>& edges)
+void DirectedAcyclicGraph::GetOutgoingEdges(const DAGNode* node, eastl::vector<DAGEdge*>& edges) const
 {
     edges.clear();
 

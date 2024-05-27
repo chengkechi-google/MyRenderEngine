@@ -56,12 +56,17 @@ class D3D12Device : public IRHIDevice
 public:
     D3D12Device(const RHIDeviceDesc& desc);
     virtual ~D3D12Device();
-
-    virtual void* GetHandle() const override { return m_pD3D12Device; }
-
+        
+    virtual void BeginFrame() override;
+    virtual void EndFrame() override;
     virtual uint64_t GetFrameID() const override { return m_frameID; }
+    virtual void* GetHandle() const override { return m_pD3D12Device; }
+    virtual RHIVender GetVender() const override { return m_vender; }
+
 
     virtual IRHISwapChain* CreateSwapChain(const RHISwapChainDesc& desc, const eastl::string& name) override;
+    virtual IRHICommandList* CreateCommandList(RHICommandQueue queueType, const eastl::string& name) override;
+    virtual IRHIFence* CreateFence(const eastl::string& name) override;
     virtual IRHIHeap* CreatHeap(const RHIHeapDesc& desc, const eastl::string& name) override;
     virtual IRHIBuffer* CreateBuffer(const RHIBufferDesc& desc, const eastl::string& name) override;
     virtual IRHITexture* CreateTexture(const RHITextureDesc& desc, const eastl::string& name) override;
@@ -80,9 +85,20 @@ public:
     ID3D12CommandQueue* GetComputeQueue() const { return m_pComputeQueue; }
     ID3D12CommandQueue* GetCopyQueue() const { return m_pCopyQueue; }
     ID3D12RootSignature* GetRootSignature() const { return m_pRootSignature; }
+    ID3D12CommandSignature* GetDrawSignature() const { return m_pDrawSignature; }
+    ID3D12CommandSignature* GetDrawIndexedSignature() const { return m_pDrawIndexedSignature; }
+    ID3D12CommandSignature* GetDispatchSignature() const { return m_pDispatchSignature; }
+    ID3D12CommandSignature* GetDispatchMeshSignature() const { return m_pDispatchMeshSignature; }
+    ID3D12CommandSignature* GetMultiDrawSignature() const { return m_pMultiDrawSignature; }
+    ID3D12CommandSignature* GetMultiDrawIndexedSignature() const { return m_pMultiDrawIndexedSignature; }
+    ID3D12CommandSignature* GetMultiDispatchSignature() const { return m_pMultiDispatchSignature; }
+    ID3D12CommandSignature* GetMultiDispatchMeshSignature() const { return m_pMultiDispatchMeshSignature; }
+    
     D3D12MA::Allocator* GetResourceAllocator() const { return m_pResourceAllocator; }
     ID3D12DescriptorHeap* GetResourceDescriptorHeap() const { return m_pResourceDescriptorAllocator->GetHeap(); }
     ID3D12DescriptorHeap* GetSamplerDescriptorHeap() const { return m_pSamplerAllocator->GetHeap(); }
+
+    D3D12_GPU_VIRTUAL_ADDRESS AllocateConstantBuffer(const void* data, size_t dataSize);
 
     void FlushDeferredDeletions();
     void Delete(IUnknown* pObject); 

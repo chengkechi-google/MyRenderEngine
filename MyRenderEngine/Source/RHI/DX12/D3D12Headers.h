@@ -38,6 +38,75 @@ inline D3D12_HEAP_TYPE RHIToD3D12HeapType(RHIMemoryType memoryType)
     }
 }
 
+inline D3D12_BARRIER_SYNC RHIToD3D12BarrierSync(RHIAccessFlags flags)
+{
+    D3D12_BARRIER_SYNC sync = D3D12_BARRIER_SYNC_NONE;
+    bool discard = flags & RHIAccessBit::RHIAccessDiscard;
+    if (!discard)
+    {
+        // D3D Validation : "SyncAfter bits D3D12_BARRIER_SYNC_CLEAR_UNORDERED_ACCESS_VIEW are incompatible with AccessAfter bits D3D12_BARRIER_ACCESS_NO_ACCESS"
+        if(flags & RHIAccessBit::RHIAccessClearUAV)     sync |= D3D12_BARRIER_SYNC_CLEAR_UNORDERED_ACCESS_VIEW;
+    }
+
+    if(flags & RHIAccessBit::RHIAccessPresent)          sync |= D3D12_BARRIER_SYNC_ALL;
+    if(flags & RHIAccessBit::RHIAccessRTV)              sync |= D3D12_BARRIER_SYNC_RENDER_TARGET;
+    if(flags & RHIAccessBit::RHIAccessMaskDSV)          sync |= D3D12_BARRIER_SYNC_DEPTH_STENCIL;
+    if(flags & RHIAccessBit::RHIAccessMaskVS)           sync |= D3D12_BARRIER_SYNC_VERTEX_SHADING;
+    if(flags & RHIAccessBit::RHIAccessMaskPS)           sync |= D3D12_BARRIER_SYNC_PIXEL_SHADING;
+    if(flags & RHIAccessBit::RHIAccessMaskCS)           sync |= D3D12_BARRIER_SYNC_COMPUTE_SHADING;
+    if(flags & RHIAccessBit::RHIAccessMaskCopy)         sync |= D3D12_BARRIER_SYNC_COPY;
+    if(flags & RHIAccessBit::RHIAccessShadingRate)      sync |= D3D12_BARRIER_SYNC_PIXEL_SHADING;
+    if(flags & RHIAccessBit::RHIAccessIndexBuffer)      sync |= D3D12_BARRIER_SYNC_INDEX_INPUT;
+    if(flags & RHIAccessBit::RHIAccessIndirectArgs)     sync |= D3D12_BARRIER_SYNC_EXECUTE_INDIRECT;
+    if(flags & RHIAccessBit::RHIAccessMaskAS)           sync |= D3D12_BARRIER_SYNC_BUILD_RAYTRACING_ACCELERATION_STRUCTURE;
+
+    return sync;
+}
+
+inline D3D12_BARRIER_ACCESS RHIToD3D12BarrierAccess(RHIAccessFlags flags)
+{
+    if (flags & RHIAccessDiscard)
+    {
+        return D3D12_BARRIER_ACCESS_NO_ACCESS;
+    }
+
+    D3D12_BARRIER_ACCESS access = D3D12_BARRIER_ACCESS_COMMON;
+
+    if(flags & RHIAccessBit::RHIAccessRTV)          access | D3D12_BARRIER_ACCESS_RENDER_TARGET;
+    if(flags & RHIAccessBit::RHIAccessDSV)          access | D3D12_BARRIER_ACCESS_DEPTH_STENCIL_WRITE;
+    if(flags & RHIAccessBit::RHIAccessDSVReadOnly)  access | D3D12_BARRIER_ACCESS_DEPTH_STENCIL_READ;
+    if(flags & RHIAccessBit::RHIAccessMaskSRV)      access | D3D12_BARRIER_ACCESS_SHADER_RESOURCE;
+    if(flags & RHIAccessBit::RHIAccessMaskUAV)      access | D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
+    if(flags & RHIAccessBit::RHIAccessClearUAV)     access | D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
+    if(flags & RHIAccessBit::RHIAccessCopyDst)      access | D3D12_BARRIER_ACCESS_COPY_DEST;
+    if(flags & RHIAccessBit::RHIAccessCopySrc)      access | D3D12_BARRIER_ACCESS_COPY_SOURCE;
+    if(flags & RHIAccessBit::RHIAccessShadingRate)  access | D3D12_BARRIER_ACCESS_SHADING_RATE_SOURCE;
+    if(flags & RHIAccessBit::RHIAccessIndexBuffer)  access | D3D12_BARRIER_ACCESS_INDEX_BUFFER;
+    if(flags & RHIAccessBit::RHIAccessIndirectArgs) access | D3D12_BARRIER_ACCESS_INDIRECT_ARGUMENT;
+    if(flags & RHIAccessBit::RHIAccessASRead)       access | D3D12_BARRIER_ACCESS_RAYTRACING_ACCELERATION_STRUCTURE_READ;
+    if(flags & RHIAccessBit::RHIAccessASWrite)      access | D3D12_BARRIER_ACCESS_RAYTRACING_ACCELERATION_STRUCTURE_WRITE;
+
+    return access;
+}
+
+inline D3D12_BARRIER_LAYOUT RHIToD3D12BarrierLayout(RHIAccessFlags flags)
+{
+    if(flags & RHIAccessBit::RHIAccessDiscard)      return D3D12_BARRIER_LAYOUT_UNDEFINED;
+    if(flags & RHIAccessBit::RHIAccessPresent)      return D3D12_BARRIER_LAYOUT_PRESENT;
+    if(flags & RHIAccessBit::RHIAccessRTV)          return D3D12_BARRIER_LAYOUT_RENDER_TARGET;
+    if(flags & RHIAccessBit::RHIAccessDSV)          return D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_WRITE;
+    if(flags & RHIAccessBit::RHIAccessDSVReadOnly)  return D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_READ;
+    if(flags & RHIAccessBit::RHIAccessMaskSRV)      return D3D12_BARRIER_LAYOUT_SHADER_RESOURCE;
+    if(flags & RHIAccessBit::RHIAccessMaskUAV)      return D3D12_BARRIER_LAYOUT_UNORDERED_ACCESS;
+    if(flags & RHIAccessBit::RHIAccessClearUAV)     return D3D12_BARRIER_LAYOUT_UNORDERED_ACCESS;
+    if(flags & RHIAccessBit::RHIAccessCopyDst)      return D3D12_BARRIER_LAYOUT_COPY_DEST;
+    if(flags & RHIAccessBit::RHIAccessCopySrc)      return D3D12_BARRIER_LAYOUT_COPY_SOURCE;
+    if(flags & RHIAccessBit::RHIAccessShadingRate)  return D3D12_BARRIER_LAYOUT_SHADING_RATE_SOURCE;
+
+    MY_ASSERT(false);
+    return D3D12_BARRIER_LAYOUT_UNDEFINED;
+}
+
 inline DXGI_FORMAT DXGIFormat(RHIFormat format, bool depthSRV = false, bool uav = false)
 {
     switch (format)
@@ -192,16 +261,16 @@ inline D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE RHIToD3D12RenderPassLoadOp(RHIRen
     }
 }
 
-inline D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE RHIToD3D12RenderPassStoreOp(RHIRenderPassStoreOp storeOp)
+inline D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RHIToD3D12RenderPassStoreOp(RHIRenderPassStoreOp storeOp)
 {
     switch (storeOp)
     {
         case RHIRenderPassStoreOp::Store:
-            return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE;
+            return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
         case RHIRenderPassStoreOp::DontCare:
-            return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD;
+            return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD;
         default:
-            return  D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE;
+            return  D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
     }
 }
         

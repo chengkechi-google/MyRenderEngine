@@ -5,7 +5,9 @@ class IRHIResource;
 class IRHIHeap;
 class IRHIBuffer;
 class IRHITexture;
+class IRHIFence;
 class IRHISwapChain;
+class IRHICommandList;
 class IRHIDescriptor;
 class IRHIRayTracingBLAS;
 class IRHIRayTracingTLAS;
@@ -15,11 +17,15 @@ class IRHIDevice
 public:
     virtual ~IRHIDevice() {}
 
-    virtual void* GetHandle() const = 0;
-
+    virtual void BeginFrame() = 0;
+    virtual void EndFrame() = 0;
     virtual uint64_t GetFrameID() const = 0;
+    virtual void* GetHandle() const = 0;
+    virtual RHIVender GetVender() const = 0;
  
     virtual IRHISwapChain* CreateSwapChain(const RHISwapChainDesc& desc, const eastl::string& name) = 0;
+    virtual IRHICommandList* CreateCommandList(RHICommandQueue queueType, const eastl::string& name) = 0;
+    virtual IRHIFence* CreateFence(const eastl::string& name) = 0;
     virtual IRHIHeap* CreatHeap(const RHIHeapDesc& desc, const eastl::string& name) = 0;
     virtual IRHIBuffer* CreateBuffer(const RHIBufferDesc& desc, const eastl::string& name) = 0;
     virtual IRHITexture* CreateTexture(const RHITextureDesc& desc, const eastl::string& name) = 0;

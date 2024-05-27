@@ -194,7 +194,7 @@ enum RHITextureUsageBit
     RHITextureUsageDepthStencil = 1 << 1,
     RHITextureUsageUnorderedAccess = 1 << 2, 
 };
-using RHITextureUsgaeFlags = uint32_t;
+using RHITextureUsageFlags = uint32_t;
 
 enum class RHITextureType
 {
@@ -330,7 +330,7 @@ struct RHITextureDesc
     RHIFormat m_format = RHIFormat::Unknown;
     RHIMemoryType m_memoryType = RHIMemoryType::GPUOnly;
     RHIAllocationType m_allocationType = RHIAllocationType::Placed;
-    RHITextureUsgaeFlags m_usage = 0;
+    RHITextureUsageFlags m_usage = 0;
     IRHIHeap* m_heap = nullptr;
     uint32_t m_heapOffset = 0;
 };
@@ -529,7 +529,7 @@ struct RHITileMapping
 {
     RHITileMappingType m_type;
 
-    uint32_t m_subResource;
+    uint32_t m_subresource;
     uint32_t m_x;
     uint32_t m_y;
     uint32_t m_z;

@@ -83,6 +83,9 @@ void Engine::Tick()
 {
     CPU_EVENT("Tick", "Engine::Tick");
     m_frameTime = (float)stm_sec(stm_laptime(&m_lastFrameTime));
+
+    m_pRenderer->RenderFrame();
+    MicroProfileFlip(0);
 }
 
 void Engine::Shutdown()
@@ -91,6 +94,7 @@ void Engine::Shutdown()
     m_pTaskScheduler.reset();
 
     MicroProfileShutdown();
+    m_pRenderer.reset();
     spdlog::shutdown();
 }
 

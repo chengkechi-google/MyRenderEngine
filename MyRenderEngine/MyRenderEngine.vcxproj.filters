@@ -64,6 +64,9 @@
     <Filter Include="Source\Renderer\RenderGraph">
       <UniqueIdentifier>{01790ccf-31c3-4330-b49b-d3de11a0d77d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Renderer\Resource">
+      <UniqueIdentifier>{3f77643b-eae9-43a4-9c51-243eeaa306b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\RHI\RHI.h">
@@ -255,6 +258,27 @@
     <ClInclude Include="Source\RHI\DX12\D3D12CommandList.h">
       <Filter>Source\RHI\DX12</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphBuilder.h">
+      <Filter>Source\Renderer\RenderGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\StagingBufferAllocator.h">
+      <Filter>Source\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Resource\Texture2D.h">
+      <Filter>Source\Renderer\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Resource\Texture3D.h">
+      <Filter>Source\Renderer\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Resource\TextureCube.h">
+      <Filter>Source\Renderer\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Resource\ConstantBuffer.h">
+      <Filter>Source\Renderer\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Resource\RawBuffer.h">
+      <Filter>Source\Renderer\Resource</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\RHI\RHI.cpp">
@@ -391,6 +415,33 @@
     </ClCompile>
     <ClCompile Include="Source\RHI\DX12\D3D12CommandList.cpp">
       <Filter>Source\RHI\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\RenderGraph\RenderGraphResource.cpp">
+      <Filter>Source\Renderer\RenderGraph</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\RenderGraph\RenderGraphPass.cpp">
+      <Filter>Source\Renderer\RenderGraph</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\RenderGraph\RenderGraph.cpp">
+      <Filter>Source\Renderer\RenderGraph</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\StagingBufferAllocator.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Resource\Texture2D.cpp">
+      <Filter>Source\Renderer\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Resource\Texture3D.cpp">
+      <Filter>Source\Renderer\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Resource\TextureCube.cpp">
+      <Filter>Source\Renderer\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Resource\RawBuffer.cpp">
+      <Filter>Source\Renderer\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Resource\ConstantBuffer.cpp">
+      <Filter>Source\Renderer\Resource</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

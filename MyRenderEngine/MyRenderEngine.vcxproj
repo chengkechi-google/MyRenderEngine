@@ -23,7 +23,16 @@
     <ClCompile Include="External\xxHash\xxhash.c" />
     <ClCompile Include="Source\Renderer\Renderer.cpp" />
     <ClCompile Include="Source\Renderer\RenderGraph\DirectedAcyclicGraph.cpp" />
+    <ClCompile Include="Source\Renderer\RenderGraph\RenderGraph.cpp" />
+    <ClCompile Include="Source\Renderer\RenderGraph\RenderGraphPass.cpp" />
+    <ClCompile Include="Source\Renderer\RenderGraph\RenderGraphResource.cpp" />
     <ClCompile Include="Source\Renderer\RenderGraph\RenderGraphResourceAllocator.cpp" />
+    <ClCompile Include="Source\Renderer\Resource\ConstantBuffer.cpp" />
+    <ClCompile Include="Source\Renderer\Resource\RawBuffer.cpp" />
+    <ClCompile Include="Source\Renderer\Resource\Texture2D.cpp" />
+    <ClCompile Include="Source\Renderer\Resource\Texture3D.cpp" />
+    <ClCompile Include="Source\Renderer\Resource\TextureCube.cpp" />
+    <ClCompile Include="Source\Renderer\StagingBufferAllocator.cpp" />
     <ClCompile Include="Source\RHI\DX12\D3D12CommandList.cpp" />
     <ClCompile Include="Source\RHI\DX12\D3D12Descriptor.cpp" />
     <ClCompile Include="Source\RHI\DX12\D3D12Fence.cpp" />
@@ -65,10 +74,17 @@
     <ClInclude Include="Source\Renderer\Renderer.h" />
     <ClInclude Include="Source\Renderer\RenderGraph\DirectedAcyclicGraph.h" />
     <ClInclude Include="Source\Renderer\RenderGraph\RenderGraph.h" />
+    <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphBuilder.h" />
     <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphHandle.h" />
     <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphPass.h" />
     <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphResource.h" />
     <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphResourceAllocator.h" />
+    <ClInclude Include="Source\Renderer\Resource\ConstantBuffer.h" />
+    <ClInclude Include="Source\Renderer\Resource\RawBuffer.h" />
+    <ClInclude Include="Source\Renderer\Resource\Texture2D.h" />
+    <ClInclude Include="Source\Renderer\Resource\Texture3D.h" />
+    <ClInclude Include="Source\Renderer\Resource\TextureCube.h" />
+    <ClInclude Include="Source\Renderer\StagingBufferAllocator.h" />
     <ClInclude Include="Source\RHI\DX12\ags.h" />
     <ClInclude Include="Source\RHI\DX12\D3D12CommandList.h" />
     <ClInclude Include="Source\RHI\DX12\D3D12Descriptor.h" />
@@ -232,7 +248,7 @@
     <ClCompile>
       <WarningLevel>Level1</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;MICROPROFILE_ENABLED=1;MICROPROFILE_GPU_TIMERS=1;MICROPROFILE_GPU_TIMERS_D3D12=1;EASTL_EASTDC_VSNPRINTF=0;EASTL_USER_DEFINED_ALLOCATOR=1;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;MICROPROFILE_ENABLED=1;MICROPROFILE_GPU_TIMERS=1;MICROPROFILE_GPU_TIMERS_D3D12=1;EASTL_EASTDC_VSNPRINTF=0;EASTL_USER_DEFINED_ALLOCATOR=1;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>Default</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)Source/;$(ProjectDir)External/;$(ProjectDir)External/EASTL/include;$(ProjectDir)External/fmt/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
