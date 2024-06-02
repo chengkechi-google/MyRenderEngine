@@ -279,6 +279,24 @@
     <ClInclude Include="Source\Renderer\Resource\RawBuffer.h">
       <Filter>Source\Renderer\Resource</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Renderer\Resource\StructedBuffer.h">
+      <Filter>Source\Renderer\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Resource\indexBuffer.h">
+      <Filter>Source\Renderer\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\Resource\TypedBuffer.h">
+      <Filter>Source\Renderer\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\ShaderCache.h">
+      <Filter>Source\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\ShaderCompiler.h">
+      <Filter>Source\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\PipelineCache.h">
+      <Filter>Source\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\RHI\RHI.cpp">
@@ -442,6 +460,24 @@
     </ClCompile>
     <ClCompile Include="Source\Renderer\Resource\ConstantBuffer.cpp">
       <Filter>Source\Renderer\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Resource\StructedBuffer.cpp">
+      <Filter>Source\Renderer\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Resource\IndexBuffer.cpp">
+      <Filter>Source\Renderer\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Resource\TypedBuffer.cpp">
+      <Filter>Source\Renderer\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\ShaderCache.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\ShaderCompiler.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\PipelineCache.cpp">
+      <Filter>Source\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

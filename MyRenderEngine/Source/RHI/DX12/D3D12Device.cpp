@@ -4,6 +4,8 @@
 #include "D3D12SwapChain.h"
 #include "D3D12Fence.h"
 #include "D3D12CommandList.h"
+#include "D3D12Shader.h"
+#include "D3D12PipelineState.h"
 #include "D3D12Heap.h"
 #include "D3D12Descriptor.h"
 #include "D3D12RayTracingBLAS.h"
@@ -294,6 +296,47 @@ IRHITexture* D3D12Device::CreateTexture(const RHITextureDesc& desc, const eastl:
     }
     
     return pTexture;    
+}
+
+IRHIShader* D3D12Device::CreateShader(const RHIShaderDesc& desc, eastl::span<uint8_t> data, const eastl::string& name)
+{
+    return new D3D12Shader(this, desc, data, name);
+}
+
+IRHIPipelineState* D3D12Device::CreateGraphicsPipelineState(const RHIGraphicsPipelineDesc& desc, const eastl::string& name)
+{
+    D3D12GraphicsPipelineState* pPipelineState = new D3D12GraphicsPipelineState(this, desc, name);
+    if (!pPipelineState->Create())
+    {
+        delete pPipelineState;
+        return nullptr;
+    }
+
+    return pPipelineState;
+}
+
+IRHIPipelineState* D3D12Device::CreateMeshShaderPipelineState(const RHIMeshShaderPipelineDesc& desc, const eastl::string& name)
+{
+    D3D12MeshShaderPipelineState* pPipelineState = new D3D12MeshShaderPipelineState(this, desc, name);
+    if (!pPipelineState->Create())
+    {
+        delete pPipelineState;
+        return nullptr;
+    }
+
+    return pPipelineState;
+}
+
+IRHIPipelineState* D3D12Device::CreateComputePipelineState(const RHIComputePipelineDesc& desc, const eastl::string& name)
+{
+    D3D12ComputePipelineState* pPipelineState = new D3D12ComputePipelineState(this, desc, name);
+    if (!pPipelineState->Create())
+    {
+        delete pPipelineState;
+        return nullptr;
+    }
+    
+    return pPipelineState;
 }
 
 IRHIDescriptor* D3D12Device::CreateShaderResourceView(IRHIResource* pResource, const RHIShaderResourceViewDesc& desc, const eastl::string& name)

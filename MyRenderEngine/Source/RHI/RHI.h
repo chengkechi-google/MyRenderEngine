@@ -5,6 +5,8 @@
 #include "RHIBuffer.h"
 #include "RHICommandList.h"
 #include "RHIFence.h"
+#include "RHIShader.h"
+#include "RHIPipelineState.h"
 #include "RHISwapChain.h"
 #include "RHIDescriptor.h"
 #include "RHIHeap.h"

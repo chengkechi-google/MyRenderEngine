@@ -1,4 +1,7 @@
 #include "Renderer.h"
+#include "ShaderCompiler.h"
+#include "ShaderCache.h"
+#include "PipelineCache.h"
 #include "Core/Engine.h"
 #include "Utils/profiler.h"
 #include "Utils/log.h"

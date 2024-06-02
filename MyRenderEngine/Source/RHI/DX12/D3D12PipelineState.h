@@ -21,11 +21,11 @@ private:
     D3D_PRIMITIVE_TOPOLOGY m_primitiveTipology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 };
 
-class D3D12ComputePipeline : public IRHIPipelineState
+class D3D12ComputePipelineState : public IRHIPipelineState
 {
 public:
-    D3D12ComputePipeline(D3D12Device* pDevice, const RHIComputePipelineDesc& desc, const eastl::string& name);
-    ~D3D12ComputePipeline();
+    D3D12ComputePipelineState(D3D12Device* pDevice, const RHIComputePipelineDesc& desc, const eastl::string& name);
+    ~D3D12ComputePipelineState();
     
     virtual void* GetHandle() const { return m_pPipelineState; }
     virtual bool Create();
@@ -35,11 +35,11 @@ private:
     RHIComputePipelineDesc m_desc;
 };
 
-class D3D12MeshShaderPipeline : public IRHIPipelineState
+class D3D12MeshShaderPipelineState : public IRHIPipelineState
 {
 public:
-    D3D12MeshShaderPipeline(D3D12Device* pDevice, const RHIMeshShaderPipelineDesc& desc, const eastl::string& name);
-    ~D3D12MeshShaderPipeline();
+    D3D12MeshShaderPipelineState(D3D12Device* pDevice, const RHIMeshShaderPipelineDesc& desc, const eastl::string& name);
+    ~D3D12MeshShaderPipelineState();
 
     virtual void* GetHandle() const { return m_pPipelineState; }
     virtual bool Create();

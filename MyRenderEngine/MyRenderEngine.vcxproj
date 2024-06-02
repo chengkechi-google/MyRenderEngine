@@ -21,6 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\xxHash\xxhash.c" />
+    <ClCompile Include="Source\Renderer\PipelineCache.cpp" />
     <ClCompile Include="Source\Renderer\Renderer.cpp" />
     <ClCompile Include="Source\Renderer\RenderGraph\DirectedAcyclicGraph.cpp" />
     <ClCompile Include="Source\Renderer\RenderGraph\RenderGraph.cpp" />
@@ -29,9 +30,14 @@
     <ClCompile Include="Source\Renderer\RenderGraph\RenderGraphResourceAllocator.cpp" />
     <ClCompile Include="Source\Renderer\Resource\ConstantBuffer.cpp" />
     <ClCompile Include="Source\Renderer\Resource\RawBuffer.cpp" />
+    <ClCompile Include="Source\Renderer\Resource\IndexBuffer.cpp" />
+    <ClCompile Include="Source\Renderer\Resource\StructedBuffer.cpp" />
     <ClCompile Include="Source\Renderer\Resource\Texture2D.cpp" />
     <ClCompile Include="Source\Renderer\Resource\Texture3D.cpp" />
     <ClCompile Include="Source\Renderer\Resource\TextureCube.cpp" />
+    <ClCompile Include="Source\Renderer\Resource\TypedBuffer.cpp" />
+    <ClCompile Include="Source\Renderer\ShaderCache.cpp" />
+    <ClCompile Include="Source\Renderer\ShaderCompiler.cpp" />
     <ClCompile Include="Source\Renderer\StagingBufferAllocator.cpp" />
     <ClCompile Include="Source\RHI\DX12\D3D12CommandList.cpp" />
     <ClCompile Include="Source\RHI\DX12\D3D12Descriptor.cpp" />
@@ -71,6 +77,7 @@
     <ClInclude Include="External\simpleini\SimpleIni.h" />
     <ClInclude Include="External\xxHash\xxhash.h" />
     <ClInclude Include="Source\Core\Engine.h" />
+    <ClInclude Include="Source\Renderer\PipelineCache.h" />
     <ClInclude Include="Source\Renderer\Renderer.h" />
     <ClInclude Include="Source\Renderer\RenderGraph\DirectedAcyclicGraph.h" />
     <ClInclude Include="Source\Renderer\RenderGraph\RenderGraph.h" />
@@ -80,10 +87,15 @@
     <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphResource.h" />
     <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphResourceAllocator.h" />
     <ClInclude Include="Source\Renderer\Resource\ConstantBuffer.h" />
+    <ClInclude Include="Source\Renderer\Resource\indexBuffer.h" />
     <ClInclude Include="Source\Renderer\Resource\RawBuffer.h" />
+    <ClInclude Include="Source\Renderer\Resource\StructedBuffer.h" />
     <ClInclude Include="Source\Renderer\Resource\Texture2D.h" />
     <ClInclude Include="Source\Renderer\Resource\Texture3D.h" />
     <ClInclude Include="Source\Renderer\Resource\TextureCube.h" />
+    <ClInclude Include="Source\Renderer\Resource\TypedBuffer.h" />
+    <ClInclude Include="Source\Renderer\ShaderCache.h" />
+    <ClInclude Include="Source\Renderer\ShaderCompiler.h" />
     <ClInclude Include="Source\Renderer\StagingBufferAllocator.h" />
     <ClInclude Include="Source\RHI\DX12\ags.h" />
     <ClInclude Include="Source\RHI\DX12\D3D12CommandList.h" />

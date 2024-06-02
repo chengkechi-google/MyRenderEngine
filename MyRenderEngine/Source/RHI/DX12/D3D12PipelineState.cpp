@@ -75,20 +75,20 @@ bool D3D12GraphicsPipelineState::Create()
     return true;
 }
 
-D3D12ComputePipeline::D3D12ComputePipeline(D3D12Device* pDevice, const RHIComputePipelineDesc& desc, const eastl::string& name)
+D3D12ComputePipelineState::D3D12ComputePipelineState(D3D12Device* pDevice, const RHIComputePipelineDesc& desc, const eastl::string& name)
 {
     m_pDevice = pDevice;
     m_desc = desc;
     m_name = name;
 }
 
-D3D12ComputePipeline::~D3D12ComputePipeline()
+D3D12ComputePipelineState::~D3D12ComputePipelineState()
 {
     D3D12Device* pDevice = (D3D12Device*) m_pDevice;
     pDevice->Delete(m_pPipelineState);
 }
 
-bool D3D12ComputePipeline::Create()
+bool D3D12ComputePipelineState::Create()
 {
     D3D12_COMPUTE_PIPELINE_STATE_DESC desc = {};
     desc.pRootSignature = ((D3D12Device*) m_pDevice)->GetRootSignature();
@@ -113,20 +113,20 @@ bool D3D12ComputePipeline::Create()
     return true;
 }
 
-D3D12MeshShaderPipeline::D3D12MeshShaderPipeline(D3D12Device* pDevice, const RHIMeshShaderPipelineDesc& desc, const eastl::string& name)
+D3D12MeshShaderPipelineState::D3D12MeshShaderPipelineState(D3D12Device* pDevice, const RHIMeshShaderPipelineDesc& desc, const eastl::string& name)
 {
     m_pDevice = pDevice;
     m_desc= desc;
     m_name = name;
 }
 
-D3D12MeshShaderPipeline::~D3D12MeshShaderPipeline()
+D3D12MeshShaderPipelineState::~D3D12MeshShaderPipelineState()
 {
     D3D12Device* pDevice = (D3D12Device*) m_pDevice;
     pDevice->Delete(m_pPipelineState);
 }
 
-bool D3D12MeshShaderPipeline::Create()
+bool D3D12MeshShaderPipelineState::Create()
 {
     D3DX12_MESH_SHADER_PIPELINE_STATE_DESC psoDesc = {};
     psoDesc.pRootSignature = ((D3D12Device*) m_pDevice)->GetRootSignature();

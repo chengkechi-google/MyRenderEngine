@@ -70,6 +70,10 @@ public:
     virtual IRHIHeap* CreatHeap(const RHIHeapDesc& desc, const eastl::string& name) override;
     virtual IRHIBuffer* CreateBuffer(const RHIBufferDesc& desc, const eastl::string& name) override;
     virtual IRHITexture* CreateTexture(const RHITextureDesc& desc, const eastl::string& name) override;
+    virtual IRHIShader* CreateShader(const RHIShaderDesc& desc, eastl::span<uint8_t> data, const eastl::string& name) override;
+    virtual IRHIPipelineState* CreateGraphicsPipelineState(const RHIGraphicsPipelineDesc& desc, const eastl::string& name) override;
+    virtual IRHIPipelineState* CreateMeshShaderPipelineState(const RHIMeshShaderPipelineDesc& desc, const eastl::string& name) override;
+    virtual IRHIPipelineState* CreateComputePipelineState(const RHIComputePipelineDesc& desc, const eastl::string& name) override;
     virtual IRHIDescriptor* CreateShaderResourceView(IRHIResource* pResource, const RHIShaderResourceViewDesc& desc, const eastl::string& name) override;
     virtual IRHIDescriptor* CreateUnorderedAccessView(IRHIResource* pResource, const RHIUnorderedAccessViewDesc& desc, const eastl::string& name) override;
     virtual IRHIDescriptor* CreateConstBufferView(IRHIBuffer* pBuffer, const RHIConstantBufferViewDesc& desc, const eastl::string& name) override;

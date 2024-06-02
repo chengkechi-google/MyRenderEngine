@@ -5,6 +5,10 @@
 #include "Utils/linear_allocator.h"
 #include "StagingBufferAllocator.h"
 
+class ShaderCompiler;
+class ShaderCache;
+class PipelineStateCache;
+
 class Renderer
 {
 public:
@@ -16,6 +20,10 @@ public:
     void WaitGPUFinished();
 
     uint64_t GetFrameID() const { return m_pDevice->GetFrameID(); }
+    ShaderCompiler* GetShaderCompiler() const { return m_pShaderCompiler.get(); }
+    ShaderCache* GetShaderCache() const { return m_pShaderCache.get(); }
+    PipelineStateCache* GetPipelineStateCache() const { return m_pPipelineCache.get(); }
+    RenderGraph* GetRenderGraph() const { return m_pRenderGraph.get(); }
 
     uint32_t GetDisplayWidth() const { return m_displayWidth; }
     uint32_t GetDispaltHeight() const { return m_displayHeight; }
@@ -50,9 +58,9 @@ private:
     eastl::unique_ptr<IRHIDevice> m_pDevice;
     eastl::unique_ptr<IRHISwapChain> m_pSwapChain;
     eastl::unique_ptr<RenderGraph> m_pRenderGraph;
-   // eastl::unique_ptr<class ShaderCompiler> m_pShaderCompiler;
-   // eastl::unique_ptr<class ShaderCache> m_pShaderCache;
-   // eastl::unique_ptr<class PipelineStateCache> m_pPipelineCache;
+    eastl::unique_ptr<ShaderCompiler> m_pShaderCompiler;
+    eastl::unique_ptr<ShaderCache> m_pShaderCache;
+    eastl::unique_ptr<PipelineStateCache> m_pPipelineCache;
    // eastl::unique_ptr<class GPUScene> m_pGPUScene;
 
     uint32_t m_displayWidth;
