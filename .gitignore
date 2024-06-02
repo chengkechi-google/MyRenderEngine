@@ -31,5 +31,13 @@ MyRenderEngine/bin/d3d12ma.json
 MyRenderEngine/bin/d3d12ma.png
 MyRenderEngine/bin/MyRenderEngine.lib
 MyRenderEngine/Debug
-MyRenderEngine/Bin
+MyRenderEngine/Bin/*
+!MyRenderEngine/Bin/Debug
+MyRenderEngine/Bin/Debug/*
+!/MyRenderEngine/Bin/Debug/dxc.exe
+!/MyRenderEngine/Bin/Debug/dxcompiler.dll
+!/MyRenderEngine/Bin/Debug/dxil.dll
 MyRenderEngine/x64
+
+#Keep dxc libs
+
