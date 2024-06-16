@@ -662,7 +662,7 @@ struct RHIRayTracingGeometry
 
 struct RHIRayTracingInstance
 {
-    IRHIRayTracingBLAS* m_blas;
+    IRHIRayTracingBLAS* m_pBLAS;
     float m_transform[12]; // object to world 3 * 4 matrix
     uint32_t m_instanceID;
     uint32_t m_instanceMask;

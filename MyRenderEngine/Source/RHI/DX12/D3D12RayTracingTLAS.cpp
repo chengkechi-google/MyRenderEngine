@@ -84,7 +84,7 @@ void D3D12RayTracingTLAS::GetBuildDesc(D3D12_BUILD_RAYTRACING_ACCELERATION_STRUC
         instanceDescs[i].InstanceMask = instances[i].m_instanceMask;
         instanceDescs[i].InstanceContributionToHitGroupIndex = 0; // DXR1.1 doesn't need it
         instanceDescs[i].Flags = RHIToD3D12RTInstanceFlags(instances[i].m_flags);
-        instanceDescs[i].AccelerationStructure = ((D3D12RayTracingBLAS*) instances[i].m_blas)->GetGPUAddress();
+        instanceDescs[i].AccelerationStructure = ((D3D12RayTracingBLAS*) instances[i].m_pBLAS)->GetGPUAddress();
     }
 
     m_nCurrentInstanceBufferOffset += sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * instanceCount;

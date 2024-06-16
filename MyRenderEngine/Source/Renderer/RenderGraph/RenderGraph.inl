@@ -148,7 +148,7 @@ inline RenderGraphPass<Data>& RenderGraph::AddPass(const eastl::string& name, Re
     {
         pass->BeginEvent(m_eventNames[i]);
     }
-    m_eventName.clear();
+    m_eventNames.clear();
 
     RGBuilder builder(this, pass);
     setup(pass->GetData(), builder);
@@ -161,7 +161,7 @@ template<typename Resource>
 inline RGHandle RenderGraph::Create(const typename Resource::Desc& desc, const eastl::string& name)
 {
     auto resource = Allocate<Resource>(m_resourceAllocator, name, desc);
-    suto node = AllocatePOD<RenderGraphResourceNode>(m_graph, resource, 0);
+    auto node = AllocatePOD<RenderGraphResourceNode>(m_graph, resource, 0);
 
     RGHandle handle;
     handle.m_index = (uint16_t) m_resources.size();

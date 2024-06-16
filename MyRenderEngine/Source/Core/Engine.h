@@ -1,7 +1,11 @@
 #pragma once
-#include "Renderer/Renderer.h"
+
+#include "Editor/Editor.h"
+
+
 #include "sigslot/signal.hpp"
 #include "simpleini/SimpleIni.h"
+#include "Renderer/Renderer.h"
 
 
 namespace enki
@@ -18,6 +22,7 @@ public:
     void Shutdown();
 
     Renderer* GetRenderer() const { return m_pRenderer.get(); }
+    Editor* GetEditor() const { return m_pEditor.get(); }
     
     void* GetWindowHandle() const { return m_windowHandle; }
     const eastl::string& GetWorkPath() const { return m_workPath; }
@@ -32,6 +37,8 @@ private:
     void LoadEngineConfig();
     
 private:
+    eastl::unique_ptr<Editor> m_pEditor;
+
     uint64_t m_lastFrameTime;
     float m_frameTime = 0.0f; //< In second
 

@@ -1,6 +1,15 @@
 #pragma once
 #include "RenderGraph/RenderGraph.h"
+#include "RenderBatch.h"
+#include "GPUScene.h"
 #include "RHI/RHI.h"
+#include "Resource/Texture2D.h"
+#include "Resource/Texture3D.h"
+#include "Resource/TextureCube.h"
+#include "Resource/indexBuffer.h"
+#include "Resource/StructedBuffer.h"
+#include "Resource/RawBuffer.h"
+#include "Resource/TypedBuffer.h"
 #include "EASTL/unique_ptr.h"
 #include "Utils/linear_allocator.h"
 #include "StagingBufferAllocator.h"
@@ -8,6 +17,37 @@
 class ShaderCompiler;
 class ShaderCache;
 class PipelineStateCache;
+class GPUScene;
+
+enum class RendererOutput
+{
+    Default,
+    Diffuse,
+    Specular,
+    WorldNormal,
+    Roughness,
+    Emissive,
+    ShadingModel,
+    CustomData,
+    AO,
+    DirectLighting,
+    IndirectSpecular,
+    IndirectDiffuse,
+    PathTracing,
+    Physics,
+
+    Max
+};
+
+enum class TemporalSuperResolution
+{
+    None,
+    FSR2,
+    DLSS,
+    XeSS,
+    
+    Max
+};
 
 class Renderer
 {
@@ -25,6 +65,14 @@ public:
     PipelineStateCache* GetPipelineStateCache() const { return m_pPipelineCache.get(); }
     RenderGraph* GetRenderGraph() const { return m_pRenderGraph.get(); }
 
+    RendererOutput GetOutputType() const { return m_outputType; }   
+    void SetOutputType(RendererOutput output) { m_outputType = output; }
+
+    TemporalSuperResolution GetTemporalUpscaleMode() const { return m_upscaleMode; }
+    void SetTemporalUpscaleMode(TemporalSuperResolution mode) { m_upscaleMode = mode; }
+    float GetTemporalUpscaleRatio() const { return m_upscaleRatio; }
+    void SetTemporalUpscaleRatio(float ratio);
+
     uint32_t GetDisplayWidth() const { return m_displayWidth; }
     uint32_t GetDispaltHeight() const { return m_displayHeight; }
     uint32_t GetRenderWidth() const { return m_renderWidth; }
@@ -33,10 +81,50 @@ public:
     IRHIDevice* GetDevice() const { return m_pDevice.get(); }
     IRHISwapChain* GetSwapChain() const { return m_pSwapChain.get(); }
     IRHIShader* GetShader(const eastl::string& file, const eastl::string& entryPoint, const eastl::string& profile, const eastl::vector<eastl::string>& defines, RHIShaderCompilerFlags flags = 0);
+    IRHIPipelineState* GetPipelineState(const RHIGraphicsPipelineDesc& desc, const eastl::string& name);
+    IRHIPipelineState* GetPipelineState(const RHIMeshShaderPipelineDesc& desc, const eastl::string& name);
+    IRHIPipelineState* GetPipelineState(const RHIComputePipelineDesc& desc, const eastl::string& name);
+    void ReloadShaders();
 
+    IndexBuffer* CreateIndexBuffer(const void* pData, uint32_t stride, uint32_t indexCount, const eastl::string& name, RHIMemoryType memoryType = RHIMemoryType::GPUOnly);
+    StructedBuffer* CreateStructedBuffer(const void* pData, uint32_t stride, uint32_t elementCount, const eastl::string& name, RHIMemoryType memoryType = RHIMemoryType::GPUOnly, bool uav = false);
+    TypedBuffer* CreateTypedBuffer(const void* pData, RHIFormat format, uint32_t elementCount, const eastl::string& name, RHIMemoryType memoryType = RHIMemoryType::GPUOnly, bool uav = false);
+    RawBuffer* CreateRawBuffer(const void* pData, uint32_t size, const eastl::string& name, RHIMemoryType memoryType = RHIMemoryType::GPUOnly, bool uav = false);
 
-    bool IsAsyncComputeEnabled() const {return m_enableAsyncCompute; }
+    Texture2D* CreateTexture2D(const eastl::string& file, bool srgb = true);
+    Texture2D* CreateTexture2D(uint32_t width, uint32_t height, uint32_t levels, RHIFormat format, RHITextureUsageFlags flags, const eastl::string& name);
+    Texture3D* CreateTexture3D(const eastl::string& file, bool srgb = true);
+    Texture3D* CreateTexture3D(uint32_t width, uint32_t height, uint32_t depths, uint32_t levels, RHIFormat format, RHITextureUsageFlags flags, const eastl::string& name);
+    TextureCube* CreateTextureCube(const eastl::string& file, bool srgb = true);
+    TextureCube* CreateTextureCube(uint32_t width, uint32_t height, uint32_t levels, RHIFormat format, RHITextureUsageFlags flags, const eastl::string& name);
+
+    void SaveTexture(const eastl::string& file, const void* pData, uint32_t width, uint32_t height, RHIFormat format);
+    void SaveTexture(const eastl::string& file, IRHITexture* pTexture);
+
+    IRHIBuffer* GetSceneStaticBuffer() const;
+    OffsetAllocator::Allocation AllocateSceneStaticBuffer(const void* pData, uint32_t size);
+    void FreeSceneStaticBuffer(OffsetAllocator::Allocation allocation);
+
+    IRHIBuffer* GetAScenenimationBuffer() const;
+    OffsetAllocator::Allocation AllocateSceneAnimationBuffer(uint32_t size);
+    void FreeSceneAnimationBuffer(OffsetAllocator::Allocation allocation);
+
+    uint32_t AllocateSceneConstant(const void* pData, uint32_t size);
+
+    void RequestMouseHitTest(uint32_t x, uint32_t y);
+    bool IsEnableMouseHitTest() const { return m_enableObjectIDRendering; }
+    uint32_t GetMouseHitObjectID() const { return m_mouseHitObjectID; }
+
+    void SetGPUDrivenStatsEnabled(bool value) { m_gpuDrivenStatsEnabled = value; }
+    void SetShowMeshletsEnabled(bool value) { m_showMeshlets = value; }
+    
+    bool IsAsyncComputeEnabled() const { return m_enableAsyncCompute; }
     void SetAsyncComputeEnabled(bool value) { m_enableAsyncCompute = value; }
+  
+    void UploadTexture(IRHITexture* pTexture, const void* pData);
+    void UploadBuffer(IRHIBuffer* pBuffer, uint32_t offset, const void* pData, uint32_t detaSize);
+    void BuildRayTracingBLAS(IRHIRayTracingBLAS* pBLAS);
+    void UpdateRayTracingBLAS(IRHIRayTracingBLAS* pBLAS, IRHIBuffer* vertexBuffer, uint32_t vertexBufferOffset);
 
     void SetupGlobalConstants(IRHICommandList* pCommandList);
 
@@ -49,11 +137,9 @@ private:
     void BuildRenderGraph(RGHandle& outColor, RGHandle& outDepth);
     void EndFrame();
 
-    
-
+    void UpdateMipBias();
+   
 private:
-    bool m_enableAsyncCompute = false;
-
     // Render resource
     eastl::unique_ptr<IRHIDevice> m_pDevice;
     eastl::unique_ptr<IRHISwapChain> m_pSwapChain;
@@ -61,7 +147,10 @@ private:
     eastl::unique_ptr<ShaderCompiler> m_pShaderCompiler;
     eastl::unique_ptr<ShaderCache> m_pShaderCache;
     eastl::unique_ptr<PipelineStateCache> m_pPipelineCache;
-   // eastl::unique_ptr<class GPUScene> m_pGPUScene;
+    eastl::unique_ptr<GPUScene> m_pGPUScene;
+
+    RendererOutput m_outputType = RendererOutput::Default;
+    TemporalSuperResolution m_upscaleMode = TemporalSuperResolution::None;
 
     uint32_t m_displayWidth;
     uint32_t m_displayHeight;
@@ -128,4 +217,15 @@ private:
     eastl::unique_ptr<IRHIDescriptor> m_pTrilinearClampSampler;
     eastl::unique_ptr<IRHIDescriptor> m_pMinReductionSampler;
     eastl::unique_ptr<IRHIDescriptor> m_pMaxReductionSampler;
+
+    bool m_gpuDrivenStatsEnabled = false;
+    bool m_showMeshlets = false;
+    bool m_enableAsyncCompute = false;
+
+    bool m_enableObjectIDRendering = false;
+    uint32_t m_mouseX = 0;
+    uint32_t m_mouseY = 0;
+    uint32_t m_mouseHitObjectID = UINT32_MAX;
+    eastl::unique_ptr<IRHIBuffer> m_pObjectIDBuffer;
+    uint32_t m_objectIDRowPitch = 0;
 };

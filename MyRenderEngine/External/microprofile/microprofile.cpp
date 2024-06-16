@@ -3945,7 +3945,7 @@ void MicroProfilePrintf(MicroProfileWriteCallback CB, void* Handle, const char* 
 	A.CB = CB;
 	A.Handle = Handle;
 	char Buffer[STB_SPRINTF_MIN];
-	int size = stbsp_vsprintfcb(MicroProfilePrintfCallback, (void*)&A, Buffer, pFmt, args);
+	int size = stbsp_vsprintfcb((STBSP_SPRINTFCB*) MicroProfilePrintfCallback, (void*)&A, Buffer, pFmt, args);
 	(void)size;
 	va_end (args);
 }
@@ -6898,7 +6898,7 @@ void MicroProfileWSPrintf(const char* pFmt, ...)
 	va_list args;
 	va_start (args, pFmt);
 	MP_ASSERT(S.WSBuf.nPut + STB_SPRINTF_MIN < S.WSBuf.nBufferSize);
-	stbsp_vsprintfcb(MicroProfileWSPrintfCallback, 0, S.WSBuf.pBuffer + S.WSBuf.nPut, pFmt, args);
+	stbsp_vsprintfcb((STBSP_SPRINTFCB*)MicroProfileWSPrintfCallback, 0, S.WSBuf.pBuffer + S.WSBuf.nPut, pFmt, args);
 	va_end(args);
 }
 

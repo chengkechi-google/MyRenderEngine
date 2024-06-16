@@ -114,13 +114,13 @@ public:
         m_execute = execute;
     }
 
-    T& GetData() { retrun m_parameters; }
+    T& GetData() { return m_parameters; }
     T const* operator->() { return &GetData(); }
 
 private:
     void ExecuteImpl(IRHICommandList* pCommandList) override
     {
-        m_execute(m_parameter, pCommandList);
+        m_execute(m_parameters, pCommandList);
     }
 
 protected:

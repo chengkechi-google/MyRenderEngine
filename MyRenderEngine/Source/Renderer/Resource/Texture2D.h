@@ -15,6 +15,8 @@ public:
     IRHIDescriptor* GetSRV() const { return m_pSRV.get(); }
     IRHIDescriptor* GetUAV(uint32_t mip = 0) const;
 
+    const eastl::string& GetName() const { return m_name; }
+
 protected:
     eastl::string m_name;
     

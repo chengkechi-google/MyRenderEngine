@@ -10,6 +10,8 @@
 #include "RHISwapChain.h"
 #include "RHIDescriptor.h"
 #include "RHIHeap.h"
+#include "RHIRayTracingBLAS.h"
+#include "RHIRayTracingTLAS.h"
 
 IRHIDevice* CreateRHIDevice(const RHIDeviceDesc& desc);
 void BeginMicroProfileGPUEvent(IRHICommandList* pCommandList, const eastl::string& eventName);

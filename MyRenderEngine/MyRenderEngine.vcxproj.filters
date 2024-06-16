@@ -67,6 +67,24 @@
     <Filter Include="Source\Renderer\Resource">
       <UniqueIdentifier>{3f77643b-eae9-43a4-9c51-243eeaa306b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\World">
+      <UniqueIdentifier>{d17bad05-3743-453a-b67e-587dd0da7121}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader">
+      <UniqueIdentifier>{6f395b52-aad1-4a92-8b27-47bfd2cc5415}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor">
+      <UniqueIdentifier>{7a1b2724-ae0f-4f98-81af-a6b5473aa0df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\imFileDialog">
+      <UniqueIdentifier>{ad493dc8-ca96-44b0-bc41-51af3743d03e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\imGuizmo">
+      <UniqueIdentifier>{5537e734-ade4-4b2b-a6bc-934a13b079b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\lodepng">
+      <UniqueIdentifier>{3e395e34-d3de-4aae-8082-802e0ce70832}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\RHI\RHI.h">
@@ -297,6 +315,39 @@
     <ClInclude Include="Source\Renderer\PipelineCache.h">
       <Filter>Source\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Renderer\RenderBatch.h">
+      <Filter>Source\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\TextureLoader.h">
+      <Filter>Source\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\World\Camera.h">
+      <Filter>Source\World</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utils\guiUtil.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Editor.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImFileDialog\ImFileDialog.h">
+      <Filter>External\imFileDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImGuizmo\ImGuizmo.h">
+      <Filter>External\imGuizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="External\lodepng\lodepng.h">
+      <Filter>External\lodepng</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\World\MeshMaterial.h">
+      <Filter>Source\World</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\World\ResourceCache.h">
+      <Filter>Source\World</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\GPUScene.h">
+      <Filter>Source\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\RHI\RHI.cpp">
@@ -479,6 +530,33 @@
     <ClCompile Include="Source\Renderer\PipelineCache.cpp">
       <Filter>Source\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Renderer\TextureLoader.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\World\Camera.cpp">
+      <Filter>Source\World</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Editor.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImFileDialog\ImFileDialog.cpp">
+      <Filter>External\imFileDialog</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImGuizmo\ImGuizmo.cpp">
+      <Filter>External\imGuizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="External\lodepng\lodepng.cpp">
+      <Filter>External\lodepng</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\World\MeshMaterial.cpp">
+      <Filter>Source\World</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\World\ResourceCache.cpp">
+      <Filter>Source\World</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\GPUScene.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="External\EASTL\EASTL.natvis">
@@ -500,6 +578,30 @@
     </None>
     <None Include="Source\Renderer\RenderGraph\RenderGraph.inl">
       <Filter>Source\Renderer\RenderGraph</Filter>
+    </None>
+    <None Include="Shader\GlobalConstants.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="External\ImFileDialog\LICENSE">
+      <Filter>External\imFileDialog</Filter>
+    </None>
+    <None Include="External\ImGuizmo\LICENSE">
+      <Filter>External\imGuizmo</Filter>
+    </None>
+    <None Include="External\lodepng\LICENSE">
+      <Filter>External\lodepng</Filter>
+    </None>
+    <None Include="Shader\ModelConstants.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\Texture.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\ShadingModel.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\GPUScene.hlsli">
+      <Filter>Shader</Filter>
     </None>
   </ItemGroup>
 </Project>
