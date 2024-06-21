@@ -406,6 +406,11 @@ uint32_t Renderer::AllocateSceneConstant(const void* pData, uint32_t size)
     return address;
 }
 
+uint32_t Renderer::AddInstance(const InstanceData& data, IRHIRayTracingBLAS* pBLAS, RHIRayTracingInstanceFlags flags)
+{
+    return m_pGPUScene->AddInstance(data, pBLAS, flags);
+}
+
 void Renderer::RequestMouseHitTest(uint32_t x, uint32_t y)
 {
     m_mouseX = x;
@@ -501,6 +506,11 @@ void Renderer::UpdateRayTracingBLAS(IRHIRayTracingBLAS* pBLAS, IRHIBuffer* verte
     m_pendingBLASUpdates.push_back({pBLAS, vertexBuffer, vertexBufferOffset});
 }
 
+RenderBatch& Renderer::AddBasePassBatch()
+{
+    // Using forward pass for render tesing
+    return m_forwardPassBatchs.emplace_back(*m_pCBAllocator);
+}
 
 void Renderer::SetupGlobalConstants(IRHICommandList* pCommandList)
 {

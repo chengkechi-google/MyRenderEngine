@@ -23,6 +23,7 @@ public:
 
     Renderer* GetRenderer() const { return m_pRenderer.get(); }
     Editor* GetEditor() const { return m_pEditor.get(); }
+    enki::TaskScheduler* GetTaskScheduler() const { return m_pTaskScheduler.get(); }
     
     void* GetWindowHandle() const { return m_windowHandle; }
     const eastl::string& GetWorkPath() const { return m_workPath; }

@@ -23,6 +23,7 @@
     <ClCompile Include="External\ImFileDialog\ImFileDialog.cpp" />
     <ClCompile Include="External\ImGuizmo\ImGuizmo.cpp" />
     <ClCompile Include="External\lodepng\lodepng.cpp" />
+    <ClCompile Include="External\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="External\xxHash\xxhash.c" />
     <ClCompile Include="Source\Editor\Editor.cpp" />
     <ClCompile Include="Source\Renderer\GPUScene.cpp" />
@@ -58,6 +59,9 @@
     <ClCompile Include="Source\World\Camera.cpp" />
     <ClCompile Include="Source\World\MeshMaterial.cpp" />
     <ClCompile Include="Source\World\ResourceCache.cpp" />
+    <ClCompile Include="Source\World\StaticMesh.cpp" />
+    <ClCompile Include="Source\World\VisibleObject.cpp" />
+    <ClCompile Include="Source\World\World.cpp" />
     <ClInclude Include="External\d3d12ma\D3D12MemAlloc.h" />
     <ClInclude Include="External\enkiTS\LockLessMultiReadPipe.h" />
     <ClInclude Include="External\enkiTS\TaskScheduler.h" />
@@ -87,9 +91,12 @@
     <ClCompile Include="Source\Core\eastl_allocator.cpp" />
     <ClInclude Include="External\simpleini\ConvertUTF.h" />
     <ClInclude Include="External\simpleini\SimpleIni.h" />
+    <ClInclude Include="External\tinyxml2\tinyxml2.h" />
     <ClInclude Include="External\xxHash\xxhash.h" />
     <ClInclude Include="Source\Core\Engine.h" />
     <ClInclude Include="Source\Editor\Editor.h" />
+    <ClInclude Include="Source\Physics\PhysicsRigidBody.h" />
+    <ClInclude Include="Source\Physics\PhysicsShape.h" />
     <ClInclude Include="Source\Renderer\GPUScene.h" />
     <ClInclude Include="Source\Renderer\PipelineCache.h" />
     <ClInclude Include="Source\Renderer\RenderBatch.h" />
@@ -150,12 +157,16 @@
     <ClInclude Include="Source\Utils\log.h" />
     <ClInclude Include="Source\Utils\math.h" />
     <ClInclude Include="Source\Utils\memory.h" />
+    <ClInclude Include="Source\Utils\parallel_for.h" />
     <ClInclude Include="Source\Utils\profiler.h" />
     <ClInclude Include="Source\Utils\string.h" />
     <ClInclude Include="Source\Utils\system.h" />
     <ClInclude Include="Source\World\Camera.h" />
     <ClInclude Include="Source\World\MeshMaterial.h" />
     <ClInclude Include="Source\World\ResourceCache.h" />
+    <ClInclude Include="Source\World\StaticMesh.h" />
+    <ClInclude Include="Source\World\VisbleObject.h" />
+    <ClInclude Include="Source\World\World.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\EASTL\source\allocator_eastl.cpp" />

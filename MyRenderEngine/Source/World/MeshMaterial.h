@@ -73,7 +73,7 @@ private:
     // KHR material sheen
     Texture2D* m_pSheenColorTexture = nullptr;
     Texture2D* m_pSheenRoughnessTexture = nullptr;
-    float3 m_sheedColor = float3(0.0f, 0.0f, 0.0f);
+    float3 m_sheenColor = float3(0.0f, 0.0f, 0.0f);
     float m_sheenRoughness = 0.0f;
 
     // KHR material clearcoat
@@ -87,6 +87,6 @@ private:
     bool m_bSkeletalAnim = false;
     bool m_bFrontFaceCCW = true;
     bool m_bDoubleSided = false;
-    bool m_bPBRSpeculatGlossiness = false;
+    bool m_bPBRSpecularGlossiness = false;
     bool m_bPBRMetallicRoughness = false;
 };

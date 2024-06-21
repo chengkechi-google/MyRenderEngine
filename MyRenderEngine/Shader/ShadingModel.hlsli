@@ -5,9 +5,9 @@ enum class ShadingModel : uint
     Default,
     Anisotropy,
     Sheen,
-    ClearCoar,
+    ClearCoat,
     Hair,
-    Max
+    Max,
 };
 
 inline float EncodeShadingModel(ShadingModel shadingModel)

@@ -21,7 +21,7 @@ struct ModelMaterialConstant
     float m_clearCoatRoughness;
     
     float3 m_sheenColor;
-    float m_clearCoar;
+    float m_clearCoat;
     
     MaterialTextureInfo m_albedoTexture;
     MaterialTextureInfo m_metallicRoughnessTexture;
@@ -40,7 +40,7 @@ struct ModelMaterialConstant
     uint m_bPBRMatallicRoughness;
     uint m_bPBRSpecularGlossiness;
     uint m_bRGNormalTexture;
-    uint m_bDoubleSide;
+    uint m_bDoubleSided;
     
     uint m_bRGClearCoatNormalTexture;
     uint3 _padding;   

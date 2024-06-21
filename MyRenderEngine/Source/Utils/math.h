@@ -83,6 +83,19 @@ inline float4 normalize_plane(const float4& plane)
     return plane * (1.0f / length);
 }
 
+inline bool FrustumCull(const float4* plane, uint32_t planeCount, float3 center, float radius)
+{
+    for (int i = 0; i < planeCount; ++i)
+    {
+        if (dot(center, plane[i].xyz()) + plane[i].w + radius < 0.0f)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 template<class T>
 inline bool nearly_equal(const T& a, const T& b)
 {

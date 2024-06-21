@@ -111,6 +111,9 @@ public:
 
     uint32_t AllocateSceneConstant(const void* pData, uint32_t size);
 
+    uint32_t AddInstance(const InstanceData& data, IRHIRayTracingBLAS* pBLAS, RHIRayTracingInstanceFlags flags);
+    uint32_t GetInstanceCount() const { return m_pGPUScene->GetInstanceCount(); }
+
     void RequestMouseHitTest(uint32_t x, uint32_t y);
     bool IsEnableMouseHitTest() const { return m_enableObjectIDRendering; }
     uint32_t GetMouseHitObjectID() const { return m_mouseHitObjectID; }
@@ -125,6 +128,14 @@ public:
     void UploadBuffer(IRHIBuffer* pBuffer, uint32_t offset, const void* pData, uint32_t detaSize);
     void BuildRayTracingBLAS(IRHIRayTracingBLAS* pBLAS);
     void UpdateRayTracingBLAS(IRHIRayTracingBLAS* pBLAS, IRHIBuffer* vertexBuffer, uint32_t vertexBufferOffset);
+
+    LinearAllocator* GetConstantAllocator() const { return m_pCBAllocator.get(); }
+    RenderBatch& AddBasePassBatch();
+    RenderBatch& AddForwardPassBatch() { return m_forwardPassBatchs.emplace_back(*m_pCBAllocator); }
+    RenderBatch& AddVelocityPassBatch() { return m_velocityPassBatchs.emplace_back(*m_pCBAllocator); }
+    RenderBatch& AddObjectIDPassBatch() { return m_idPassBatchs.emplace_back(*m_pCBAllocator); }
+    ComputeBatch& AddAnimationBatch() { return m_animationBatchs.emplace_back(*m_pCBAllocator); }
+
 
     void SetupGlobalConstants(IRHICommandList* pCommandList);
 
@@ -228,4 +239,9 @@ private:
     uint32_t m_mouseHitObjectID = UINT32_MAX;
     eastl::unique_ptr<IRHIBuffer> m_pObjectIDBuffer;
     uint32_t m_objectIDRowPitch = 0;
+
+    eastl::vector<ComputeBatch> m_animationBatchs;
+    eastl::vector<RenderBatch> m_forwardPassBatchs;
+    eastl::vector<RenderBatch> m_velocityPassBatchs;
+    eastl::vector<RenderBatch> m_idPassBatchs;
 };

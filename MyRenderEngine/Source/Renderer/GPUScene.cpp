@@ -109,7 +109,7 @@ uint32_t GPUScene::AddInstance(const InstanceData& data, IRHIRayTracingBLAS* pBL
 
     if (pBLAS)
     {
-        float4x4 transform = transpose(data.mtxWorld);
+        float4x4 transform = transpose(data.m_mtxWorld);
         
         RHIRayTracingInstance instance;
         instance.m_pBLAS = pBLAS;

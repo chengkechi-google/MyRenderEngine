@@ -85,6 +85,12 @@
     <Filter Include="External\lodepng">
       <UniqueIdentifier>{3e395e34-d3de-4aae-8082-802e0ce70832}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Physics">
+      <UniqueIdentifier>{de3de60c-6d4a-4f4b-8d21-ef45e2daf3f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\tinyxml2">
+      <UniqueIdentifier>{93ffe879-9a0b-40c9-a64b-fff0a0d55768}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\RHI\RHI.h">
@@ -348,6 +354,27 @@
     <ClInclude Include="Source\Renderer\GPUScene.h">
       <Filter>Source\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Physics\PhysicsShape.h">
+      <Filter>Source\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Physics\PhysicsRigidBody.h">
+      <Filter>Source\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\World\StaticMesh.h">
+      <Filter>Source\World</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\World\VisbleObject.h">
+      <Filter>Source\World</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\World\World.h">
+      <Filter>Source\World</Filter>
+    </ClInclude>
+    <ClInclude Include="External\tinyxml2\tinyxml2.h">
+      <Filter>External\tinyxml2</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utils\parallel_for.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\RHI\RHI.cpp">
@@ -556,6 +583,18 @@
     </ClCompile>
     <ClCompile Include="Source\Renderer\GPUScene.cpp">
       <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\World\VisibleObject.cpp">
+      <Filter>Source\World</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\World\StaticMesh.cpp">
+      <Filter>Source\World</Filter>
+    </ClCompile>
+    <ClCompile Include="External\tinyxml2\tinyxml2.cpp">
+      <Filter>External\tinyxml2</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\World\World.cpp">
+      <Filter>Source\World</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

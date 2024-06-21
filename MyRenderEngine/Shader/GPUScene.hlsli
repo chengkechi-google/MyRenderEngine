@@ -36,9 +36,9 @@ struct InstanceData
     uint m_bShowBitangent;
     uint m_bShowNormal;
     
-    float4x4 mtxWorld;
-    float4x4 mtxWorldInverseTranspose; //< For normal
-    float4x4 mtxPrevWorld;
+    float4x4 m_mtxWorld;
+    float4x4 m_mtxWorldInverseTranspose; //< For normal
+    float4x4 m_mtxPrevWorld;
     
     InstanceType GetInstanceType()
     {
