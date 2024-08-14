@@ -170,7 +170,7 @@ public:
     }
 private:
     RGBuilder(RGBuilder const&) = delete;
-    RGBuilder& operator=(RGBuilder& const) = delete;
+    RGBuilder& operator=(RGBuilder const&) = delete;
 
 private:
     RenderGraph* m_pGraph = nullptr;

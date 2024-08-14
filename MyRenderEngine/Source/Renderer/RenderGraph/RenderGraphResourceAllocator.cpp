@@ -34,7 +34,7 @@ void RenderGraphResourceAllocator::Reset()
     // Possible O(n^2)
     for (auto iter = m_allocatedHeaps.begin(); iter != m_allocatedHeaps.end();)
     {
-        Heap heap = *iter;
+        Heap& heap = *iter;
         CheckHeapUsage(heap);
 
         if (heap.m_resources.empty())
@@ -85,7 +85,7 @@ IRHITexture* RenderGraphResourceAllocator::AllocateNonOverlappingTexture(const R
     }
     else if (desc.m_usage & RHITextureUsageBit::RHITextureUsageRenderTarget)
     {
-        initialState = RHIAccessBit::RHIAccessDSVReadOnly;
+        initialState = RHIAccessBit::RHIAccessRTV;
     }
     else if (desc.m_usage & RHITextureUsageBit::RHITextureUsageUnorderedAccess)
     {
@@ -241,13 +241,13 @@ IRHIResource* RenderGraphResourceAllocator::GetAliasedPrevResource(IRHIResource*
     for (size_t i = 0; i < m_allocatedHeaps.size(); ++i)
     {
         Heap& heap = m_allocatedHeaps[i];
-        if (heap.Contains(pResource))
+        if (!heap.Contains(pResource))
         {
             continue;
         }
 
         AliasedResource* preAliasedResource = nullptr;
-        IRHIResource* pRreResource = nullptr;
+        IRHIResource* pPreResource = nullptr;
         uint32_t preResourceLastPass = 0;
 
         for (size_t j = 0; j < heap.m_resources.size(); ++j)
@@ -258,7 +258,7 @@ IRHIResource* RenderGraphResourceAllocator::GetAliasedPrevResource(IRHIResource*
                 && aliasedResource.m_lifeTime.m_lastPass > preResourceLastPass)
             {
                 preAliasedResource = &aliasedResource;
-                pRreResource = aliasedResource.m_pResource;
+                pPreResource = aliasedResource.m_pResource;
                 lastUsedState = aliasedResource.m_lastUsedState;
 
                 preResourceLastPass = aliasedResource.m_lifeTime.m_lastPass;
@@ -270,7 +270,7 @@ IRHIResource* RenderGraphResourceAllocator::GetAliasedPrevResource(IRHIResource*
             preAliasedResource->m_lastUsedState |= RHIAccessBit::RHIAccessDiscard;
         }
 
-        return pRreResource;
+        return pPreResource;
     }
 
     MY_ASSERT(false);   //< Can not find previous reosurce
@@ -315,7 +315,7 @@ void RenderGraphResourceAllocator::CheckHeapUsage(Heap& heap)
     for (auto iter = heap.m_resources.begin(); iter != heap.m_resources.end();)
     {
         const AliasedResource aliasedResource = *iter;
-        if (currentFrame - aliasedResource.m_lastUsedState > 30)
+        if (currentFrame - aliasedResource.m_lastUsedFrame > 30)
         {
             DeleteDescroptor(aliasedResource.m_pResource);
             delete aliasedResource.m_pResource;
@@ -330,11 +330,11 @@ void RenderGraphResourceAllocator::CheckHeapUsage(Heap& heap)
 
 void RenderGraphResourceAllocator::DeleteDescroptor(IRHIResource* pResource)
 {
-    for (auto iter = m_allocatedSRVs.begin(); iter != m_allocatedSRVs.end(); ++iter)
+    for (auto iter = m_allocatedSRVs.begin(); iter != m_allocatedSRVs.end(); )
     {
         if (iter->m_pResource == pResource)
         {
-            delete iter->m_pResource;
+            delete iter->m_pDescriptor;
             iter = m_allocatedSRVs.erase(iter);
         }
         else
@@ -343,11 +343,11 @@ void RenderGraphResourceAllocator::DeleteDescroptor(IRHIResource* pResource)
         }
     }
 
-    for (auto iter = m_allocatedUAVs.begin(); iter != m_allocatedUAVs.end(); ++iter)
+    for (auto iter = m_allocatedUAVs.begin(); iter != m_allocatedUAVs.end(); )
     {
         if (iter->m_pResource == pResource)
         {
-            delete iter->m_pResource;
+            delete iter->m_pDescriptor;
             iter = m_allocatedUAVs.erase(iter);
         }
         else
@@ -362,7 +362,7 @@ void RenderGraphResourceAllocator::AllocateHeap(uint32_t size)
     RHIHeapDesc heapDesc;
     heapDesc.m_size = RoundUpPow2(size, 64 * 1024);     // Round to 64kb
 
-    eastl::string heapName = fmt::format("RG Hea[ {:.1f} MB", heapDesc.m_size / (1024.0f * 1024.0f)).c_str();
+    eastl::string heapName = fmt::format("RG Heap[ {:.1f} MB", heapDesc.m_size / (1024.0f * 1024.0f)).c_str();
 
     Heap heap;
     heap.m_heap = m_pDevice->CreatHeap(heapDesc, heapName);

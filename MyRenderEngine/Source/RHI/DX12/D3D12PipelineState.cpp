@@ -59,13 +59,13 @@ bool D3D12GraphicsPipelineState::Create()
     ID3D12PipelineState* pPipelineState = nullptr;
     ID3D12Device* pDevice = (ID3D12Device*) m_pDevice->GetHandle();
 
-    if (FAILED(pDevice->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&m_pPipelineState))))
+    if (FAILED(pDevice->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pPipelineState))))
     {
         MY_ERROR("[D3D12GraphicsPipelineState] failed to create {}", m_name);
         return false; 
     }
 
-    m_pPipelineState->SetName(string_to_wstring(m_name).c_str());
+    pPipelineState->SetName(string_to_wstring(m_name).c_str());
     if (m_pPipelineState)
     {
         ((D3D12Device*) m_pDevice)->Delete(m_pPipelineState);

@@ -60,12 +60,32 @@ inline float rotation_roll(const quaternion& q)
     return radian_to_degree(atan2(2.0f * (q.x * q.y + q.w * q.z), q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z));
 }
 
-inline float3 roatation_angles(const quaternion& q)
+inline float3 rotation_angles(const quaternion& q)
 {
     return float3(rotation_pitch(q), rotation_yaw(q), rotation_roll(q));
 }
 
+inline void decompose(const float4x4& matrix, float3& translation, quaternion& rotation, float3& scale)
+{
+    translation = matrix[3].xyz();
+    float3 right = matrix[0].xyz();
+    float3 up = matrix[1].xyz();
+    float3 dir = matrix[2].xyz();
 
+    scale[0] = length(right);
+    scale[1] = length(up);
+    scale[2] = length(dir);
+
+    float3x3 mtxRotation = float3x3(right/scale[0], up/scale[1], dir/scale[2]);
+    rotation = rotation_quat(mtxRotation);
+}
+
+inline void decompose(const float4x4& matrix, float3& translation, float3& rotation, float3& scale)
+{
+    quaternion q;
+    decompose(matrix, translation, q, scale);
+    rotation = rotation_angles(q);
+}
 
 inline float sign(float x)
 {

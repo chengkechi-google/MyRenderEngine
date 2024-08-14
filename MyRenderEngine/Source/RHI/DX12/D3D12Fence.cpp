@@ -21,7 +21,7 @@ void D3D12Fence::Wait(uint64_t value)
     if (m_pFence->GetCompletedValue() != value)
     {
         m_pFence->SetEventOnCompletion(value, m_hEvent);
-        WaitForSingleObjectEx(m_hEvent, INFINITE, false);
+        WaitForSingleObjectEx(m_hEvent, INFINITE, FALSE);
     }
 }
 

@@ -27,6 +27,33 @@ StaticMesh::~StaticMesh()
     // todo:
 }
 
+bool StaticMesh::Create()
+{
+    // todo: need to cache BLAS for same modules
+
+    RHIRayTracingGeometry geometry;
+    geometry.m_vertexBuffer = m_pRenderer->GetSceneStaticBuffer();
+    geometry.m_vertexBufferOffset = m_posBuffer.offset;
+    geometry.m_vertexCount = m_vertexCount;
+    geometry.m_vertexStride = sizeof(float3);
+    geometry.m_vertexFormat = RHIFormat::RGB32F;
+    geometry.m_indexBuffer = m_pRenderer->GetSceneStaticBuffer();
+    geometry.m_indexBufferOffset = m_indexBuffer.offset;
+    geometry.m_indexCount = m_indexCount;
+    geometry.m_indexFormat = m_indexBufferFormat;
+    geometry.m_opaque = m_pMaterial->IsAlphaTest() ? false : true;  // todo: alpha blend
+
+    RHIRayTracingBLASDesc desc;
+    desc.m_geometries.push_back(geometry);
+    desc.m_flags = RHIRayTracingASFlagAllowCompaction | RHIRayTracingASFlagPreferFastTrace;
+
+    IRHIDevice* pDevice = m_pRenderer->GetDevice();
+    m_pBLAS.reset(pDevice->CreateRayTracingBLAS(desc, "BLAS : " + m_name));
+    m_pRenderer->BuildRayTracingBLAS(m_pBLAS.get());
+
+    return true;
+}
+
 void StaticMesh::Tick(float deltaTime)
 {
     // todo:
@@ -57,7 +84,7 @@ void StaticMesh::UpdateConstants()
     m_instanceData.m_tangentBufferAddress = m_tangentBuffer.offset;
 
     m_instanceData.m_bVertexAnimation = false;
-    m_instanceData.m_materialDataAddresss = m_pRenderer->AllocateSceneConstant((void*)m_pMaterial->GetConstants(), sizeof(ModelMaterialConstant));
+    m_instanceData.m_materialDataAddress = m_pRenderer->AllocateSceneConstant((void*)m_pMaterial->GetConstants(), sizeof(ModelMaterialConstant));
     m_instanceData.m_objectID = m_id;
     m_instanceData.m_scale = max(max(abs(m_scale.x), abs(m_scale.y)), abs(m_scale.z));
 

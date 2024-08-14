@@ -606,6 +606,15 @@ struct RHIRenderPassDesc
     RHIRenderPassDepthAttachment m_depth;
 };
 
+enum class RHIShaderType
+{
+    AS,
+    MS,
+    VS,
+    PS,
+    CS
+};
+
 enum RHIShaderCompilerFlagBit
 {
     RHIShaderCompilerFlag0 = 1 << 0,
@@ -617,9 +626,9 @@ using RHIShaderCompilerFlags = uint32_t;
 
 struct RHIShaderDesc
 {
+    RHIShaderType m_type;
     eastl::string m_file;
     eastl::string m_entryPoint;
-    eastl::string m_profile;
     eastl::vector<eastl::string> m_defines;
     RHIShaderCompilerFlags m_flags = 0;
 };

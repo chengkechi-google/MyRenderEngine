@@ -28,8 +28,9 @@ public:
 private:
     void ClearScene();
 
-    void CreateVisibleObject(tinyxml2::XMLElement* pElement);
+    void CreateVisibleObject(tinyxml2::XMLElement* pElement);       
     void CreateCamera(tinyxml2::XMLElement* pElement);
+    void CreateModel(tinyxml2::XMLElement* pElement);           //< Load GLTF file
 private:
     eastl::unique_ptr<Camera> m_pCamera;
     eastl::vector<eastl::unique_ptr<IVisibleObject>> m_objects;

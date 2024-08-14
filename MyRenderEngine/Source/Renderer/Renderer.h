@@ -55,7 +55,7 @@ public:
     Renderer();
     ~Renderer();
 
-    void CreateDevice(void* windowHandle, uint32_t windowWidth, uint32_t windowHeight);
+    bool CreateDevice(void* windowHandle, uint32_t windowWidth, uint32_t windowHeight);
     void RenderFrame();
     void WaitGPUFinished();
 
@@ -80,11 +80,13 @@ public:
 
     IRHIDevice* GetDevice() const { return m_pDevice.get(); }
     IRHISwapChain* GetSwapChain() const { return m_pSwapChain.get(); }
-    IRHIShader* GetShader(const eastl::string& file, const eastl::string& entryPoint, const eastl::string& profile, const eastl::vector<eastl::string>& defines, RHIShaderCompilerFlags flags = 0);
+    IRHIShader* GetShader(const eastl::string& file, const eastl::string& entryPoint, RHIShaderType type, const eastl::vector<eastl::string>& defines = {}, RHIShaderCompilerFlags flags = 0);
     IRHIPipelineState* GetPipelineState(const RHIGraphicsPipelineDesc& desc, const eastl::string& name);
     IRHIPipelineState* GetPipelineState(const RHIMeshShaderPipelineDesc& desc, const eastl::string& name);
     IRHIPipelineState* GetPipelineState(const RHIComputePipelineDesc& desc, const eastl::string& name);
     void ReloadShaders();
+    IRHIDescriptor* GetPointSampler() const { return m_pPointRepeatSampler.get(); }
+    IRHIDescriptor* GetLinearSampler() const { return m_pBilinearRepeatSampler.get(); }
 
     IndexBuffer* CreateIndexBuffer(const void* pData, uint32_t stride, uint32_t indexCount, const eastl::string& name, RHIMemoryType memoryType = RHIMemoryType::GPUOnly);
     StructedBuffer* CreateStructedBuffer(const void* pData, uint32_t stride, uint32_t elementCount, const eastl::string& name, RHIMemoryType memoryType = RHIMemoryType::GPUOnly, bool uav = false);
@@ -140,6 +142,7 @@ public:
     void SetupGlobalConstants(IRHICommandList* pCommandList);
 
 private:
+    void CreateCommonResources();
     void OnWindowResize(void* window, uint32_t width, uint32_t height);
 
     void BeginFrame();
@@ -149,6 +152,11 @@ private:
     void EndFrame();
 
     void UpdateMipBias();
+
+    // Render passes
+    void BasePass(RGHandle& outColor, RGHandle& outDepth);
+    void RenderBackBufferPass(IRHICommandList* pCommandList, RGHandle color, RGHandle depth);
+    void CopyToBackBuffer(IRHICommandList* pCommandList, RGHandle color, RGHandle depth, bool needUpscaleDepth);    
    
 private:
     // Render resource
@@ -226,6 +234,7 @@ private:
     eastl::unique_ptr<IRHIDescriptor> m_pBilinearWhiteBoarderSampler;
     eastl::unique_ptr<IRHIDescriptor> m_pTrilinearRepeatSampler;
     eastl::unique_ptr<IRHIDescriptor> m_pTrilinearClampSampler;
+    eastl::unique_ptr<IRHIDescriptor> m_pShadowSampler;
     eastl::unique_ptr<IRHIDescriptor> m_pMinReductionSampler;
     eastl::unique_ptr<IRHIDescriptor> m_pMaxReductionSampler;
 
@@ -240,8 +249,11 @@ private:
     eastl::unique_ptr<IRHIBuffer> m_pObjectIDBuffer;
     uint32_t m_objectIDRowPitch = 0;
 
+    eastl::vector<RenderBatch> m_BaseBatchs;             //< not mesh let
     eastl::vector<ComputeBatch> m_animationBatchs;
     eastl::vector<RenderBatch> m_forwardPassBatchs;
     eastl::vector<RenderBatch> m_velocityPassBatchs;
     eastl::vector<RenderBatch> m_idPassBatchs;
+
+    IRHIPipelineState* m_pCopyColorPSO = nullptr;
 };

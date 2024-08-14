@@ -158,7 +158,7 @@ TextureLoader::~TextureLoader()
 
 bool TextureLoader::Load(const eastl::string& file, bool srgb)
 {
-    std::fstream is;
+    std::ifstream is;
     is.open(file.c_str(), std::ios::binary);
     if (is.fail())
     {

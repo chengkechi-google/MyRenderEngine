@@ -221,7 +221,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE D3D12Texture::GetDSV(uint32_t mipSlice, uint32_t arr
     uint32_t index = m_desc.m_mipLevels * arraySlice + mipSlice;
     if (IsNullDescriptor(m_DSV[index]))
     {
-        m_DSV[index] = ((D3D12Device*)m_pDevice)->AllocateRTV();
+        m_DSV[index] = ((D3D12Device*)m_pDevice)->AllocateDSV();
 
         D3D12_DEPTH_STENCIL_VIEW_DESC desc = {};
         desc.Format = DXGIFormat(m_desc.m_format);

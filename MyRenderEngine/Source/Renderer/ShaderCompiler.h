@@ -14,7 +14,7 @@ public:
     ~ShaderCompiler();
 
     bool Compile(const eastl::string& source, const eastl::string& file, const eastl::string& entryPoint,
-        const eastl::string& profile, const eastl::vector<eastl::string>& defines, RHIShaderCompilerFlags flags,
+        RHIShaderType type, const eastl::vector<eastl::string>& defines, RHIShaderCompilerFlags flags,
         eastl::vector<uint8_t>& outputBlob);
 private:
     Renderer* m_pRenderer = nullptr;

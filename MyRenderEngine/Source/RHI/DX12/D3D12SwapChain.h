@@ -12,6 +12,7 @@ public:
     ~D3D12SwapChain();
 
     virtual void* GetHandle() const override { return m_pSwapChain; }
+    virtual void AcquireNextBackBuffer() override;
     virtual bool Present() override;
     virtual bool Resize(uint32_t width, uint32_t height) override;
     virtual void SetVsyncEnabled(bool value) override { m_enableVsync = value; }
@@ -23,7 +24,7 @@ private:
     bool CreateTextures();
 
 protected:
-    IDXGISwapChain4* m_pSwapChain = nullptr;
+    IDXGISwapChain3* m_pSwapChain = nullptr;
     bool m_enableVsync = true;
     bool m_supportTearing = false;
     bool m_windowMode = true;

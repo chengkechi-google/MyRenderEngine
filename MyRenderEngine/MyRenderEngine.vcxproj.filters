@@ -70,9 +70,6 @@
     <Filter Include="Source\World">
       <UniqueIdentifier>{d17bad05-3743-453a-b67e-587dd0da7121}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader">
-      <UniqueIdentifier>{6f395b52-aad1-4a92-8b27-47bfd2cc5415}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Editor">
       <UniqueIdentifier>{7a1b2724-ae0f-4f98-81af-a6b5473aa0df}</UniqueIdentifier>
     </Filter>
@@ -90,6 +87,15 @@
     </Filter>
     <Filter Include="External\tinyxml2">
       <UniqueIdentifier>{93ffe879-9a0b-40c9-a64b-fff0a0d55768}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\meshoptimizer">
+      <UniqueIdentifier>{b0d5a9fb-bc09-4bb3-a764-7e05bd486b46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Renderer\RenderPasses">
+      <UniqueIdentifier>{fd00b1c2-20c2-4527-b90b-4e18947dba7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{6f395b52-aad1-4a92-8b27-47bfd2cc5415}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -375,6 +381,48 @@
     <ClInclude Include="Source\Utils\parallel_for.h">
       <Filter>Source\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Source\World\GLTFLoader.h">
+      <Filter>Source\World</Filter>
+    </ClInclude>
+    <ClInclude Include="External\meshoptimizer\meshoptimizer.h">
+      <Filter>External\meshoptimizer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\GUI.h">
+      <Filter>Source\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\Common.hlsli">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\Copy.hlsl">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\Debug.hlsli">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\GlobalConstants.hlsli">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\GPUScene.hlsli">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\Imgui.hlsl">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\Model.hlsl">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\Model.hlsli">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\ModelConstants.hlsli">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\ShadingModel.hlsli">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\Texture.hlsli">
+      <Filter>Shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\RHI\RHI.cpp">
@@ -596,6 +644,60 @@
     <ClCompile Include="Source\World\World.cpp">
       <Filter>Source\World</Filter>
     </ClCompile>
+    <ClCompile Include="Source\World\GLTFLoader.cpp">
+      <Filter>Source\World</Filter>
+    </ClCompile>
+    <ClCompile Include="External\meshoptimizer\allocator.cpp">
+      <Filter>External\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="External\meshoptimizer\clusterizer.cpp">
+      <Filter>External\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="External\meshoptimizer\indexcodec.cpp">
+      <Filter>External\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="External\meshoptimizer\indexgenerator.cpp">
+      <Filter>External\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="External\meshoptimizer\overdrawanalyzer.cpp">
+      <Filter>External\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="External\meshoptimizer\overdrawoptimizer.cpp">
+      <Filter>External\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="External\meshoptimizer\quantization.cpp">
+      <Filter>External\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="External\meshoptimizer\simplifier.cpp">
+      <Filter>External\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="External\meshoptimizer\spatialorder.cpp">
+      <Filter>External\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="External\meshoptimizer\stripifier.cpp">
+      <Filter>External\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="External\meshoptimizer\vcacheanalyzer.cpp">
+      <Filter>External\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="External\meshoptimizer\vcacheoptimizer.cpp">
+      <Filter>External\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="External\meshoptimizer\vertexcodec.cpp">
+      <Filter>External\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="External\meshoptimizer\vertexfilter.cpp">
+      <Filter>External\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="External\meshoptimizer\vfetchanalyzer.cpp">
+      <Filter>External\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="External\meshoptimizer\vfetchoptimizer.cpp">
+      <Filter>External\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\GUI.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="External\EASTL\EASTL.natvis">
@@ -611,15 +713,11 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="External\xxHash\LICENSE">
       <Filter>External\xxHash</Filter>
     </None>
     <None Include="Source\Renderer\RenderGraph\RenderGraph.inl">
       <Filter>Source\Renderer\RenderGraph</Filter>
-    </None>
-    <None Include="Shader\GlobalConstants.hlsli">
-      <Filter>Shader</Filter>
     </None>
     <None Include="External\ImFileDialog\LICENSE">
       <Filter>External\imFileDialog</Filter>
@@ -630,17 +728,6 @@
     <None Include="External\lodepng\LICENSE">
       <Filter>External\lodepng</Filter>
     </None>
-    <None Include="Shader\ModelConstants.hlsli">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="Shader\Texture.hlsli">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="Shader\ShadingModel.hlsli">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="Shader\GPUScene.hlsli">
-      <Filter>Shader</Filter>
-    </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

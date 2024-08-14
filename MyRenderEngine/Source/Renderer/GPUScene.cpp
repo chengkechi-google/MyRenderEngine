@@ -30,7 +30,7 @@ GPUScene::~GPUScene()
 OffsetAllocator::Allocation GPUScene::AllocateStaticBuffer(uint32_t size)
 {
     // todo: resize
-    return m_pSceneAnimationBufferAllocator->allocate(RoundUpPow2(size, ALLOCATION_ALIGNMENT));
+    return m_pSceneStaticBufferAllocator->allocate(RoundUpPow2(size, ALLOCATION_ALIGNMENT));
 }
 
 void GPUScene::FreeStaticBuffer(OffsetAllocator::Allocation allocation)

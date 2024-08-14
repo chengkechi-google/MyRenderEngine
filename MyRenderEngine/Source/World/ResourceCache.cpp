@@ -30,11 +30,11 @@ void ResourceCache::ReleaseTexture2D(Texture2D* pTexture)
 {
     if (pTexture == nullptr)
     {
-        MY_ASSERT("Shoould not happen" && false);
+        //MY_ASSERT("Shoould not happen" && false);
         return;
     }
 
-    /*for (auto iter = m_cachedTexture2D.begin(); iter != m_cachedTexture2D.end(); ++iter)
+    for (auto iter = m_cachedTexture2D.begin(); iter != m_cachedTexture2D.end(); ++iter)
     {
         if (iter->second.m_ptr == pTexture)
         {
@@ -47,7 +47,7 @@ void ResourceCache::ReleaseTexture2D(Texture2D* pTexture)
 
             return;
         }
-    }*/
+    }
 
     // hash_map look up takes O(1), so maybe faster
     auto iter = m_cachedTexture2D.find(pTexture->GetName());

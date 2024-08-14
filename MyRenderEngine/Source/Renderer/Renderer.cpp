@@ -14,6 +14,9 @@
 
 Renderer::Renderer()
 {
+    m_pShaderCache = eastl::make_unique<ShaderCache>(this);
+    m_pShaderCompiler = eastl::make_unique<ShaderCompiler>(this);
+    m_pPipelineCache = eastl::make_unique<PipelineStateCache>(this);
     m_pCBAllocator = eastl::make_unique<LinearAllocator>(8 * 1024 * 1024); // 8 MB for constant buffer
 
     Engine::GetInstance()->WindowResizeSignal.connect(&Renderer::OnWindowResize, this);
@@ -22,11 +25,15 @@ Renderer::Renderer()
 Renderer::~Renderer()
 {
     WaitGPUFinished();
-    m_pRenderGraph->Clear();
+    if (m_pRenderGraph)
+    {
+        m_pRenderGraph->Clear();
+    }
+
     Engine::GetInstance()->WindowResizeSignal.disconnect(this);
 }
 
-void Renderer::CreateDevice(void* windowHandle, uint32_t windowWidth, uint32_t windowHeight)
+bool Renderer::CreateDevice(void* windowHandle, uint32_t windowWidth, uint32_t windowHeight)
 {
     m_displayWidth = windowWidth;
     m_displayHeight = windowHeight;
@@ -39,7 +46,7 @@ void Renderer::CreateDevice(void* windowHandle, uint32_t windowWidth, uint32_t w
     if (m_pDevice == nullptr)
     {
         MY_ERROR("[Renderer::CreateDevice] failed to create the RHI device");
-        return;
+        return false;
     }
 
     RHISwapChainDesc swapChainDesc = {};
@@ -71,8 +78,11 @@ void Renderer::CreateDevice(void* windowHandle, uint32_t windowWidth, uint32_t w
     }
 
 
-    // CreateCommonResources();
-    m_pRenderGraph = eastl::make_unique<RenderGraph>(this);    
+    CreateCommonResources();
+    m_pRenderGraph = eastl::make_unique<RenderGraph>(this);   
+    m_pGPUScene = eastl::make_unique<GPUScene>(this);
+
+    return true; 
 }
 
 void Renderer::RenderFrame()
@@ -105,9 +115,9 @@ void Renderer::SetTemporalUpscaleRatio(float ratio)
     }
 }
 
-IRHIShader* Renderer::GetShader(const eastl::string& file, const eastl::string& entryPoint, const eastl::string& profile, const eastl::vector<eastl::string>& defines, RHIShaderCompilerFlags flags /*= 0*/)
+IRHIShader* Renderer::GetShader(const eastl::string& file, const eastl::string& entryPoint, RHIShaderType type, const eastl::vector<eastl::string>& defines, RHIShaderCompilerFlags flags /*= 0*/)
 {
-    return nullptr;
+    return m_pShaderCache->GetShader(file, entryPoint, type, defines, flags);
 }
 
 IRHIPipelineState* Renderer::GetPipelineState(const RHIGraphicsPipelineDesc& desc, const eastl::string& name)
@@ -509,12 +519,171 @@ void Renderer::UpdateRayTracingBLAS(IRHIRayTracingBLAS* pBLAS, IRHIBuffer* verte
 RenderBatch& Renderer::AddBasePassBatch()
 {
     // Using forward pass for render tesing
-    return m_forwardPassBatchs.emplace_back(*m_pCBAllocator);
+    return m_BaseBatchs.emplace_back(*m_pCBAllocator);
 }
 
 void Renderer::SetupGlobalConstants(IRHICommandList* pCommandList)
 {
-    
+    World* pWorld = Engine::GetInstance()->GetWorld();
+    Camera* pCamera = pWorld->GetCamera();
+
+    bool enableJitter = false;
+    pCamera->EnableJitter(enableJitter);
+
+    SceneConstant sceneCB;
+    pCamera->SetupCameraCB(sceneCB.m_cameraCB);
+
+    sceneCB.m_sceneConstantBufferSRV = m_pGPUScene->GetSceneConstantSRV()->GetHeapIndex();
+    sceneCB.m_sceneStaticBufferSRV = m_pGPUScene->GetSceneStaticBufferSRV()->GetHeapIndex();
+    sceneCB.m_sceneAnimationBufferSRV = m_pGPUScene->GetSceneAnimationBufferSRV()->GetHeapIndex();
+    sceneCB.m_sceneAnimationBufferUAV = m_pGPUScene->GetSceneAnimationBufferUAV()->GetHeapIndex();
+    sceneCB.m_instanceDataAddress = m_pGPUScene->GetInstanceDataAddress();
+    sceneCB.m_sceneRayTracingTLAS = m_pGPUScene->GetRayTracingTLASSRV()->GetHeapIndex();
+    sceneCB.m_showMeshlets = m_showMeshlets;
+    sceneCB.m_secondPhaseMeshletsListUAV = RHI_INVALID_RESOURCE;
+    sceneCB.m_secondPhaseMeshletsCounterUAV = RHI_INVALID_RESOURCE;
+    sceneCB.m_lightDir = float3(0.0f, -1.0f, 0.0f);
+    sceneCB.m_lightColor = float3(1.0f, 1.0f, 1.0f);
+    sceneCB.m_lightRadius = 1.0f;
+    sceneCB.m_renderSize = uint2(m_renderWidth, m_renderHeight);
+    sceneCB.m_rcpRenderSize = float2(1.0f/ m_renderWidth, 1.0f / m_renderHeight);
+    sceneCB.m_displaySize = uint2(m_displayWidth, m_displayHeight);
+    sceneCB.m_rcpDisplaySize = float2(1.0f / m_displayWidth, 1.0f / m_displayHeight);
+    sceneCB.m_prevSceneColorSRV = RHI_INVALID_RESOURCE;
+    sceneCB.m_prevSceneDepthSRV = RHI_INVALID_RESOURCE;
+    sceneCB.m_prevNormalSRV = RHI_INVALID_RESOURCE;
+    sceneCB.m_hzbWidth = 1;
+    sceneCB.m_hzbHeight = 1;
+    sceneCB.m_firstPhaseCullingHZBSRV = RHI_INVALID_RESOURCE;
+    sceneCB.m_secondPhaseCullingHZBSRV = RHI_INVALID_RESOURCE;
+    sceneCB.m_sceneHZBSRV = RHI_INVALID_RESOURCE;
+    sceneCB.m_debugLineDrawCommandUAV = RHI_INVALID_RESOURCE;
+    sceneCB.m_debugLineVertexBufferUAV = RHI_INVALID_RESOURCE;
+    sceneCB.m_debugTextCounterBufferUAV = RHI_INVALID_RESOURCE;
+    sceneCB.m_debugTextBufferUAV = RHI_INVALID_RESOURCE;
+    sceneCB.m_debugFontCharBufferSRV = RHI_INVALID_RESOURCE;
+    sceneCB.m_enableStats = m_gpuDrivenStatsEnabled;
+    sceneCB.m_statsBufferUAV = RHI_INVALID_RESOURCE;
+    sceneCB.m_minReductionSampler = m_pMinReductionSampler->GetHeapIndex();
+    sceneCB.m_maxReductionSampler = m_pMaxReductionSampler->GetHeapIndex();
+    sceneCB.m_pointRepeatSampler = m_pPointRepeatSampler->GetHeapIndex();
+    sceneCB.m_pointClampSampler = m_pPointClampSampler->GetHeapIndex();
+    sceneCB.m_bilinearRepeatSampler = m_pBilinearRepeatSampler->GetHeapIndex();
+    sceneCB.m_bilinearClampSampler = m_pBilinearClampSampler->GetHeapIndex();
+    sceneCB.m_bilinearBlackBorderSampler = m_pBilinearBlackBoarderSampler->GetHeapIndex();
+    sceneCB.m_bilinearWhiteBorderSampler = m_pBilinearWhiteBoarderSampler->GetHeapIndex();
+    sceneCB.m_trilinearRepeatSampler = m_pTrilinearRepeatSampler->GetHeapIndex();
+    sceneCB.m_trilinearClampSampler = m_pTrilinearClampSampler->GetHeapIndex();
+    sceneCB.m_aniso2xSampler = m_pAniso2xSampler->GetHeapIndex();
+    sceneCB.m_aniso4xSampler = m_pAniso4xSampler->GetHeapIndex();
+    sceneCB.m_aniso8xSampler = m_pAniso8xSampler->GetHeapIndex();
+    sceneCB.m_aniso16xSampler = m_pAniso16xSampler->GetHeapIndex();
+    sceneCB.m_skyCubeTexture = RHI_INVALID_RESOURCE;
+    sceneCB.m_skyDiffuseIBLTexture = RHI_INVALID_RESOURCE;
+    sceneCB.m_skySpecularIBLTexture = RHI_INVALID_RESOURCE;
+    sceneCB.m_preIntegratedGFTexture = RHI_INVALID_RESOURCE;
+    sceneCB.m_blueNoiseTexture = RHI_INVALID_RESOURCE;
+    sceneCB.m_sheenETexture = RHI_INVALID_RESOURCE;
+    sceneCB.m_tonyMcMapfaceTexture = RHI_INVALID_RESOURCE;
+    sceneCB.m_scalarSTBN = RHI_INVALID_RESOURCE;
+    sceneCB.m_vec2STBN = RHI_INVALID_RESOURCE;
+    sceneCB.m_vec3STBN = RHI_INVALID_RESOURCE;
+    sceneCB.m_frameTime = Engine::GetInstance()->GetFrameDeltaTime();
+    sceneCB.m_frameIndex = (uint32_t) GetFrameID();
+    sceneCB.m_mipBias = m_mipBias;
+    sceneCB.m_marschnerTextureM = RHI_INVALID_RESOURCE;
+    sceneCB.m_marschnerTextureN = RHI_INVALID_RESOURCE;
+
+    if (pCommandList->GetQueue() == RHICommandQueue::Graphics)
+    {
+        pCommandList->SetGraphicsConstants(2, &sceneCB, sizeof(sceneCB));
+    }
+
+    pCommandList->SetComputeConstants(2, &sceneCB, sizeof(sceneCB));
+}
+
+void Renderer::CreateCommonResources()
+{
+    RHISamplerDesc desc;
+    m_pPointRepeatSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pPointRepeatSampler"));
+
+    desc.m_minFilter = RHIFilter::Linear;
+    desc.m_magFilter = RHIFilter::Linear;
+    m_pBilinearRepeatSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pBilinearRepeatSampler"));
+
+    desc.m_mipFilter = RHIFilter::Linear;
+    m_pTrilinearRepeatSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pTrilinearRepeatSampler"));
+
+    desc.m_minFilter = RHIFilter::Point;
+    desc.m_magFilter = RHIFilter::Point;
+    desc.m_mipFilter = RHIFilter::Point;
+    desc.m_addressU = RHISamplerAddressMode::ClampToEdge;
+    desc.m_addressV = RHISamplerAddressMode::ClampToEdge;
+    desc.m_addressW = RHISamplerAddressMode::ClampToEdge;
+    m_pPointClampSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pPointClampSampler"));
+
+    desc.m_minFilter = RHIFilter::Linear;
+    desc.m_magFilter = RHIFilter::Linear;
+    m_pBilinearClampSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pBilinearClampSampler"));
+
+    desc.m_mipFilter = RHIFilter::Linear;
+    m_pTrilinearClampSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pTrilinearClampSampler"));
+
+    desc.m_mipFilter = RHIFilter::Point;
+    desc.m_addressU = RHISamplerAddressMode::ClampToBorder;
+    desc.m_addressV = RHISamplerAddressMode::ClampToBorder;
+    desc.m_addressW = RHISamplerAddressMode::ClampToBorder;
+    m_pBilinearBlackBoarderSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pBilinearBlackBoarderSampler"));
+
+    desc.m_borderColor[0] = desc.m_borderColor[1] = desc.m_borderColor[2] = desc.m_borderColor[3] = 1.0f;
+    m_pBilinearWhiteBoarderSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pBilinearWhiteBoarderSampler"));
+
+    desc.m_minFilter = RHIFilter::Linear;
+    desc.m_magFilter = RHIFilter::Linear;
+    desc.m_mipFilter = RHIFilter::Linear;
+    desc.m_addressU = RHISamplerAddressMode::Repeat;
+    desc.m_addressV = RHISamplerAddressMode::Repeat;
+    desc.m_addressW = RHISamplerAddressMode::Repeat;
+    desc.m_enableAnisotropy = true;
+    desc.m_maxAnisotropy = 2.0f;
+    m_pAniso2xSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pAniso2xSampler"));
+
+    desc.m_maxAnisotropy = 4.0f;
+    m_pAniso4xSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pAniso4xSampler"));
+
+    desc.m_maxAnisotropy = 8.0f;
+    m_pAniso8xSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pAniso8xSampler"));
+
+    desc.m_maxAnisotropy = 16.0f;
+    m_pAniso16xSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pAniso16xSampler"));
+
+    desc.m_enableAnisotropy = false;
+    desc.m_maxAnisotropy = 1.0f;
+
+    desc.m_minFilter = RHIFilter::Linear;
+    desc.m_magFilter = RHIFilter::Linear;
+    desc.m_mipFilter = RHIFilter::Point;
+    desc.m_addressU = RHISamplerAddressMode::ClampToEdge;
+    desc.m_addressV = RHISamplerAddressMode::ClampToEdge;
+    desc.m_addressW = RHISamplerAddressMode::ClampToEdge;
+    desc.m_reductionMode = RHISamplerReductionMode::Min;
+    m_pMinReductionSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pMinReductionSampler"));
+
+    desc.m_reductionMode = RHISamplerReductionMode::Max;
+    m_pMaxReductionSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pMaxReductionSampler"));
+
+    desc.m_reductionMode = RHISamplerReductionMode::Compare;
+    desc.m_compareFunc = RHICompareFunc::LessEqual;
+    m_pShadowSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pShadowSampler"));  
+
+    // Create global shader
+    RHIGraphicsPipelineDesc psoDesc;
+    psoDesc.m_pVS = GetShader("Copy.hlsl", "vs_main", RHIShaderType::VS);
+    psoDesc.m_pPS = GetShader("Copy.hlsl", "ps_main", RHIShaderType::PS);
+    psoDesc.m_depthStencilState.m_depthWrite = false;
+    psoDesc.m_rtFormat[0] = m_pSwapChain->GetDesc().m_format;
+    psoDesc.m_depthStencilFromat = RHIFormat::D32F;
+    m_pCopyColorPSO = GetPipelineState(psoDesc, "Copy PSO");
 }
 
 void Renderer::OnWindowResize(void* window, uint32_t width, uint32_t height)
@@ -526,8 +695,8 @@ void Renderer::OnWindowResize(void* window, uint32_t width, uint32_t height)
         
         m_displayWidth = width;
         m_displayHeight = height;
-        m_renderWidth = (uint32_t)((float)m_renderWidth / m_upscaleRatio);
-        m_renderHeight = (uint32_t)((float)m_renderHeight / m_upscaleRatio);
+        m_renderWidth = (uint32_t)((float)m_displayWidth / m_upscaleRatio);
+        m_renderHeight = (uint32_t)((float)m_displayHeight / m_upscaleRatio);
     }
 }
 
@@ -551,11 +720,6 @@ void Renderer::BeginFrame()
     pComputeCommandList->ResetAllocator();
     pComputeCommandList->Begin();
     pComputeCommandList->BeginProfiling();
-
-    if (m_pDevice->GetFrameID() == 0)
-    {
-        //pCommandList->BufferBarrier(
-    }
 }
 
 void Renderer::UploadResources()
@@ -611,7 +775,7 @@ void Renderer::Render()
     GPU_EVENT_PROFILER(pCommandList, "Render Frame");
 
     m_pRenderGraph->Clear();
-    // m_pGPUScene->Update();
+    m_pGPUScene->Update();
 
     // ImportPrevFrameTextures();
 
@@ -624,24 +788,25 @@ void Renderer::Render()
     // m_pGPUDebugPring->Clear(pCommandList);
     // m_pGPUStates->Clear(pCommandList);
 
-    // SetupGlobalConstants(pCommandList);
-    // FlushComputePass(pCommandList);
-    // BuildRayTracingAS(pCommandList, pComputeCommandList);
+    SetupGlobalConstants(pCommandList);
+    //FlushComputePass(pCommandList);
+    //BuildRayTracingAS(pCommandList, pComputeCommandList);
 
     // m_pSkyyCubeMap->Update();
 
-    // World* pWorld = Engine::GetInstance()->GetWorld();
-    // Camera* pCamera = pWorld->GetCamera();
-    // pCamera->DrawViewFrustum(pCommandList);
+    World* pWorld = Engine::GetInstance()->GetWorld();
+    Camera* pCamera = pWorld->GetCamera();
+    pCamera->DrawViewFrustum(pCommandList);
 
     m_pRenderGraph->Execute(this, pCommandList, pComputeCommandList);
 
-    // RenderBackBufferPass(pCommandList, outputColorHandle, outputDepthHandle);
+    RenderBackBufferPass(pCommandList, outputColorHandle, outputDepthHandle);
 }
 
 void Renderer::BuildRenderGraph(RGHandle& outColor, RGHandle& outDepth)
 {
-    
+    BasePass(outColor, outDepth);
+    m_pRenderGraph->Present(outColor, RHIAccessBit::RHIAccessPixelShaderSRV);
 }
 
 void Renderer::EndFrame()
@@ -659,16 +824,23 @@ void Renderer::EndFrame()
 
     m_frameFenceValue[frameIndex] = ++ m_currentFrameFenceValue;
 
+    pCommandList->Present(m_pSwapChain.get());
     pCommandList->Signal(m_pFrameFence.get(), m_currentFrameFenceValue);
     pCommandList->Submit();
     pCommandList->EndProfiling(); 
-    {
+    /* {
         CPU_EVENT("Render", "IRHISwapchain::Present");
         m_pSwapChain->Present();
-    }
+    }*/
 
     m_pStagingBufferAllocator[frameIndex]->Reset();
     m_pCBAllocator->Reset();
+    m_pGPUScene->ResetFrameData();
+
+    m_BaseBatchs.clear();
+    m_animationBatchs.clear();
+    m_velocityPassBatchs.clear();
+    m_idPassBatchs.clear();
 
     m_pDevice->EndFrame();
 }
@@ -705,3 +877,77 @@ void Renderer::UpdateMipBias()
     desc.m_maxAnisotropy = 16.0f;
     m_pAniso16xSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pAniso16xSampler"));
 }
+
+void Renderer::BasePass(RGHandle& outColor, RGHandle& outDepth)
+{
+    struct BasePassData
+    {
+        RGHandle outSceneColorRT;
+        RGHandle outSceneDepthRT;
+    };
+
+    auto basePass = m_pRenderGraph->AddPass<BasePassData>("Base Pass", RenderPassType::Graphics,
+        [&](BasePassData& data, RGBuilder& builder)
+        {
+            RGTexture::Desc desc;
+            desc.m_width = m_renderWidth;
+            desc.m_height = m_renderHeight;
+            desc.m_format = RHIFormat::RGBA8SRGB;
+
+            data.outSceneColorRT = builder.Create<RGTexture>(desc, "SceneColor RT");
+            data.outSceneColorRT = builder.WriteColor(0, data.outSceneColorRT, 0, RHIRenderPassLoadOp::Clear, float4(1.0f, 1.0f, 0.0f, 1.0f));
+
+            desc.m_format = RHIFormat::D32F;
+            data.outSceneDepthRT = builder.Create<RGTexture>(desc, "SceneDepth RT");
+            data.outSceneDepthRT = builder.WriteDepth(data.outSceneDepthRT, 0, RHIRenderPassLoadOp::Clear, RHIRenderPassLoadOp::Clear);
+        },
+        [&](const BasePassData& data, IRHICommandList* pCommandList)
+        {
+            for (size_t i = 0; i < m_BaseBatchs.size(); ++i)
+            {
+                DrawBatch(pCommandList, m_BaseBatchs[i]);
+            }
+        });
+
+    outColor = basePass->outSceneColorRT;
+    outDepth = basePass->outSceneDepthRT;
+}
+
+void Renderer::RenderBackBufferPass(IRHICommandList* pCommandList, RGHandle color, RGHandle depth)
+{
+    GPU_EVENT(pCommandList, "BackBuffer Pass");
+
+    m_pSwapChain->AcquireNextBackBuffer();
+    pCommandList->TextureBarrier(m_pSwapChain->GetBackBuffer(), 0, RHIAccessBit::RHIAccessPresent, RHIAccessBit::RHIAccessRTV);
+    RGTexture* pDepth = m_pRenderGraph->GetTexture(depth);
+
+    RHIRenderPassDesc renderPass;
+    renderPass.m_color[0].m_pTexture = m_pSwapChain->GetBackBuffer();
+    renderPass.m_color[0].m_loadOp = RHIRenderPassLoadOp::DontCare;
+    renderPass.m_depth.m_pTexture = pDepth->GetTexture();
+    renderPass.m_depth.m_loadOp = RHIRenderPassLoadOp::DontCare;
+    renderPass.m_depth.m_stencilLoadOp = RHIRenderPassLoadOp::DontCare;
+    renderPass.m_depth.m_storeOp = RHIRenderPassStoreOp::DontCare;
+    renderPass.m_depth.m_stencilStoreOp = RHIRenderPassStoreOp::DontCare;
+    pCommandList->BeginRenderPass(renderPass);
+    
+    CopyToBackBuffer(pCommandList, color, depth, false);
+    Engine::GetInstance()->GetGUI()->Render(pCommandList);
+
+    pCommandList->EndRenderPass();
+    pCommandList->TextureBarrier(m_pSwapChain->GetBackBuffer(), 0, RHIAccessBit::RHIAccessRTV, RHIAccessBit::RHIAccessPresent);
+}
+
+void Renderer::CopyToBackBuffer(IRHICommandList* pCommandList, RGHandle color, RGHandle depth, bool needUpscaleDepth)
+{
+    GPU_EVENT(pCommandList, "CopyToBackBuffer");
+    
+    RGTexture* pColorRT = m_pRenderGraph->GetTexture(color);
+    RGTexture* pDepthRT = m_pRenderGraph->GetTexture(depth);
+
+    uint32_t constants[3] = { pColorRT->GetSRV()->GetHeapIndex(), pDepthRT->GetSRV()->GetHeapIndex(), m_pPointClampSampler->GetHeapIndex() };
+    pCommandList->SetGraphicsConstants(0, constants, sizeof(constants));
+    pCommandList->SetPipelineState(m_pCopyColorPSO);
+    pCommandList->Draw(3);
+}
+

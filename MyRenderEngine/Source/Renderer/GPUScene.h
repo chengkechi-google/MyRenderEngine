@@ -42,8 +42,8 @@ public:
 
     uint32_t GetInstanceDataAddress() const { return m_instanceDataAddress; }
     
-    IRHIDescriptor* GetRayTracingTLASSRV() const { return m_pSceneTLASSRV.get(); 
-}
+    IRHIDescriptor* GetRayTracingTLASSRV() const { return m_pSceneTLASSRV.get(); }
+
 private:
     Renderer* m_pRenderer = nullptr;
     

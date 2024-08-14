@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.Direct3D.D3D12.1.613.0\build\native\Microsoft.Direct3D.D3D12.props" Condition="Exists('..\packages\Microsoft.Direct3D.D3D12.1.613.0\build\native\Microsoft.Direct3D.D3D12.props')" />
+  <Import Project="..\packages\Microsoft.Direct3D.D3D12.1.614.1\build\native\Microsoft.Direct3D.D3D12.props" Condition="Exists('..\packages\Microsoft.Direct3D.D3D12.1.614.1\build\native\Microsoft.Direct3D.D3D12.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -23,8 +23,25 @@
     <ClCompile Include="External\ImFileDialog\ImFileDialog.cpp" />
     <ClCompile Include="External\ImGuizmo\ImGuizmo.cpp" />
     <ClCompile Include="External\lodepng\lodepng.cpp" />
+    <ClCompile Include="External\meshoptimizer\allocator.cpp" />
+    <ClCompile Include="External\meshoptimizer\clusterizer.cpp" />
+    <ClCompile Include="External\meshoptimizer\indexcodec.cpp" />
+    <ClCompile Include="External\meshoptimizer\indexgenerator.cpp" />
+    <ClCompile Include="External\meshoptimizer\overdrawanalyzer.cpp" />
+    <ClCompile Include="External\meshoptimizer\overdrawoptimizer.cpp" />
+    <ClCompile Include="External\meshoptimizer\quantization.cpp" />
+    <ClCompile Include="External\meshoptimizer\simplifier.cpp" />
+    <ClCompile Include="External\meshoptimizer\spatialorder.cpp" />
+    <ClCompile Include="External\meshoptimizer\stripifier.cpp" />
+    <ClCompile Include="External\meshoptimizer\vcacheanalyzer.cpp" />
+    <ClCompile Include="External\meshoptimizer\vcacheoptimizer.cpp" />
+    <ClCompile Include="External\meshoptimizer\vertexcodec.cpp" />
+    <ClCompile Include="External\meshoptimizer\vertexfilter.cpp" />
+    <ClCompile Include="External\meshoptimizer\vfetchanalyzer.cpp" />
+    <ClCompile Include="External\meshoptimizer\vfetchoptimizer.cpp" />
     <ClCompile Include="External\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="External\xxHash\xxhash.c" />
+    <ClCompile Include="Source\Core\GUI.cpp" />
     <ClCompile Include="Source\Editor\Editor.cpp" />
     <ClCompile Include="Source\Renderer\GPUScene.cpp" />
     <ClCompile Include="Source\Renderer\PipelineCache.cpp" />
@@ -57,6 +74,7 @@
     <ClCompile Include="Source\RHI\DX12\D3D12Texture.cpp" />
     <ClCompile Include="Source\Windows\Main.cpp" />
     <ClCompile Include="Source\World\Camera.cpp" />
+    <ClCompile Include="Source\World\GLTFLoader.cpp" />
     <ClCompile Include="Source\World\MeshMaterial.cpp" />
     <ClCompile Include="Source\World\ResourceCache.cpp" />
     <ClCompile Include="Source\World\StaticMesh.cpp" />
@@ -75,6 +93,7 @@
     <ClInclude Include="External\imgui\imstb_textedit.h" />
     <ClInclude Include="External\imgui\imstb_truetype.h" />
     <ClInclude Include="External\lodepng\lodepng.h" />
+    <ClInclude Include="External\meshoptimizer\meshoptimizer.h" />
     <ClInclude Include="External\microprofile\microprofile.h" />
     <ClInclude Include="External\rpmalloc\rpmalloc.h" />
     <ClInclude Include="External\rpmalloc\rpnew.h" />
@@ -94,6 +113,7 @@
     <ClInclude Include="External\tinyxml2\tinyxml2.h" />
     <ClInclude Include="External\xxHash\xxhash.h" />
     <ClInclude Include="Source\Core\Engine.h" />
+    <ClInclude Include="Source\Core\GUI.h" />
     <ClInclude Include="Source\Editor\Editor.h" />
     <ClInclude Include="Source\Physics\PhysicsRigidBody.h" />
     <ClInclude Include="Source\Physics\PhysicsShape.h" />
@@ -162,6 +182,7 @@
     <ClInclude Include="Source\Utils\string.h" />
     <ClInclude Include="Source\Utils\system.h" />
     <ClInclude Include="Source\World\Camera.h" />
+    <ClInclude Include="Source\World\GLTFLoader.h" />
     <ClInclude Include="Source\World\MeshMaterial.h" />
     <ClInclude Include="Source\World\ResourceCache.h" />
     <ClInclude Include="Source\World\StaticMesh.h" />
@@ -202,13 +223,43 @@
     <None Include="External\ImGuizmo\LICENSE" />
     <None Include="External\lodepng\LICENSE" />
     <None Include="External\xxHash\LICENSE" />
+    <ClInclude Include="Shaders\Common.hlsli">
+      <FileType>Document</FileType>
+    </ClInclude>
+    <ClInclude Include="Shaders\Debug.hlsli">
+      <FileType>Document</FileType>
+    </ClInclude>
+    <ClInclude Include="Shaders\GlobalConstants.hlsli">
+      <FileType>Document</FileType>
+    </ClInclude>
+    <ClInclude Include="Shaders\GPUScene.hlsli">
+      <FileType>Document</FileType>
+    </ClInclude>
+    <ClInclude Include="Shaders\Model.hlsli">
+      <FileType>Document</FileType>
+    </ClInclude>
+    <ClInclude Include="Shaders\ModelConstants.hlsli">
+      <FileType>Document</FileType>
+    </ClInclude>
+    <ClInclude Include="Shaders\ShadingModel.hlsli">
+      <FileType>Document</FileType>
+    </ClInclude>
+    <ClInclude Include="Shaders\Texture.hlsli">
+      <FileType>Document</FileType>
+    </ClInclude>
     <None Include="packages.config" />
-    <None Include="Shader\GlobalConstants.hlsli" />
-    <None Include="Shader\GPUScene.hlsli" />
-    <None Include="Shader\ModelConstants.hlsli" />
-    <None Include="Shader\ShadingModel.hlsli" />
-    <None Include="Shader\Texture.hlsli" />
     <None Include="Source\Renderer\RenderGraph\RenderGraph.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Shaders\Copy.hlsl">
+      <FileType>Document</FileType>
+    </ClInclude>
+    <ClInclude Include="Shaders\Imgui.hlsl">
+      <FileType>Document</FileType>
+    </ClInclude>
+    <ClInclude Include="Shaders\Model.hlsl">
+      <FileType>Document</FileType>
+    </ClInclude>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -216,6 +267,9 @@
     <ProjectGuid>{407d2976-117c-4203-bd98-2c8e3a9a8a27}</ProjectGuid>
     <RootNamespace>MyRenderEngine</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Label="Globals" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Microsoft_Direct3D_D3D12_D3D12SDKPath>.\D3D12\</Microsoft_Direct3D_D3D12_D3D12SDKPath>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -265,7 +319,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>$(ProjectDir)$(Configuration)/</IntDir>
-    <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -299,9 +353,9 @@
     <ClCompile>
       <WarningLevel>Level1</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;MICROPROFILE_ENABLED=1;MICROPROFILE_GPU_TIMERS=1;MICROPROFILE_GPU_TIMERS_D3D12=1;EASTL_EASTDC_VSNPRINTF=0;EASTL_USER_DEFINED_ALLOCATOR=1;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;MICROPROFILE_ENABLED=1;MICROPROFILE_GPU_TIMERS=1;MICROPROFILE_GPU_TIMERS_D3D12=1;EASTL_EASTDC_VSNPRINTF=0;EASTL_USER_DEFINED_ALLOCATOR=1;_CRT_SECURE_NO_WARNINGS;NOMINMAX;UNICODE;_UNICODE;_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>Default</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)Shader/;$(ProjectDir)Source/;$(ProjectDir)External/;$(ProjectDir)External/EASTL/include;$(ProjectDir)External/fmt/include;$(ProjectDir)External/imgui;$(ProjectDir)External/stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Shaders/;$(ProjectDir)Source/;$(ProjectDir)External/;$(ProjectDir)External/EASTL/include;$(ProjectDir)External/fmt/include;$(ProjectDir)External/imgui;$(ProjectDir)External/stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -314,7 +368,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <AdditionalDependencies>ws2_32.lib;$(SolutionDir)ExternalLibs\OffsetAllocator\$(Platform)\$(Configuration)\;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;$(SolutionDir)ExternalLibs\OffsetAllocator\$(Platform)\$(Configuration)\OffsetAllocator.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <ProjectReference>
@@ -322,6 +376,7 @@
     </ProjectReference>
     <ResourceCompile>
       <ResourceOutputFileName>$(OutDir)%(Filename).res</ResourceOutputFileName>
+      <AdditionalIncludeDirectories>$(ProjectDir)Shaders/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -342,13 +397,15 @@
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\Microsoft.Direct3D.D3D12.1.613.0\build\native\Microsoft.Direct3D.D3D12.targets" Condition="Exists('..\packages\Microsoft.Direct3D.D3D12.1.613.0\build\native\Microsoft.Direct3D.D3D12.targets')" />
+    <Import Project="..\packages\Microsoft.Direct3D.D3D12.1.614.1\build\native\Microsoft.Direct3D.D3D12.targets" Condition="Exists('..\packages\Microsoft.Direct3D.D3D12.1.614.1\build\native\Microsoft.Direct3D.D3D12.targets')" />
+    <Import Project="..\packages\WinPixEventRuntime.1.0.240308001\build\WinPixEventRuntime.targets" Condition="Exists('..\packages\WinPixEventRuntime.1.0.240308001\build\WinPixEventRuntime.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.Direct3D.D3D12.1.613.0\build\native\Microsoft.Direct3D.D3D12.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.D3D12.1.613.0\build\native\Microsoft.Direct3D.D3D12.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Direct3D.D3D12.1.613.0\build\native\Microsoft.Direct3D.D3D12.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.D3D12.1.613.0\build\native\Microsoft.Direct3D.D3D12.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Direct3D.D3D12.1.614.1\build\native\Microsoft.Direct3D.D3D12.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.D3D12.1.614.1\build\native\Microsoft.Direct3D.D3D12.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Direct3D.D3D12.1.614.1\build\native\Microsoft.Direct3D.D3D12.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.D3D12.1.614.1\build\native\Microsoft.Direct3D.D3D12.targets'))" />
+    <Error Condition="!Exists('..\packages\WinPixEventRuntime.1.0.240308001\build\WinPixEventRuntime.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WinPixEventRuntime.1.0.240308001\build\WinPixEventRuntime.targets'))" />
   </Target>
 </Project>

@@ -1,5 +1,6 @@
 #pragma once
 #include "RenderGraph.h"
+#include "RenderGraphBuilder.h"
 
 class RenderGraphEdge : public DAGEdge
 {

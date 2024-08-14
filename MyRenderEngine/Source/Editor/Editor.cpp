@@ -57,9 +57,9 @@ void Editor::Tick()
     }
 
     DrawMenu();
-    DrawToolBar();
-    DrawGizmo();
-    DrawFrameStats();
+    //DrawToolBar();
+    //DrawGizmo();
+    //DrawFrameStats();
 }
 
 void Editor::AddGUICommand(const eastl::string& window, const eastl::string& section, const eastl::function<void()>& command)
@@ -118,6 +118,8 @@ void Editor::DrawMenu()
 
             ImGui::EndMenu();
         }
+
+        ImGui::EndMainMenuBar();
     }
 
     // todo

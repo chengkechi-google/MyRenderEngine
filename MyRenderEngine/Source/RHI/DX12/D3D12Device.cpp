@@ -22,7 +22,7 @@
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 
-extern "C" { _declspec(dllexport) extern const UINT D3D12SDKVersion = 613; }
+extern "C" { _declspec(dllexport) extern const UINT D3D12SDKVersion = 614; }
 extern "C" { _declspec(dllexport) extern const char* D3D12SDKPath = u8".\\D3D12\\"; }
 
 static void __stdcall D3D12MessageCallback(D3D12_MESSAGE_CATEGORY Category, D3D12_MESSAGE_SEVERITY Severity, D3D12_MESSAGE_ID ID, LPCSTR pDescription, void* pContext)
@@ -30,30 +30,30 @@ static void __stdcall D3D12MessageCallback(D3D12_MESSAGE_CATEGORY Category, D3D1
     MY_DEBUG(pDescription);
 }
 
-static IDXGIAdapter4* FindAdapter(IDXGIFactory7* pDXGIFactory, D3D_FEATURE_LEVEL minimumFeatureLevel)
+static IDXGIAdapter1* FindAdapter(IDXGIFactory6* pDXGIFactory, D3D_FEATURE_LEVEL minimumFeatureLevel)
 {
-    eastl::vector<IDXGIAdapter4*> adapters;
+    eastl::vector<IDXGIAdapter1*> adapters;
 
     // Get how many adapters
     MY_DEBUG("Available GPUs : ");
 
-    IDXGIAdapter4* pDXGIAdapter = nullptr;
+    IDXGIAdapter1* pDXGIAdapter = nullptr;
     for (UINT adapterIndex = 0;
         DXGI_ERROR_NOT_FOUND != pDXGIFactory->EnumAdapterByGpuPreference(adapterIndex, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&pDXGIAdapter));
         ++adapterIndex)
     {
-        DXGI_ADAPTER_DESC3 desc;
-        pDXGIAdapter->GetDesc3(&desc);
+        DXGI_ADAPTER_DESC1 desc;
+        pDXGIAdapter->GetDesc1(&desc);
         MY_DEBUG(" - {}", wstring_to_string(desc.Description));
         adapters.push_back(pDXGIAdapter);
     }
     
-    auto selectAdapter = eastl::find_if(adapters.begin(), adapters.end(), [=](IDXGIAdapter4* adapter)
+    auto selectAdapter = eastl::find_if(adapters.begin(), adapters.end(), [=](IDXGIAdapter1* adapter)
     {
-        DXGI_ADAPTER_DESC3 desc;
-        adapter->GetDesc3(&desc);
+        DXGI_ADAPTER_DESC1 desc;
+        adapter->GetDesc1(&desc);
         
-        bool isSoftwareGPU = desc.Flags & DXGI_ADAPTER_FLAG3_SOFTWARE;
+        bool isSoftwareGPU = desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE;
         bool capableFeatureLevel = SUCCEEDED(D3D12CreateDevice(adapter, minimumFeatureLevel, _uuidof(ID3D12Device), nullptr));
 
         return !isSoftwareGPU && capableFeatureLevel;
@@ -378,7 +378,7 @@ IRHIDescriptor* D3D12Device::CreateConstBufferView(IRHIBuffer* pBuffer, const RH
 IRHIDescriptor* D3D12Device::CreateSampler(const RHISamplerDesc& desc, const eastl::string& name)
 {
     D3D12Sampler *pSampler = new D3D12Sampler(this, desc, name);
-    if (pSampler->Create())
+    if (!pSampler->Create())
     {
         delete pSampler;
         return nullptr;
@@ -390,7 +390,7 @@ IRHIDescriptor* D3D12Device::CreateSampler(const RHISamplerDesc& desc, const eas
 IRHIRayTracingBLAS* D3D12Device::CreateRayTracingBLAS(const RHIRayTracingBLASDesc& desc, const eastl::string& name)
 {
     D3D12RayTracingBLAS* pBLAS = new D3D12RayTracingBLAS(this, desc, name);
-    if (pBLAS->Create())
+    if (!pBLAS->Create())
     {
         delete pBLAS;
         return nullptr;
@@ -402,7 +402,7 @@ IRHIRayTracingBLAS* D3D12Device::CreateRayTracingBLAS(const RHIRayTracingBLASDes
 IRHIRayTracingTLAS* D3D12Device::CreateRayTracongTLAS(const RHIRayTracingTLASDesc& desc, const eastl::string& name)
 {
     D3D12RayTracingTLAS* pTLAS = new D3D12RayTracingTLAS(this, desc, name);
-    if (pTLAS->Create())
+    if (!pTLAS->Create())
     {
         delete pTLAS;
         return nullptr;
@@ -519,15 +519,15 @@ bool D3D12Device::Init()
     queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-    m_pD3D12Device->CreateCommandQueue1(&queueDesc, ComponentID, IID_PPV_ARGS(&m_pGraphicsQueue));
+    m_pD3D12Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_pGraphicsQueue));
     m_pGraphicsQueue->SetName(L"Graphics queue");
 
     queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
-    m_pD3D12Device->CreateCommandQueue1(&queueDesc, ComponentID, IID_PPV_ARGS(&m_pComputeQueue));
+    m_pD3D12Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_pComputeQueue));
     m_pComputeQueue->SetName(L"Compute queue");
 
     queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
-    m_pD3D12Device->CreateCommandQueue1(&queueDesc, ComponentID, IID_PPV_ARGS(&m_pCopyQueue));
+    m_pD3D12Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_pCopyQueue));
     m_pComputeQueue->SetName(L"Copy queue");
 
 // Create allocators

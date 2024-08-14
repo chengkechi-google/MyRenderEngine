@@ -10,6 +10,7 @@ class IRHIDescriptor;
 class IRHIPipelineState;
 class IRHIRayTracingBLAS;
 class IRHIRayTracingTLAS;
+class IRHISwapChain;
 
 class IRHICommandList : public IRHIResource
 {
@@ -23,6 +24,7 @@ public:
     virtual void End() = 0;
     virtual void Wait(IRHIFence* fence, uint64_t value) = 0;
     virtual void Signal(IRHIFence* fence, uint64_t value) = 0;
+    virtual void Present(IRHISwapChain* pSwapChain) = 0;
     virtual void Submit() = 0;
     virtual void ClearState() = 0;
 

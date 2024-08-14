@@ -23,7 +23,7 @@ MeshMaterial::~MeshMaterial()
 
 IRHIPipelineState* MeshMaterial::GetPSO()
 {
-    if (m_pPSO != nullptr)
+    if (m_pPSO == nullptr)
     {
         Renderer* pRenderer = Engine::GetInstance()->GetRenderer();
     
@@ -32,8 +32,8 @@ IRHIPipelineState* MeshMaterial::GetPSO()
         defines.push_back("UNIFORM_RESOURCE=1");
 
         RHIGraphicsPipelineDesc psoDesc;
-        psoDesc.m_pVS = pRenderer->GetShader("Model.hlsl", "vs_main", "vs_6_6", defines);
-        psoDesc.m_pPS = pRenderer->GetShader("Model.hlsl", "ps_main", "ps_6_6", defines);
+        psoDesc.m_pVS = pRenderer->GetShader("Model.hlsl", "vs_main", RHIShaderType::VS, defines);
+        psoDesc.m_pPS = pRenderer->GetShader("Model.hlsl", "ps_main", RHIShaderType::PS, defines);
         psoDesc.m_rasterizerState.m_cullMode = m_bDoubleSided ? RHICullMode::None : RHICullMode::Back;
         psoDesc.m_rasterizerState.m_frontCCW = m_bFrontFaceCCW;
         psoDesc.m_depthStencilState.m_depthTest = true;
@@ -61,9 +61,9 @@ IRHIPipelineState* MeshMaterial::GetMeshletPSO()
         AddMaterialDefines(defines);
 
         RHIMeshShaderPipelineDesc psoDesc;
-        psoDesc.m_pAS = pRenderer->GetShader("MeshletCulling.hlsl", "as_main", "as_6_6", defines);
-        psoDesc.m_pMS = pRenderer->GetShader("ModelMeshlet.hlsl", "ms_main", "ms_6_6", defines);
-        psoDesc.m_pPS = pRenderer->GetShader("Model.hlsl", "ps_main", "ps_6_6", defines);
+        psoDesc.m_pAS = pRenderer->GetShader("MeshletCulling.hlsl", "as_main", RHIShaderType::AS, defines);
+        psoDesc.m_pMS = pRenderer->GetShader("ModelMeshlet.hlsl", "ms_main", RHIShaderType::MS, defines);
+        psoDesc.m_pPS = pRenderer->GetShader("Model.hlsl", "ps_main", RHIShaderType::PS, defines);
         psoDesc.m_rasterizerState.m_cullMode = m_bDoubleSided ? RHICullMode::None : RHICullMode::Back;
         psoDesc.m_rasterizerState.m_frontCCW = m_bFrontFaceCCW;
         psoDesc.m_depthStencilState.m_depthTest = true;
@@ -94,10 +94,10 @@ IRHIPipelineState* MeshMaterial::GetShadowPSO()
         if(m_bAlphaTest) defines.push_back("ALPHA_TEST=1");
 
         RHIGraphicsPipelineDesc psoDesc;
-        psoDesc.m_pVS = pRenderer->GetShader("ModelShadow.hlsl", "vs_main", "vs_6_6", defines);
+        psoDesc.m_pVS = pRenderer->GetShader("ModelShadow.hlsl", "vs_main", RHIShaderType::VS, defines);
         if (m_pAlbedoTexture && m_bAlphaTest)
         {
-            psoDesc.m_pPS = pRenderer->GetShader("ModelShadow.hlsl", "ps_main", "vs_6_6", defines);
+            psoDesc.m_pPS = pRenderer->GetShader("ModelShadow.hlsl", "ps_main", RHIShaderType::PS, defines);
         }
 
         psoDesc.m_rasterizerState.m_cullMode = m_bDoubleSided ? RHICullMode::None : RHICullMode::Back;
@@ -129,8 +129,8 @@ IRHIPipelineState* MeshMaterial::GetVelocityPSO()
         if(m_bAlphaTest) defines.push_back("ALPHA_TEST=1");
 
         RHIGraphicsPipelineDesc psoDesc;
-        psoDesc.m_pVS = pRenderer->GetShader("ModelVelocity.hlsl", "vs_main", "vs_6_6", defines);
-        psoDesc.m_pPS = pRenderer->GetShader("ModelVelocity.hlsl", "ps_main", "ps_6_6", defines);        
+        psoDesc.m_pVS = pRenderer->GetShader("ModelVelocity.hlsl", "vs_main", RHIShaderType::VS, defines);
+        psoDesc.m_pPS = pRenderer->GetShader("ModelVelocity.hlsl", "ps_main", RHIShaderType::PS, defines);        
         psoDesc.m_rasterizerState.m_cullMode = m_bDoubleSided ? RHICullMode::None : RHICullMode::Back;
         psoDesc.m_rasterizerState.m_frontCCW = m_bFrontFaceCCW;
         psoDesc.m_depthStencilState.m_depthWrite = false;
@@ -159,8 +159,8 @@ IRHIPipelineState* MeshMaterial::GetIDPSO()
         if(m_bAlphaTest) defines.push_back("ALPHA_TEST=1");
 
         RHIGraphicsPipelineDesc psoDesc;
-        psoDesc.m_pVS = pRenderer->GetShader("MidelID.hlsl", "vs_main", "vs_6_6", defines);
-        psoDesc.m_pPS = pRenderer->GetShader("MidelID.hlsl", "ps_main", "ps_6_6", defines);
+        psoDesc.m_pVS = pRenderer->GetShader("ModelID.hlsl", "vs_main", RHIShaderType::VS, defines);
+        psoDesc.m_pPS = pRenderer->GetShader("ModelID.hlsl", "ps_main", RHIShaderType::PS, defines);
         psoDesc.m_rasterizerState.m_cullMode = m_bDoubleSided ? RHICullMode::None : RHICullMode::Back;
         psoDesc.m_rasterizerState.m_frontCCW = m_bFrontFaceCCW;
         psoDesc.m_depthStencilState.m_depthWrite = false;
@@ -190,8 +190,8 @@ IRHIPipelineState* MeshMaterial::GetOutlinePSO()
         if(m_bAlphaTest) defines.push_back("ALPHA_TEST=1");
 
         RHIGraphicsPipelineDesc psoDesc;
-        psoDesc.m_pVS = pRenderer->GetShader("ModelOutline.hlsl", "vs_main", "vs_6_6", defines);
-        psoDesc.m_pPS = pRenderer->GetShader("ModelOutline.hlsl", "ps_main", "ps_6_6", defines);
+        psoDesc.m_pVS = pRenderer->GetShader("ModelOutline.hlsl", "vs_main", RHIShaderType::VS, defines);
+        psoDesc.m_pPS = pRenderer->GetShader("ModelOutline.hlsl", "ps_main", RHIShaderType::PS, defines);
         psoDesc.m_rasterizerState.m_cullMode = RHICullMode::Front;
         psoDesc.m_rasterizerState.m_frontCCW = m_bFrontFaceCCW;
         psoDesc.m_depthStencilState.m_depthWrite = false;
@@ -213,7 +213,7 @@ IRHIPipelineState* MeshMaterial::GetVertexSkinningPSO()
         Renderer* pRenderer = Engine::GetInstance()->GetRenderer();
 
         RHIComputePipelineDesc desc;
-        desc.m_pCS = pRenderer->GetShader("VertexSkining.hlsl", "main", "cs_6_6", {});
+        desc.m_pCS = pRenderer->GetShader("VertexSkining.hlsl", "main", RHIShaderType::CS, {});
         m_pVertexSkinningPSO = pRenderer->GetPipelineState(desc, "Vertex skinning PSO");
     }
     return m_pVertexSkinningPSO;

@@ -19,7 +19,7 @@ static LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARA
         {
             if (wParam != SIZE_MINIMIZED)
             {
-                Engine::GetInstance()->WindowResizeSignal(hWnd, LOWORD(lParam), HIWORD(wParam));
+                Engine::GetInstance()->WindowResizeSignal(hWnd, LOWORD(lParam), HIWORD(lParam));
             }
             return 0;
         }
@@ -104,6 +104,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     );
 
     ShowWindow(hWnd, cmdShow);
+    MessageBox(hWnd, L"Wait for debuger", L"Caution", MB_OK);
 
     Engine::GetInstance()->Init(GetWorkPath(), hWnd, windowWidth, windowHeight);
     

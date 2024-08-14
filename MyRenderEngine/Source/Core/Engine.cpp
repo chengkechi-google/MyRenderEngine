@@ -10,6 +10,8 @@
 
 #define SOKOL_IMPL
 #include "sokol/sokol_time.h"
+#include "imgui/imgui.h"
+#include "simpleini/SimpleIni.h"
 
 
 Engine* Engine::GetInstance()
@@ -71,12 +73,21 @@ void Engine::Init(const eastl::string& workPath, void* windowHandle, uint32_t wi
 
     // Initialized renderer
     m_pRenderer = eastl::make_unique<Renderer>();
-    m_pRenderer->CreateDevice(windowHandle, windowWidth, windowHeight);
     m_pRenderer->SetAsyncComputeEnabled(m_configIni.GetBoolValue("Render", "AsyncCompute"));
+    if (!m_pRenderer->CreateDevice(windowHandle, windowWidth, windowHeight))
+    {
+        exit(0);
+    }
 
-    stm_setup();
+    m_pWorld = eastl::make_unique<World>();
+    m_pWorld->LoadScene(m_assetPath + m_configIni.GetValue("World", "Scene"));
 
+    m_pGUI = eastl::make_unique<GUI>();
+    m_pGUI->Init();
+
+    m_pEditor = eastl::make_unique<Editor>();
     
+    stm_setup();
 }
 
 void Engine::Tick()
@@ -84,13 +95,31 @@ void Engine::Tick()
     CPU_EVENT("Tick", "Engine::Tick");
     m_frameTime = (float)stm_sec(stm_laptime(&m_lastFrameTime));
 
-    m_pRenderer->RenderFrame();
-    MicroProfileFlip(0);
+    m_pGUI->Tick();
+
+    ImGuiIO& io = ImGui::GetIO();
+    bool isMinimized = (io.DisplaySize.x <= 0.0f || io.DisplaySize.y <= 0);
+
+    if (isMinimized)
+    {
+        ImGui::Render();
+    }
+    else
+    {
+        m_pEditor->Tick();
+        m_pWorld->Tick(m_frameTime);
+        m_pRenderer->RenderFrame();
+    }
+
+    //MicroProfileFlip(0);
 }
 
 void Engine::Shutdown()
 {
     m_pTaskScheduler->WaitforAll();
+    m_pWorld.reset();
+    m_pEditor.reset();
+    m_pGUI.reset();
     m_pTaskScheduler.reset();
 
     MicroProfileShutdown();

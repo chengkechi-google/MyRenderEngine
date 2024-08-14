@@ -1,11 +1,11 @@
 #pragma once
 
+#include "GUI.h"
 #include "Editor/Editor.h"
-
-
+#include "World/World.h"
+#include "Renderer/Renderer.h"
 #include "sigslot/signal.hpp"
 #include "simpleini/SimpleIni.h"
-#include "Renderer/Renderer.h"
 
 
 namespace enki
@@ -21,6 +21,8 @@ public:
     void Tick();
     void Shutdown();
 
+    World* GetWorld() const { return m_pWorld.get(); }
+    GUI* GetGUI() const { return m_pGUI.get(); }
     Renderer* GetRenderer() const { return m_pRenderer.get(); }
     Editor* GetEditor() const { return m_pEditor.get(); }
     enki::TaskScheduler* GetTaskScheduler() const { return m_pTaskScheduler.get(); }
@@ -30,6 +32,8 @@ public:
     const eastl::string& GetAssetPath() const { return m_assetPath; }
     const eastl::string& GetShaderPath() const { return m_shaderPath; }
 
+    float GetFrameDeltaTime() const { return m_frameTime; }
+
 public:
     sigslot::signal<void*, uint32_t, uint32_t> WindowResizeSignal;
 
@@ -38,6 +42,9 @@ private:
     void LoadEngineConfig();
     
 private:
+    eastl::unique_ptr<Renderer> m_pRenderer;
+    eastl::unique_ptr<World> m_pWorld;
+    eastl::unique_ptr<GUI> m_pGUI;
     eastl::unique_ptr<Editor> m_pEditor;
 
     uint64_t m_lastFrameTime;
@@ -51,6 +58,4 @@ private:
     eastl::string m_workPath;
     eastl::string m_assetPath;
     eastl::string m_shaderPath;
-
-    eastl::unique_ptr<Renderer> m_pRenderer;
 };

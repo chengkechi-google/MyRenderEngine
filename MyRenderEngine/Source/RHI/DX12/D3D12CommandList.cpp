@@ -8,6 +8,7 @@
 #include "D3D12Descriptor.h"
 #include "D3D12RayTracingBLAS.h"
 #include "D3D12RayTracingTLAS.h"
+#include "D3D12SwapChain.h"
 #include "PixRuntime.h"
 #include "ags.h"
 #include "../RHI.h"
@@ -121,6 +122,11 @@ void D3D12CommandList::Signal(IRHIFence* pFence, uint64_t value)
     m_pendingSignals.emplace_back(pFence, value);
 }
 
+void D3D12CommandList::Present(IRHISwapChain* pSwapChain)
+{
+    m_pendingSwapChain.push_back(pSwapChain);
+}
+
 void D3D12CommandList::Submit()
 {
     for (size_t i = 0; i < m_pendingWaits.size(); ++i)
@@ -134,6 +140,12 @@ void D3D12CommandList::Submit()
         ID3D12CommandList* ppCommandLists[] = { m_pCommandList };
         m_pCommandQueue->ExecuteCommandLists(1, ppCommandLists);
     }
+
+    for (size_t i = 0; i < m_pendingSwapChain.size(); ++i)
+    {
+        ((D3D12SwapChain*) m_pendingSwapChain[i])->Present();
+    }
+    m_pendingSwapChain.clear();
 
     for (size_t i = 0; i < m_pendingSignals.size(); ++i)
     {
@@ -523,7 +535,7 @@ void D3D12CommandList::BeginRenderPass(const RHIRenderPassDesc& renderPass)
         }
         else
         {
-            dsDesc.cpuDescriptor = ((D3D12Texture*) pTexture)->GetReadOnlyDSV(renderPass.m_depth.m_mipSlice, renderPass.m_depth.m_arraySlice);
+            dsDesc.cpuDescriptor = ((D3D12Texture*) pTexture)->GetDSV(renderPass.m_depth.m_mipSlice, renderPass.m_depth.m_arraySlice);
         }
 
         dsDesc.DepthBeginningAccess.Type = RHIToD3D12RenderPassLoadOp(renderPass.m_depth.m_loadOp);

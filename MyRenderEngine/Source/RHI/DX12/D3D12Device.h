@@ -84,7 +84,7 @@ public:
     virtual uint32_t GetAllocationSize(const RHITextureDesc& desc) override;
 
     bool Init();
-    IDXGIFactory7* GetDXGIFactory() const { return m_pDXGIFactory; }
+    IDXGIFactory5* GetDXGIFactory() const { return m_pDXGIFactory; }
     ID3D12CommandQueue* GetGraphicsQueue() const { return m_pGraphicsQueue; }
     ID3D12CommandQueue* GetComputeQueue() const { return m_pComputeQueue; }
     ID3D12CommandQueue* GetCopyQueue() const { return m_pCopyQueue; }
@@ -137,8 +137,8 @@ protected:
     uint64_t m_frameID = 0;
 
     // D3D12 members
-    IDXGIFactory7* m_pDXGIFactory = nullptr;
-    IDXGIAdapter4* m_pDXGIAdapter = nullptr;
+    IDXGIFactory6* m_pDXGIFactory = nullptr;
+    IDXGIAdapter1* m_pDXGIAdapter = nullptr;
 
     ID3D12Device10* m_pD3D12Device = nullptr;
     ID3D12CommandQueue* m_pGraphicsQueue = nullptr;

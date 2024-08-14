@@ -12,10 +12,10 @@ namespace eastl
         return &gDefaultAllocator;
     }
 
-    allocator::allocator(const char* EASTL_NAME(name))
+    allocator::allocator(const char* EASTL_NAME(pName))
     {
 #if EASTL_NAME_ENABLED
-        mpName = name;
+        mpName = pName ? pName : EASTL_ALLOCATOR_DEFAULT_NAME;
 #endif        
     }
     
@@ -26,10 +26,10 @@ namespace eastl
 #endif
     }
 
-    allocator::allocator(const allocator&, const char* EASTL_NAME(name))
+    allocator::allocator(const allocator&, const char* EASTL_NAME(pName))
     {
 #if EASTL_NAME_ENABLED
-        mpName = name;
+        mpName = pName ? pName : EASTL_ALLOCATOR_DEFAULT_NAME;
 #endif
     }
 
@@ -57,7 +57,7 @@ namespace eastl
 
     void* allocator::allocate(size_t n, size_t alignment, size_t offset, int flag)
     {
-        return MY_ALLOC(alignment, n);
+        return MY_ALLOC(n, alignment);
     }
 
     void allocator::deallocate(void* p, size_t n)

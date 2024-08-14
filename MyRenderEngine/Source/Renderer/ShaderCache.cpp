@@ -10,7 +10,7 @@
 
 inline bool operator==(const RHIShaderDesc& lhs, const RHIShaderDesc& rhs)
 {
-    if (lhs.m_file != rhs.m_file || lhs.m_entryPoint != rhs.m_entryPoint || lhs.m_profile != rhs.m_profile)
+    if (lhs.m_file != rhs.m_file || lhs.m_entryPoint != rhs.m_entryPoint || lhs.m_type != rhs.m_type)
     {
         return false;
     }
@@ -59,15 +59,15 @@ ShaderCache::ShaderCache(Renderer* pRenderer)
     m_pRenderer = pRenderer;
 }
 
-IRHIShader* ShaderCache::GetShader(const eastl::string& file, const eastl::string& entryPoint, const eastl::string& profile, const eastl::vector<eastl::string>& defines, RHIShaderCompilerFlags flags)
+IRHIShader* ShaderCache::GetShader(const eastl::string& file, const eastl::string& entryPoint, RHIShaderType type, const eastl::vector<eastl::string>& defines, RHIShaderCompilerFlags flags)
 {
     eastl::string filePath = Engine::GetInstance()->GetShaderPath() + file;
     eastl::string absolutePath = std::filesystem::absolute(filePath.c_str()).string().c_str();
 
     RHIShaderDesc desc;
+    desc.m_type = type;
     desc.m_file = absolutePath;
     desc.m_entryPoint = entryPoint;
-    desc.m_profile = profile;
     desc.m_defines = defines; //< vector copy?
     desc.m_flags = flags;
 
@@ -77,7 +77,7 @@ IRHIShader* ShaderCache::GetShader(const eastl::string& file, const eastl::strin
         return iter->second.get();
     }
 
-    IRHIShader* pShader = CreateShader(absolutePath, entryPoint, profile, defines, flags);
+    IRHIShader* pShader = CreateShader(absolutePath, entryPoint, type, defines, flags);
     if (pShader != nullptr)
     {
         m_cachedShaders.insert(eastl::make_pair(desc, eastl::unique_ptr<IRHIShader>(pShader)));
@@ -120,23 +120,23 @@ void ShaderCache::ReloadShaders()
     }
 }
 
-IRHIShader* ShaderCache::CreateShader(const eastl::string& file, const eastl::string& entryPoint, const eastl::string& profile, const eastl::vector<eastl::string>& defines, RHIShaderCompilerFlags flags)
+IRHIShader* ShaderCache::CreateShader(const eastl::string& file, const eastl::string& entryPoint, RHIShaderType type, const eastl::vector<eastl::string>& defines, RHIShaderCompilerFlags flags)
 {
     eastl::string source = GetCachedFileContent(file);
     
     eastl::vector<uint8_t> shaderBlob;
-    if(!m_pRenderer->GetShaderCompiler()->Compile(source, file, entryPoint, profile, defines, flags, shaderBlob))
+    if(!m_pRenderer->GetShaderCompiler()->Compile(source, file, entryPoint, type, defines, flags, shaderBlob))
     {
         return nullptr;
     }
 
     RHIShaderDesc desc;
+    desc.m_type = type;
     desc.m_file = file;
     desc.m_entryPoint = entryPoint;
-    desc.m_profile = profile;
     desc.m_defines = defines;
 
-    eastl::string name = file + " : " + entryPoint + "(" + profile + ")";
+    eastl::string name = file + " : " + entryPoint;
     IRHIShader* pShader = m_pRenderer->GetDevice()->CreateShader(desc, shaderBlob, name);
     return pShader;
 }
@@ -149,7 +149,7 @@ void ShaderCache::RecompileShader(IRHIShader* pShader)
     eastl::string source = GetCachedFileContent(desc.m_file);
 
     eastl::vector<uint8_t> shaderBlob;
-    if(!m_pRenderer->GetShaderCompiler()->Compile(source, desc.m_file, desc.m_entryPoint, desc.m_profile, desc.m_defines, desc.m_flags, shaderBlob))
+    if(!m_pRenderer->GetShaderCompiler()->Compile(source, desc.m_file, desc.m_entryPoint, desc.m_type, desc.m_defines, desc.m_flags, shaderBlob))
     {
         return;
     }

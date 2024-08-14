@@ -24,6 +24,11 @@ D3D12SwapChain::~D3D12SwapChain()
     pDevice->Delete(m_pSwapChain);
 }
 
+void D3D12SwapChain::AcquireNextBackBuffer()
+{
+    m_currentBackBuffer = m_pSwapChain->GetCurrentBackBufferIndex();
+}
+
 bool D3D12SwapChain::Present()
 {
     UINT interval, flags;
@@ -39,7 +44,6 @@ bool D3D12SwapChain::Present()
     }
 
     HRESULT hResult = m_pSwapChain->Present(interval, flags);
-    m_currentBackBuffer = (m_currentBackBuffer + 1) % m_desc.m_backBufferCount;
     return SUCCEEDED(hResult);
 }
 
@@ -86,7 +90,7 @@ IRHITexture* D3D12SwapChain::GetBackBuffer() const
 bool D3D12SwapChain::Create()
 {
     D3D12Device* pDevice = (D3D12Device*) m_pDevice;
-    IDXGIFactory6* pFactory = pDevice->GetDXGIFactory();
+    IDXGIFactory5* pFactory = pDevice->GetDXGIFactory();
 
     BOOL allowTearing = FALSE;
     pFactory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing));

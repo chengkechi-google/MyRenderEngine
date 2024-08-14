@@ -257,7 +257,7 @@ void Camera::UpdateMatrix()
     else
     {
         m_projectionJitter = m_projection;
-        m_viewProjectionJitter = m_viewProjectionJitter;
+        m_viewProjectionJitter = m_viewProjection;
     }
 }
 
@@ -331,12 +331,12 @@ void Camera::DrawViewFrustum(IRHICommandList* pCommandList)
         return;
     }
 
-    GPU_EVENT(pCommandList, "Camera::DrawViewFrustum");
+    //GPU_EVENT(pCommandList, "Camera::DrawViewFrustum");
 
     Renderer* pRenderer = Engine::GetInstance()->GetRenderer();
 
     RHIComputePipelineDesc psoDesc;
-    psoDesc.m_pCS = pRenderer->GetShader("viewFrustum.hlsl", "main", "cs_6_6", {});
+    psoDesc.m_pCS = pRenderer->GetShader("viewFrustum.hlsl", "main", RHIShaderType::CS, {});
     IRHIPipelineState* pPSO = pRenderer->GetPipelineState(psoDesc, "ViewFrustum PSO");
 
     pCommandList->SetPipelineState(pPSO);

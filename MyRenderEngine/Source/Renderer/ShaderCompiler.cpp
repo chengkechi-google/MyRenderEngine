@@ -71,7 +71,7 @@ private:
 
 ShaderCompiler::ShaderCompiler(Renderer* pRenderer) : m_pRenderer(pRenderer)
 {
-    HMODULE dxc = LoadLibrary(L"dxccompiler.dll");
+    HMODULE dxc = LoadLibrary(L"dxcompiler.dll");
     if (dxc)
     {
         DxcCreateInstanceProc DxcCreateInstance = (DxcCreateInstanceProc)GetProcAddress(dxc, "DxcCreateInstance");
@@ -91,8 +91,27 @@ ShaderCompiler::~ShaderCompiler()
     m_pDxcUtils->Release();
 }
 
+inline const wchar_t* GetShaderProfiler(RHIShaderType type)
+{
+    switch (type)
+    {
+        case RHIShaderType::AS:
+            return L"as_6_6";
+        case RHIShaderType::MS:
+            return L"ms_6_6";
+        case RHIShaderType::VS:
+            return L"vs_6_6";
+        case RHIShaderType::PS:
+            return L"ps_6_6";
+        case RHIShaderType::CS:
+            return L"cs_6_6";
+        default:
+            return L"";
+    }
+}
+
 bool ShaderCompiler::Compile(const eastl::string& source, const eastl::string& file, const eastl::string& entryPoint,
-    const eastl::string& profile, const eastl::vector<eastl::string>& defines, RHIShaderCompilerFlags flags, eastl::vector<uint8_t>& outputBlob)
+    RHIShaderType type, const eastl::vector<eastl::string>& defines, RHIShaderCompilerFlags flags, eastl::vector<uint8_t>& outputBlob)
 {
     DxcBuffer sourceBuffer;
     sourceBuffer.Ptr = source.data();
@@ -101,7 +120,7 @@ bool ShaderCompiler::Compile(const eastl::string& source, const eastl::string& f
 
     eastl::wstring wstrFile = string_to_wstring(file);
     eastl::wstring wstrEntryPoint = string_to_wstring(entryPoint);
-    eastl::wstring wstrProfile = string_to_wstring(profile);
+    eastl::wstring wstrProfile = GetShaderProfiler(type);
 
     eastl::vector<eastl::wstring> wstrDefines;
     for (size_t i = 0; i < defines.size(); ++i)
@@ -118,16 +137,18 @@ bool ShaderCompiler::Compile(const eastl::string& source, const eastl::string& f
         arguments.push_back(L"-D"); arguments.push_back(wstrDefines[i].c_str());
     }
     
-    arguments.push_back(L"-D");
     switch (m_pRenderer->GetDevice()->GetVender())
     {
         case RHIVender::AMD:
+            arguments.push_back(L"-D");
             arguments.push_back(L"RHI_VENDOR_AMD=1");
             break;
         case RHIVender::Intel:
+            arguments.push_back(L"-D");
             arguments.push_back(L"RHI_VENDER_INTEL=1");
             break;
         case RHIVender::NVidia:
+            arguments.push_back(L"-D");
             arguments.push_back(L"RHI_VENDER_NV=1");
             break;
         default:
@@ -139,9 +160,9 @@ bool ShaderCompiler::Compile(const eastl::string& source, const eastl::string& f
     arguments.push_back(L"-enable-16bit-types");
 
 #ifdef _DEBUG
-    arguments.push_back(L"-Od");
+    //arguments.push_back(L"-Od");
     arguments.push_back(L"-Zi");
-    arguments.push_back(L"-Qembed_debug");    
+    arguments.push_back(L"-Qembed_debug"); 
 #endif
 
     if (flags & RHIShaderCompilerFlagBit::RHIShaderCompilerFlag3)
@@ -163,7 +184,7 @@ bool ShaderCompiler::Compile(const eastl::string& source, const eastl::string& f
     else
     {
 #ifdef _DEBUG
-    arguments.push_back(L"O0");
+    arguments.push_back(L"-O0");
 #else
     arguments.push_back(L"O3");
 #endif

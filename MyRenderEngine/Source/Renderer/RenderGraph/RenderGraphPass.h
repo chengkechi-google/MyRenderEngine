@@ -101,7 +101,7 @@ protected:
     DAGNodeID m_signalGraphicsPass = UINT32_MAX;
 
     uint64_t m_signalValue = -1;
-    uint64_t m_waitValue;
+    uint64_t m_waitValue = -1;
 };
 
 template<class T>
