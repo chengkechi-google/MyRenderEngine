@@ -11,7 +11,7 @@ void RenderGraphResource::Resolve(RenderGraphEdge* pEdge, RenderGraphPassBase* p
     m_firstPass = eastl::min(m_firstPass, pPass->GetID());
     m_lastPass = eastl::max(m_lastPass, pPass->GetID());
 
-    // Fro resources used in async compute, we should extent its life time range
+    // For resources used in async compute, we should extent its life time range
     if(pPass->GetType() == RenderPassType::AsyncCompute)
     {
         m_firstPass = eastl::min(m_firstPass, pPass->GetWaitGraphicsPassID());

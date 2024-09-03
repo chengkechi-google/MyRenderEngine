@@ -155,8 +155,13 @@ private:
 
     // Render passes
     void BasePass(RGHandle& outColor, RGHandle& outDepth);
+    void ComputeTestPass(RGHandle input, RGHandle& output);
+    void GraphicsTestPass(RGHandle input, RGHandle& output);
+    void FinalTestPass(RGHandle input1, RGHandle input2, RGHandle& output);
     void RenderBackBufferPass(IRHICommandList* pCommandList, RGHandle color, RGHandle depth);
     void CopyToBackBuffer(IRHICommandList* pCommandList, RGHandle color, RGHandle depth, bool needUpscaleDepth);    
+
+    void BuildRayTracingAS(IRHICommandList* pGraphicsCommandList, IRHICommandList* pComputeCommandList);
    
 private:
     // Render resource
@@ -256,4 +261,7 @@ private:
     eastl::vector<RenderBatch> m_idPassBatchs;
 
     IRHIPipelineState* m_pCopyColorPSO = nullptr;
+    IRHIPipelineState* m_pComputeTestPSO = nullptr;
+    IRHIPipelineState* m_pGraphicsTestPSO = nullptr;
+    IRHIPipelineState* m_pFinalTestPassPSO = nullptr;
 };

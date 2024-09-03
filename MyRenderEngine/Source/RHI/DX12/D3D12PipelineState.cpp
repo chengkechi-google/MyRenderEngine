@@ -80,6 +80,7 @@ D3D12ComputePipelineState::D3D12ComputePipelineState(D3D12Device* pDevice, const
     m_pDevice = pDevice;
     m_desc = desc;
     m_name = name;
+    m_type = RHIPipelineType::Compute;
 }
 
 D3D12ComputePipelineState::~D3D12ComputePipelineState()
@@ -118,6 +119,7 @@ D3D12MeshShaderPipelineState::D3D12MeshShaderPipelineState(D3D12Device* pDevice,
     m_pDevice = pDevice;
     m_desc= desc;
     m_name = name;
+    m_type = RHIPipelineType::MeshShading;
 }
 
 D3D12MeshShaderPipelineState::~D3D12MeshShaderPipelineState()

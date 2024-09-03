@@ -333,6 +333,7 @@ struct RHITextureDesc
     RHITextureUsageFlags m_usage = 0;
     IRHIHeap* m_heap = nullptr;
     uint32_t m_heapOffset = 0;
+    uint32_t m_frameID = 0;         //< Only for RGResource, because graph will try to re-use resource, but some resource is still in use in previous resource, it is fine if I only use graphics queue, but if I use async compute, the compute don't know the resoource is still in use
 };
 
 inline bool operator==(const RHITextureDesc& lhs, const RHITextureDesc& rhs)
@@ -346,7 +347,8 @@ inline bool operator==(const RHITextureDesc& lhs, const RHITextureDesc& rhs)
         && lhs.m_format == rhs.m_format
         && lhs.m_memoryType == rhs.m_memoryType
         && lhs.m_allocationType == rhs.m_allocationType
-        && lhs.m_usage == rhs.m_usage;
+        && lhs.m_usage == rhs.m_usage
+        && lhs.m_frameID == rhs.m_frameID;
 }
 
 struct RHIConstantBufferViewDesc

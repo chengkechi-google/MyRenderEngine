@@ -19,7 +19,7 @@ VSOutput vs_main(uint vertexID : SV_VertexID)
 cbuffer CB : register(b0)
 {
     uint c_inputTexture;
-    uint c_depthTexture;
+    //uint c_depthTexture;
     uint c_pointSampler;
     uint padding0;
 }
@@ -30,4 +30,13 @@ float4 ps_main(VSOutput input) : SV_TARGET
     SamplerState pointSampler = SamplerDescriptorHeap[c_pointSampler];
 
     return inputTexture.SampleLevel(pointSampler, input.m_uv, 0);
+}
+
+float4 ps_main_graphics_test(VSOutput input) : SV_TARGET
+{
+    Texture2D inputTexture = ResourceDescriptorHeap[c_inputTexture];
+    SamplerState pointSampler = SamplerDescriptorHeap[c_pointSampler];
+    float4 output = inputTexture.SampleLevel(pointSampler, input.m_uv, 0);
+
+    return output;//float4(1.0f, 0.0f, 0.0f, 1.0f);
 }

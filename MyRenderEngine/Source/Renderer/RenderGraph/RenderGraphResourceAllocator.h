@@ -14,7 +14,7 @@ class RenderGraphResourceAllocator
         {
             if (IsUsed())
             {
-                return m_firstPass <= other.m_firstPass && m_lastPass >= other.m_lastPass;
+                return m_firstPass <= other.m_lastPass && m_lastPass >= other.m_firstPass;
             }
             else
             {

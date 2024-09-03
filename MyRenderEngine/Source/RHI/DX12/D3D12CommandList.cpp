@@ -82,7 +82,7 @@ bool D3D12CommandList::Create()
     }
     m_pCommandAllocator->SetName(string_to_wstring(m_name + "allocator").c_str());
 
-    hResult = pD3D12Device->CreateCommandList(0, type,m_pCommandAllocator, nullptr, IID_PPV_ARGS(&m_pCommandList));     //< Low cost without initial state
+    hResult = pD3D12Device->CreateCommandList(0, type, m_pCommandAllocator, nullptr, IID_PPV_ARGS(&m_pCommandList));     //< Low cost without initial state
     if (FAILED(hResult))
     {
         MY_ERROR("[Command List] failed to create command list {}", m_name);

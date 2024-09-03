@@ -65,17 +65,20 @@ public:
                 {
                     state = RHIAccessBit::RHIAccessVertexShaderSRV | RHIAccessBit::RHIAccessPixelShaderSRV;
                 }
+                break;
             }
 
             case RenderPassType::Compute:
             case RenderPassType::AsyncCompute:
             {
                 state = RHIAccessBit::RHIAccessComputeShaderSRV;
+                break;
             }
 
             case RenderPassType::Copy:
             {
                 state = RHIAccessBit::RHIAccessCopySrc;
+                break;
             }
         
             default:
@@ -142,7 +145,7 @@ public:
                 break;
             }
         }
-        Write(input, state, subresource);
+        return Write(input, state, subresource);
     }
 
     RGHandle WriteColor(uint32_t colorIndex, const RGHandle& input, uint32_t subresource, RHIRenderPassLoadOp loadOp, float4 clearColor = float4(0.0f, 0.0f, 0.0f, 1.0f))

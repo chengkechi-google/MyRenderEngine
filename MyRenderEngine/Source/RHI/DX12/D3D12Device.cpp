@@ -528,7 +528,7 @@ bool D3D12Device::Init()
 
     queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
     m_pD3D12Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_pCopyQueue));
-    m_pComputeQueue->SetName(L"Copy queue");
+    m_pCopyQueue->SetName(L"Copy queue");
 
 // Create allocators
     D3D12MA::ALLOCATOR_DESC allocatorDesc = {};

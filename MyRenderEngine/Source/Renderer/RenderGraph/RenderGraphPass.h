@@ -10,13 +10,14 @@ class RenderGraphResource;
 class RenderGraphEdgeColorAttachment;
 class RenderGraphEdgeDepthAttachment;
 
-enum class RenderPassType
+enum RenderPassType
 {
-    Graphics,
-    Compute,
-    AsyncCompute,
-    Copy
+    Graphics = 1 << 0,
+    Compute = 1 << 1,
+    AsyncCompute = 1 << 2,
+    Copy = 1 << 3
 };
+using RenderPassTypeFlags = uint32_t;
 
 struct RenderGraphAsyncResolveContext
 {
@@ -92,6 +93,17 @@ protected:
         RHIAccessFlags m_accessAfter;
     };
     eastl::vector<AliasDiscardBarrier> m_disacardBarrier;
+
+    struct AsyncTrasitionContext
+    {
+        bool m_bIsAsyncTrasitionPoint = false;
+        uint64_t m_signalValue = UINT32_MAX;
+        uint64_t m_waitValue = UINT32_MAX;
+        DAGNodeID m_passToWait = UINT32_MAX;
+        eastl::vector<ResourceBarrier> m_asyncTrasitionBarriers;
+        
+    };
+    AsyncTrasitionContext m_asyncTrasitionContext;                  //< Will do a resource trasition before this pass
 
     RenderGraphEdgeColorAttachment* m_pColorRT[RHI_MAX_RENDER_TARGET_ACCOUNT];
     RenderGraphEdgeDepthAttachment* m_pDepthRT = nullptr;

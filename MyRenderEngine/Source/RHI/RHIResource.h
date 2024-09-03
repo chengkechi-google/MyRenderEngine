@@ -9,7 +9,7 @@ public:
     virtual ~IRHIResource(){};
     
     virtual void* GetHandle() const = 0;
-    virtual bool IsTexture() { return false; }
+    virtual bool IsTexture() const { return false; }
     virtual bool IsBuffer() { return false; }
 
     IRHIDevice* GetDevice() { return m_pDevice; }

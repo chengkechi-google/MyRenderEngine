@@ -120,7 +120,7 @@ IRHITexture* RenderGraphResourceAllocator::AllocateTexture(uint32_t firstPass, u
 
         for (size_t j = 0; j < heap.m_resources.size(); ++j)
         {
-            AliasedResource aliasResource = heap.m_resources[j];
+            AliasedResource& aliasResource = heap.m_resources[j];
             if (aliasResource.m_pResource->IsTexture() && !aliasResource.m_lifeTime.IsUsed() && ((IRHITexture*)aliasResource.m_pResource)->GetDesc() == desc)
             {
                 aliasResource.m_lifeTime = lifeTime;
@@ -149,7 +149,7 @@ IRHITexture* RenderGraphResourceAllocator::AllocateTexture(uint32_t firstPass, u
         }
         else if (desc.m_usage & RHITextureUsageBit::RHITextureUsageUnorderedAccess)
         {
-            initialState = RHIAccessBit::RHIAccessRTV;
+            initialState = RHIAccessBit::RHIAccessMaskUAV;
         }
 
         MY_ASSERT(aliasedTexture.m_pResource != nullptr);

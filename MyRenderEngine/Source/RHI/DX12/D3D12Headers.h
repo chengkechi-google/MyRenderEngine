@@ -48,6 +48,15 @@ inline D3D12_BARRIER_SYNC RHIToD3D12BarrierSync(RHIAccessFlags flags)
         if(flags & RHIAccessBit::RHIAccessClearUAV)     sync |= D3D12_BARRIER_SYNC_CLEAR_UNORDERED_ACCESS_VIEW;
     }
 
+    // Now no resource transition in compute queue, it is much easier
+    /*if ((flags & RHIAccessBit::RHIAccessMaskVS) && (flags & RHIAccessBit::RHIAccessMaskPS) && (flags & RHIAccessBit::RHIAccessMaskCS))
+    {
+        sync |= D3D12_BARRIER_SYNC_ALL_SHADING;
+        flags &= ~RHIAccessBit::RHIAccessMaskVS;
+        flags &= ~RHIAccessBit::RHIAccessMaskPS;
+        flags &= ~RHIAccessBit::RHIAccessMaskCS;
+    }*/
+    
     if(flags & RHIAccessBit::RHIAccessPresent)          sync |= D3D12_BARRIER_SYNC_ALL;
     if(flags & RHIAccessBit::RHIAccessRTV)              sync |= D3D12_BARRIER_SYNC_RENDER_TARGET;
     if(flags & RHIAccessBit::RHIAccessMaskDSV)          sync |= D3D12_BARRIER_SYNC_DEPTH_STENCIL;
@@ -72,19 +81,19 @@ inline D3D12_BARRIER_ACCESS RHIToD3D12BarrierAccess(RHIAccessFlags flags)
 
     D3D12_BARRIER_ACCESS access = D3D12_BARRIER_ACCESS_COMMON;
 
-    if(flags & RHIAccessBit::RHIAccessRTV)          access | D3D12_BARRIER_ACCESS_RENDER_TARGET;
-    if(flags & RHIAccessBit::RHIAccessDSV)          access | D3D12_BARRIER_ACCESS_DEPTH_STENCIL_WRITE;
-    if(flags & RHIAccessBit::RHIAccessDSVReadOnly)  access | D3D12_BARRIER_ACCESS_DEPTH_STENCIL_READ;
-    if(flags & RHIAccessBit::RHIAccessMaskSRV)      access | D3D12_BARRIER_ACCESS_SHADER_RESOURCE;
-    if(flags & RHIAccessBit::RHIAccessMaskUAV)      access | D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
-    if(flags & RHIAccessBit::RHIAccessClearUAV)     access | D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
-    if(flags & RHIAccessBit::RHIAccessCopyDst)      access | D3D12_BARRIER_ACCESS_COPY_DEST;
-    if(flags & RHIAccessBit::RHIAccessCopySrc)      access | D3D12_BARRIER_ACCESS_COPY_SOURCE;
-    if(flags & RHIAccessBit::RHIAccessShadingRate)  access | D3D12_BARRIER_ACCESS_SHADING_RATE_SOURCE;
-    if(flags & RHIAccessBit::RHIAccessIndexBuffer)  access | D3D12_BARRIER_ACCESS_INDEX_BUFFER;
-    if(flags & RHIAccessBit::RHIAccessIndirectArgs) access | D3D12_BARRIER_ACCESS_INDIRECT_ARGUMENT;
-    if(flags & RHIAccessBit::RHIAccessASRead)       access | D3D12_BARRIER_ACCESS_RAYTRACING_ACCELERATION_STRUCTURE_READ;
-    if(flags & RHIAccessBit::RHIAccessASWrite)      access | D3D12_BARRIER_ACCESS_RAYTRACING_ACCELERATION_STRUCTURE_WRITE;
+    if(flags & RHIAccessBit::RHIAccessRTV)          access |= D3D12_BARRIER_ACCESS_RENDER_TARGET;
+    if(flags & RHIAccessBit::RHIAccessDSV)          access |= D3D12_BARRIER_ACCESS_DEPTH_STENCIL_WRITE;
+    if(flags & RHIAccessBit::RHIAccessDSVReadOnly)  access |= D3D12_BARRIER_ACCESS_DEPTH_STENCIL_READ;
+    if(flags & RHIAccessBit::RHIAccessMaskSRV)      access |= D3D12_BARRIER_ACCESS_SHADER_RESOURCE;
+    if(flags & RHIAccessBit::RHIAccessMaskUAV)      access |= D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
+    if(flags & RHIAccessBit::RHIAccessClearUAV)     access |= D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
+    if(flags & RHIAccessBit::RHIAccessCopyDst)      access |= D3D12_BARRIER_ACCESS_COPY_DEST;
+    if(flags & RHIAccessBit::RHIAccessCopySrc)      access |= D3D12_BARRIER_ACCESS_COPY_SOURCE;
+    if(flags & RHIAccessBit::RHIAccessShadingRate)  access |= D3D12_BARRIER_ACCESS_SHADING_RATE_SOURCE;
+    if(flags & RHIAccessBit::RHIAccessIndexBuffer)  access |= D3D12_BARRIER_ACCESS_INDEX_BUFFER;
+    if(flags & RHIAccessBit::RHIAccessIndirectArgs) access |= D3D12_BARRIER_ACCESS_INDIRECT_ARGUMENT;
+    if(flags & RHIAccessBit::RHIAccessASRead)       access |= D3D12_BARRIER_ACCESS_RAYTRACING_ACCELERATION_STRUCTURE_READ;
+    if(flags & RHIAccessBit::RHIAccessASWrite)      access |= D3D12_BARRIER_ACCESS_RAYTRACING_ACCELERATION_STRUCTURE_WRITE;
 
     return access;
 }

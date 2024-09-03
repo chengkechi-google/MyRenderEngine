@@ -12,10 +12,22 @@ RenderGraphPassBase::RenderGraphPassBase(const eastl::string& name, RenderPassTy
 // todo : https://docs.microsoft.com/en-us/windows/win32/direct3d12/executing-and-synchronizing-command-lists#accessing-resources-from-multiple-command-queues
 void RenderGraphPassBase::ResolveBarriers(const DirectedAcyclicGraph& graph)
 {
+    // Async pass, the resource transition will be happend in transition point
+    if (m_type == RenderPassType::AsyncCompute)
+    {
+        return;
+    }
+
     eastl::vector<DAGEdge*> edges;
     
     eastl::vector<DAGEdge*> resourceIncoming;
     eastl::vector<DAGEdge*> resourceOutgoing;
+
+    // For debug
+    if (m_name.find("Compute Test") != eastl::string::npos)
+    {
+        int i = 0;
+    }
 
     graph.GetIncomingEdges(this, edges);
     for (size_t i = 0; i < edges.size(); ++i)
@@ -34,21 +46,34 @@ void RenderGraphPassBase::ResolveBarriers(const DirectedAcyclicGraph& graph)
         RHIAccessFlags oldState = RHIAccessBit::RHIAccessPresent;
         RHIAccessFlags newState = pEdge->GetUsage();
 
+        RenderPassTypeFlags renderPassType = (RenderPassTypeFlags) m_type;
+
         // Try to find previous state from last pass which used this resource
         // todo : should merge states if possible, eg. shader resource ps + reosurce resource non-ps -> shader resource all
         if (resourceOutgoing.size() > 1)
         {
             // resource outgoing should be sorted
-            for (size_t i = resourceOutgoing.size() - 1; i >= 0; --i)
+            for (int i = (int)resourceOutgoing.size() - 1; i >= 0; --i)
             {
                 uint32_t subResource = ((RenderGraphEdge*) resourceOutgoing[i])->GetSubResource();
                 DAGNodeID passID = resourceOutgoing[i]->GetToNode();
-                if (subResource == pEdge->GetSubResource() && passID < this->GetID() && !graph.GetNode(passID)->IsCulled())
+                if (subResource == pEdge->GetSubResource() && !graph.GetNode(passID)->IsCulled())
                 {
-                    oldState = ((RenderGraphEdge*) resourceOutgoing[i])->GetUsage();
-                    break;
+                    const RenderGraphPassBase* pPass = (RenderGraphPassBase*) graph.GetNode(passID);
+                    renderPassType |= (RenderPassTypeFlags) pPass->GetType();
+                    if (passID < this->GetID())
+                    {
+                        oldState = ((RenderGraphEdge*) resourceOutgoing[i])->GetUsage();
+                        break;
+                    }
                 }
             }
+        }
+
+        // If this resource is cross diffrent queues, use transition barrier
+        if (((renderPassType & RenderPassType::Compute) || (renderPassType & RenderPassType::Graphics)) && (renderPassType & RenderPassType::AsyncCompute))
+        {
+            continue;
         }
 
         // If not found, get the state from the pass which output the resource
@@ -125,24 +150,79 @@ void RenderGraphPassBase::ResolveAsyncCompute(const DirectedAcyclicGraph& graph,
         eastl::vector<DAGEdge*> resourceIncoming;
         eastl::vector<DAGEdge*> resourceOutgoing;
 
+        RHIAccessFlags oldState;
+        DAGNodeID smallestID = UINT32_MAX;
         graph.GetIncomingEdges(this, edges);
         for (size_t i = 0; i < edges.size(); ++i)
         {
+            RenderPassTypeFlags renderPassType= m_type;
             RenderGraphEdge* pEdge = (RenderGraphEdge*) edges[i];
             MY_ASSERT(pEdge->GetToNode() == this->GetID());
             
             RenderGraphResourceNode* pResourceNode = (RenderGraphResourceNode*) graph.GetNode(pEdge->GetFromNode());
+            RenderGraphResource* pResource = pResourceNode->GetResource();
+            oldState = pResource->GetInitialState();
             
             graph.GetIncomingEdges(pResourceNode, resourceIncoming);
             MY_ASSERT(resourceIncoming.size() <= 1);                    //< Should not have 2 pass write to same resource
 
             if (!resourceIncoming.empty())
             {
-                RenderGraphPassBase* pPrePass = (RenderGraphPassBase*) graph.GetNode(resourceIncoming[0]->GetFromNode());
-                if (!pPrePass->IsCulled() && pPrePass->GetType() != RenderPassType::AsyncCompute)
+                oldState = ((RenderGraphEdge*) resourceIncoming[i])->GetUsage();
+                RenderGraphPassBase* pPrePass = (RenderGraphPassBase*)graph.GetNode(resourceIncoming[0]->GetFromNode());
+                renderPassType |= pPrePass->GetType();
+                
+                /*if (!pPrePass->IsCulled() && pPrePass->GetType() != RenderPassType::AsyncCompute)
                 {
                     context.m_preGraphicsQueuePasses.push_back(pPrePass->GetID());
+                }*/
+            }
+
+            // Get reosurce outgoing to find all previous pass and add a transition point, the rule is all previous pass have to be read resource only before asyc compute
+            graph.GetOutgoingEdges(pResourceNode, resourceOutgoing);
+            
+            RHIAccessFlags newState = pEdge->GetUsage();
+            if (!resourceOutgoing.empty())
+            {
+                // resource outgoing should be sorted
+                for (int i = (int)resourceOutgoing.size() - 1; i >= 0; --i)
+                {
+                    uint32_t subResource = ((RenderGraphEdge*) resourceOutgoing[i])->GetSubResource();
+                    DAGNodeID passID = resourceOutgoing[i]->GetToNode();
+                    // Should check read or write state ti find out the wait point, but for now I assume before pass are all use read, and onlyh write to new resource
+                    if (subResource == pEdge->GetSubResource() && passID < this->GetID() && !graph.GetNode(passID)->IsCulled())
+                    {
+                        newState |= ((RenderGraphEdge*) resourceOutgoing[i])->GetUsage();
+                        if (passID < smallestID)
+                        {
+                            smallestID = passID;
+                        }
+                    }
                 }
+            } 
+
+            // I don't check if the resource is crossed queue, if it is async pass, every resource transition will be happened in transition point
+            //if (((renderPassType & RenderPassType::Compute) || (renderPassType & RenderPassType::Graphics)) && (renderPassType & RenderPassType::AsyncCompute))
+            {
+                RenderGraphPassBase* transitionPass = smallestID == UINT32_MAX ? this : (RenderGraphPassBase*) graph.GetNode(smallestID);
+                if (!transitionPass->m_asyncTrasitionContext.m_bIsAsyncTrasitionPoint)
+                {   
+                    transitionPass->m_asyncTrasitionContext.m_bIsAsyncTrasitionPoint = true;
+                    transitionPass->m_asyncTrasitionContext.m_signalValue = ++ context.m_graphicsFence;
+                }
+
+                if (oldState != newState)
+                {
+                    // todo: if UAV to uav, can use simpe uav barrier for all uavs
+                    ResourceBarrier barrier;
+                    barrier.m_pResource = pResource;
+                    barrier.m_subResource = pEdge->GetSubResource();
+                    barrier.m_oldState = oldState;
+                    barrier.m_newState = newState;
+
+                    transitionPass->m_asyncTrasitionContext.m_asyncTrasitionBarriers.push_back(barrier);
+                }
+                context.m_preGraphicsQueuePasses.push_back(transitionPass->GetID());
             }
         }
 
@@ -173,16 +253,16 @@ void RenderGraphPassBase::ResolveAsyncCompute(const DirectedAcyclicGraph& graph,
         {
             if (!context.m_preGraphicsQueuePasses.empty())
             {
-                DAGNodeID graphicsPassToWaitID = *eastl::max_element(context.m_preGraphicsQueuePasses.begin(), context.m_preGraphicsQueuePasses.end());     //< find final wait graphic pass
+                DAGNodeID graphicsPassToWaitID = context.m_preGraphicsQueuePasses[0];//*eastl::max_element(context.m_preGraphicsQueuePasses.begin(), context.m_preGraphicsQueuePasses.end());     //< find final wait graphic pass
                 
-                RenderGraphPassBase* pGraphicsPassToWait = (RenderGraphPassBase*) graph.GetNode(graphicsPassToWaitID);
-                if (pGraphicsPassToWait->m_signalValue == -1)
+                RenderGraphPassBase* pGraphicsPassToWait = (RenderGraphPassBase*)graph.GetNode(graphicsPassToWaitID);
+                /*if (pGraphicsPassToWait->m_signalValue == -1)
                 {
-                    pGraphicsPassToWait->m_signalValue = ++ context.m_graphicsFence;
-                }
+                    pGraphicsPassToWait->m_signalValue = pGraphicsPassToWait->m_asyncTrasitionContext.m_signalValue;// ++ context.m_graphicsFence;
+                }*/
 
                 RenderGraphPassBase* pComputePass = (RenderGraphPassBase*) graph.GetNode(context.m_computeQueuePasses[0]);
-                pComputePass->m_waitValue = pGraphicsPassToWait->m_signalValue;
+                pComputePass->m_waitValue = pGraphicsPassToWait->m_asyncTrasitionContext.m_signalValue;//pGraphicsPassToWait->m_signalValue;
 
                 for (size_t i = 0; i < context.m_computeQueuePasses.size(); ++i)
                 {
@@ -191,7 +271,6 @@ void RenderGraphPassBase::ResolveAsyncCompute(const DirectedAcyclicGraph& graph,
                 }
             }
         
-
             if (!context.m_postGraphicsQueuePasses.empty())
             {
                 DAGNodeID graphicsPassToSignalID = *eastl::min_element(context.m_postGraphicsQueuePasses.begin(), context.m_postGraphicsQueuePasses.end()); //< first graphic pass
@@ -221,6 +300,33 @@ void RenderGraphPassBase::ResolveAsyncCompute(const DirectedAcyclicGraph& graph,
 void RenderGraphPassBase::Execute(const RenderGraph& graph, RenderGraphPassExecuteContext& context)
 {
     IRHICommandList* pCommandList = m_type == RenderPassType::AsyncCompute ? context.m_pComputeCommandList : context.m_pGraphicsCommandList;
+    IRHICommandList* pMostCompetentCommandList = context.m_pGraphicsCommandList;
+
+    // Flush transition point
+    if (m_asyncTrasitionContext.m_bIsAsyncTrasitionPoint)
+    {
+        for (size_t i = 0; i < m_asyncTrasitionContext.m_asyncTrasitionBarriers.size(); ++i)
+        {
+            const ResourceBarrier& barrier = m_asyncTrasitionContext.m_asyncTrasitionBarriers[i];
+            barrier.m_pResource->Barrier(pCommandList, barrier.m_subResource, barrier.m_oldState, barrier.m_newState);
+        }
+
+        pMostCompetentCommandList->End();
+        if (m_type == RenderPassType::AsyncCompute)
+        {
+            pCommandList->Signal(context.m_pComputeQueueFence, context.m_initialComputeFenceValue + m_asyncTrasitionContext.m_signalValue);
+            context.m_lastSignaledComputeValue = context.m_initialComputeFenceValue + m_signalValue;
+        }else
+        {
+            pCommandList->Signal(context.m_pGraphicsQueueFence, context.m_initialGraphicsFenceValue + m_asyncTrasitionContext.m_signalValue);
+            context.m_lastSignaledGraphicsValue = context.m_initialGraphicsFenceValue + m_signalValue;
+        }
+
+        pCommandList->Submit();
+
+        pCommandList->Begin();
+        context.m_pRenderer->SetupGlobalConstants(pCommandList);
+    }
 
     // If need wait for other passes, execute the commands and add pending wait
     if (m_waitValue != -1)
@@ -229,7 +335,7 @@ void RenderGraphPassBase::Execute(const RenderGraph& graph, RenderGraphPassExecu
         pCommandList->Submit(); 
 
         pCommandList->Begin();
-        context.m_pRenderer->SetupGlobalConstants(pCommandList); // todo: Not implemented
+        context.m_pRenderer->SetupGlobalConstants(pCommandList);
 
         if (m_type == RenderPassType::AsyncCompute)
         {

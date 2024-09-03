@@ -261,6 +261,16 @@
       <FileType>Document</FileType>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Shaders\ComputeTest.hlsl">
+      <FileType>Document</FileType>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Shaders\FinalTestPass.hlsl">
+      <FileType>Document</FileType>
+    </ClInclude>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -353,7 +363,7 @@
     <ClCompile>
       <WarningLevel>Level1</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;MICROPROFILE_ENABLED=1;MICROPROFILE_GPU_TIMERS=1;MICROPROFILE_GPU_TIMERS_D3D12=1;EASTL_EASTDC_VSNPRINTF=0;EASTL_USER_DEFINED_ALLOCATOR=1;_CRT_SECURE_NO_WARNINGS;NOMINMAX;UNICODE;_UNICODE;_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;MICROPROFILE_ENABLED=1;MICROPROFILE_GPU_TIMERS=0;MICROPROFILE_GPU_TIMERS_D3D12=0;EASTL_EASTDC_VSNPRINTF=0;EASTL_USER_DEFINED_ALLOCATOR=1;_CRT_SECURE_NO_WARNINGS;NOMINMAX;UNICODE;_UNICODE;_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>Default</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)Shaders/;$(ProjectDir)Source/;$(ProjectDir)External/;$(ProjectDir)External/EASTL/include;$(ProjectDir)External/fmt/include;$(ProjectDir)External/imgui;$(ProjectDir)External/stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>

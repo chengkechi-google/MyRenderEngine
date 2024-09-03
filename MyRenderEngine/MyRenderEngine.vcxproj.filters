@@ -423,6 +423,12 @@
     <ClInclude Include="Shaders\Texture.hlsli">
       <Filter>Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\ComputeTest.hlsl">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\FinalTestPass.hlsl">
+      <Filter>Shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\RHI\RHI.cpp">

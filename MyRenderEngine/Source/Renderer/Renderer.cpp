@@ -684,6 +684,19 @@ void Renderer::CreateCommonResources()
     psoDesc.m_rtFormat[0] = m_pSwapChain->GetDesc().m_format;
     psoDesc.m_depthStencilFromat = RHIFormat::D32F;
     m_pCopyColorPSO = GetPipelineState(psoDesc, "Copy PSO");
+
+    RHIComputePipelineDesc computePSODesc;
+    computePSODesc.m_pCS = GetShader("ComputeTest.hlsl", "cs_main", RHIShaderType::CS);
+    m_pComputeTestPSO = GetPipelineState(computePSODesc, "Compute Test");
+
+    psoDesc.m_pPS = GetShader("Copy.hlsl", "ps_main_graphics_test", RHIShaderType::PS);
+    psoDesc.m_rtFormat[0] = m_pSwapChain->GetDesc().m_format;
+    m_pGraphicsTestPSO = GetPipelineState(psoDesc, "Graphics Test");
+
+    psoDesc.m_pVS = GetShader("FinalTestPass.hlsl", "vs_main", RHIShaderType::VS);
+    psoDesc.m_pPS = GetShader("FinalTestPass.hlsl", "ps_main", RHIShaderType::PS);
+    psoDesc.m_rtFormat[0] = m_pSwapChain->GetDesc().m_format;
+    m_pFinalTestPassPSO = GetPipelineState(psoDesc, "Pass Test Final");
 }
 
 void Renderer::OnWindowResize(void* window, uint32_t width, uint32_t height)
@@ -790,7 +803,7 @@ void Renderer::Render()
 
     SetupGlobalConstants(pCommandList);
     //FlushComputePass(pCommandList);
-    //BuildRayTracingAS(pCommandList, pComputeCommandList);
+    BuildRayTracingAS(pCommandList, pComputeCommandList);
 
     // m_pSkyyCubeMap->Update();
 
@@ -801,12 +814,25 @@ void Renderer::Render()
     m_pRenderGraph->Execute(this, pCommandList, pComputeCommandList);
 
     RenderBackBufferPass(pCommandList, outputColorHandle, outputDepthHandle);
+    //Engine::GetInstance()->GetGUI()->Render(pCommandList);
+
 }
 
 void Renderer::BuildRenderGraph(RGHandle& outColor, RGHandle& outDepth)
 {
-    BasePass(outColor, outDepth);
-    m_pRenderGraph->Present(outColor, RHIAccessBit::RHIAccessPixelShaderSRV);
+    RGHandle outSceneColor, outSceneDepth;
+    RGHandle output0, output1, output2;
+    BasePass(outSceneColor, outSceneDepth);
+    GraphicsTestPass(outSceneColor, output0);
+    ComputeTestPass(outSceneColor, output1);
+    FinalTestPass(output0, output1, output2);
+    
+    //m_pRenderGraph->Present(outSceneColor, RHIAccessBit::RHIAccessPixelShaderSRV);
+    //m_pRenderGraph->Present(output1, RHIAccessBit::RHIAccessPixelShaderSRV);
+    m_pRenderGraph->Present(output2, RHIAccessBit::RHIAccessPixelShaderSRV);
+    outColor = output2;
+    outDepth = outSceneDepth;
+    //m_pRenderGraph->Present(outDepth, RHIAccessBit::RHIAccessDSVReadOnly);
 }
 
 void Renderer::EndFrame()
@@ -823,7 +849,6 @@ void Renderer::EndFrame()
     pCommandList->End();
 
     m_frameFenceValue[frameIndex] = ++ m_currentFrameFenceValue;
-
     pCommandList->Present(m_pSwapChain.get());
     pCommandList->Signal(m_pFrameFence.get(), m_currentFrameFenceValue);
     pCommandList->Submit();
@@ -893,6 +918,7 @@ void Renderer::BasePass(RGHandle& outColor, RGHandle& outDepth)
             desc.m_width = m_renderWidth;
             desc.m_height = m_renderHeight;
             desc.m_format = RHIFormat::RGBA8SRGB;
+            desc.m_frameID = GetFrameID() % RHI_MAX_INFLIGHT_FRAMES;
 
             data.outSceneColorRT = builder.Create<RGTexture>(desc, "SceneColor RT");
             data.outSceneColorRT = builder.WriteColor(0, data.outSceneColorRT, 0, RHIRenderPassLoadOp::Clear, float4(1.0f, 1.0f, 0.0f, 1.0f));
@@ -913,29 +939,159 @@ void Renderer::BasePass(RGHandle& outColor, RGHandle& outDepth)
     outDepth = basePass->outSceneDepthRT;
 }
 
+void Renderer::ComputeTestPass(RGHandle input, RGHandle& output)
+{
+    struct ComputeTestPassData
+    {
+        RGHandle input;
+        RGHandle output;
+    };
+
+    auto computeTestPass = m_pRenderGraph->AddPass<ComputeTestPassData>("Compute Test Pass", RenderPassType::AsyncCompute,
+        [&](ComputeTestPassData& data, RGBuilder& builder)
+        {
+            data.input = builder.Read(input);
+
+            RGTexture::Desc desc;
+            desc.m_width = m_renderWidth;
+            desc.m_height = m_renderHeight;
+            desc.m_format = RHIFormat::RGBA8UNORM;
+            desc.m_frameID = GetFrameID() % RHI_MAX_INFLIGHT_FRAMES;
+
+            data.output = builder.Create<RGTexture>(desc, "Compute Test Pass output texture");
+            data.output = builder.Write(data.output);
+        },
+
+        [=](const ComputeTestPassData& data, IRHICommandList* pCommandList)
+        {
+            //RGTexture* pInpute = m_pRenderGraph->GetTexture(data.input);
+            RGTexture* pOutput = m_pRenderGraph->GetTexture(data.output);
+
+            
+            struct CB
+            {
+                uint input;
+                uint output;
+                uint samplerState;
+                uint padding;
+                float2 pixelSize;
+            };
+
+            CB constants;
+            constants.input = 0;//pInpute->GetSRV()->GetHeapIndex();
+            constants.output = pOutput->GetSRV()->GetHeapIndex();
+            constants.samplerState = m_pPointClampSampler.get()->GetHeapIndex();
+            constants.pixelSize = float2(1.0f / m_renderWidth, 1.0f / m_renderHeight);
+            pCommandList->SetComputeConstants(0, &constants, sizeof(constants));
+
+            pCommandList->SetPipelineState(m_pComputeTestPSO);
+
+            pCommandList->Dispatch(DivideRoundingUp(m_renderWidth, 8), DivideRoundingUp(m_renderHeight, 8), 1);
+        });
+
+    output = computeTestPass->output;
+}
+
+void Renderer::GraphicsTestPass(RGHandle input, RGHandle& output)
+{
+    struct GraphicsPassTestData
+    {
+        RGHandle input;
+        RGHandle output;
+    };
+
+    auto graphicsTestPass = m_pRenderGraph->AddPass<GraphicsPassTestData>("Graphics Test Pass", RenderPassType::Graphics,
+        [&](GraphicsPassTestData& data, RGBuilder& builder)
+        {
+            data.input = builder.Read(input);
+    
+
+            RGTexture::Desc desc;
+            desc.m_width = m_renderWidth;
+            desc.m_height = m_renderHeight;
+            desc.m_format = RHIFormat::RGBA8SRGB;
+            desc.m_frameID = GetFrameID() % RHI_MAX_INFLIGHT_FRAMES;
+
+            data.output = builder.Create<RGTexture>(desc, "Graphics Pass Test output texture");
+            data.output = builder.WriteColor(0, data.output, 0, RHIRenderPassLoadOp::Clear, float4(0.0f, 0.0f, 0.0f, 1.0f));
+
+        },
+        [=](const GraphicsPassTestData& data, IRHICommandList* pCommandList)
+        {
+            RGTexture* pInput = m_pRenderGraph->GetTexture(data.input);
+            RGTexture* pOutput = m_pRenderGraph->GetTexture(data.output);
+
+            uint32_t cb[3] = {pInput->GetSRV()->GetHeapIndex(), m_pPointClampSampler->GetHeapIndex(), 0};
+            pCommandList->SetGraphicsConstants(0, cb, sizeof(cb));
+            pCommandList->SetPipelineState(m_pGraphicsTestPSO);
+            pCommandList->Draw(3);
+        });
+
+    output = graphicsTestPass->output;
+}
+
+void Renderer::FinalTestPass(RGHandle input1, RGHandle input2, RGHandle& output)
+{
+    struct FinalTestPassData
+    {
+        RGHandle input1;
+        RGHandle input2;
+        RGHandle output;
+    };
+
+    auto finalTestPass = m_pRenderGraph->AddPass<FinalTestPassData>("Final Test Pass", RenderPassType::Graphics, 
+        [&](FinalTestPassData& data, RGBuilder& builder)
+        {
+            data.input1 = builder.Read(input1);
+            data.input2 = builder.Read(input2);
+
+            RGTexture::Desc desc;
+            desc.m_width = m_renderWidth;
+            desc.m_height = m_renderHeight;
+            desc.m_format = RHIFormat::RGBA8SRGB;
+            desc.m_frameID = GetFrameID() % RHI_MAX_INFLIGHT_FRAMES;
+
+            data.output = builder.Create<RGTexture>(desc, "Final Test Pass output");
+            data.output = builder.WriteColor(0, data.output, 0, RHIRenderPassLoadOp::Load);
+        },
+        [=](const FinalTestPassData& data, IRHICommandList* pCommandList)
+        {
+            RGTexture* pInputTexture1 = m_pRenderGraph->GetTexture(data.input1);
+            RGTexture* pInputTexture2 = m_pRenderGraph->GetTexture(data.input2);
+
+            uint cb[3] = {pInputTexture1->GetSRV()->GetHeapIndex(), pInputTexture2->GetSRV()->GetHeapIndex(), m_pPointClampSampler->GetHeapIndex()};
+            pCommandList->SetGraphicsConstants(0, cb, sizeof(cb));
+            pCommandList->SetPipelineState(m_pFinalTestPassPSO);
+            pCommandList->Draw(3);
+         });
+
+    output = finalTestPass->output;
+}
+
 void Renderer::RenderBackBufferPass(IRHICommandList* pCommandList, RGHandle color, RGHandle depth)
 {
     GPU_EVENT(pCommandList, "BackBuffer Pass");
 
     m_pSwapChain->AcquireNextBackBuffer();
     pCommandList->TextureBarrier(m_pSwapChain->GetBackBuffer(), 0, RHIAccessBit::RHIAccessPresent, RHIAccessBit::RHIAccessRTV);
-    RGTexture* pDepth = m_pRenderGraph->GetTexture(depth);
+    //RGTexture* pDepth = m_pRenderGraph->GetTexture(depth);
 
     RHIRenderPassDesc renderPass;
     renderPass.m_color[0].m_pTexture = m_pSwapChain->GetBackBuffer();
     renderPass.m_color[0].m_loadOp = RHIRenderPassLoadOp::DontCare;
-    renderPass.m_depth.m_pTexture = pDepth->GetTexture();
+    renderPass.m_depth.m_pTexture = nullptr;//pDepth->GetTexture();
     renderPass.m_depth.m_loadOp = RHIRenderPassLoadOp::DontCare;
     renderPass.m_depth.m_stencilLoadOp = RHIRenderPassLoadOp::DontCare;
     renderPass.m_depth.m_storeOp = RHIRenderPassStoreOp::DontCare;
     renderPass.m_depth.m_stencilStoreOp = RHIRenderPassStoreOp::DontCare;
     pCommandList->BeginRenderPass(renderPass);
-    
+  
     CopyToBackBuffer(pCommandList, color, depth, false);
     Engine::GetInstance()->GetGUI()->Render(pCommandList);
-
     pCommandList->EndRenderPass();
     pCommandList->TextureBarrier(m_pSwapChain->GetBackBuffer(), 0, RHIAccessBit::RHIAccessRTV, RHIAccessBit::RHIAccessPresent);
+    pCommandList->SetPipelineState(m_pComputeTestPSO);
+
 }
 
 void Renderer::CopyToBackBuffer(IRHICommandList* pCommandList, RGHandle color, RGHandle depth, bool needUpscaleDepth)
@@ -945,9 +1101,55 @@ void Renderer::CopyToBackBuffer(IRHICommandList* pCommandList, RGHandle color, R
     RGTexture* pColorRT = m_pRenderGraph->GetTexture(color);
     RGTexture* pDepthRT = m_pRenderGraph->GetTexture(depth);
 
-    uint32_t constants[3] = { pColorRT->GetSRV()->GetHeapIndex(), pDepthRT->GetSRV()->GetHeapIndex(), m_pPointClampSampler->GetHeapIndex() };
+    uint32_t constants[3] = { pColorRT->GetSRV()->GetHeapIndex(), /*pDepthRT->GetSRV()->GetHeapIndex(),*/ m_pPointClampSampler->GetHeapIndex(), 0};
     pCommandList->SetGraphicsConstants(0, constants, sizeof(constants));
     pCommandList->SetPipelineState(m_pCopyColorPSO);
     pCommandList->Draw(3);
+}
+
+void Renderer::BuildRayTracingAS(IRHICommandList* pGraphicsCommandList, IRHICommandList* pComputeCommandList)
+{
+    if (m_enableAsyncCompute)
+    {
+        pGraphicsCommandList->End();
+        pGraphicsCommandList->Signal(m_pAsyncComputeFence.get(), ++ m_currentAsyncComputeFenceValue);
+        pGraphicsCommandList->Submit();
+
+        pGraphicsCommandList->Begin();
+        SetupGlobalConstants(pGraphicsCommandList);
+        pComputeCommandList->Wait(m_pAsyncComputeFence.get(), m_currentAsyncComputeFenceValue);
+    }
+
+    {
+        IRHICommandList* pCommandList = m_enableAsyncCompute ? pComputeCommandList : pGraphicsCommandList;
+        GPU_EVENT(pCommandList, "BuildRayTracingAS");
+
+        if (!m_pendingBLASBuilds.empty())
+        {
+            GPU_EVENT(pCommandList, "BuildAS");
+            
+            for (size_t i = 0; i < m_pendingBLASBuilds.size(); ++i)
+            {
+                pCommandList->BuildRayTracingBLAS(m_pendingBLASBuilds[i]);
+            }
+            m_pendingBLASBuilds.clear();
+            pCommandList->GlobalBarrier(RHIAccessBit::RHIAccessMaskAS, RHIAccessBit::RHIAccessMaskAS);
+        }
+
+        if (!m_pendingBLASUpdates.empty())
+        {
+            GPU_EVENT(pCommandList, "UpdateBLAS");
+            
+            for (size_t i = 0; i < m_pendingBLASUpdates.size(); ++i)
+            {
+                pCommandList->UpdateRayTracingBLAS(m_pendingBLASUpdates[i].m_pBLAS, m_pendingBLASUpdates[i].m_pVertexBuffer, m_pendingBLASUpdates[i].m_vettexBufferOffset);
+            }
+            m_pendingBLASUpdates.clear();
+            pCommandList->GlobalBarrier(RHIAccessBit::RHIAccessMaskAS, RHIAccessBit::RHIAccessMaskAS);
+            
+        }
+
+        m_pGPUScene->BuildRayTracingAS(pCommandList);
+    }
 }
 
