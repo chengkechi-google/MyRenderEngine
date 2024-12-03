@@ -104,7 +104,6 @@ inline void DrawBatch(IRHICommandList* pCommandList, const RenderBatch& batch)
         if (batch.m_cb[i].m_pData != nullptr)
         {
             pCommandList->SetGraphicsConstants(i, batch.m_cb[i].m_pData, batch.m_cb[i].m_dataSize);
-
         }
     }
 

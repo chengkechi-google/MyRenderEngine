@@ -17,6 +17,7 @@ public:
     IRHIPipelineState* GetIDPSO();
     IRHIPipelineState* GetOutlinePSO();
     IRHIPipelineState* GetMeshletPSO();
+    IRHIPipelineState* GetMeshletDirectPSO();
     IRHIPipelineState* GetVertexSkinningPSO();
 
     void UpdateConstants();
@@ -41,6 +42,7 @@ private:
     IRHIPipelineState* m_pIDPSO = nullptr;
     IRHIPipelineState* m_pOutlinePSO = nullptr;
     IRHIPipelineState* m_pMeshletPSO = nullptr;
+    IRHIPipelineState* m_pMeshletDirectPSO = nullptr;
     IRHIPipelineState* m_pVertexSkinningPSO = nullptr;
 
     ShadingModel m_shadingModel = ShadingModel::Default;

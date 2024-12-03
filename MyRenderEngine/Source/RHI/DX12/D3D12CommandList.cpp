@@ -296,7 +296,7 @@ void D3D12CommandList::CopyTexture(IRHITexture* pDstTexture, uint32_t dstMip, ui
 
 void D3D12CommandList::ClearUAV(IRHIResource* pResource, IRHIDescriptor* pUAV, const float* clearValue)
 {
-    MY_ASSERT(pResource->IsTexture() || pResource->IsTexture());
+    MY_ASSERT(pResource->IsTexture() || pResource->IsBuffer());
 
     FlushBarriers();
     
@@ -676,7 +676,7 @@ void D3D12CommandList::Dispatch(uint32_t groupCountX, uint32_t groupCountY, uint
 
 void D3D12CommandList::DispatchMesh(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
 {
-    m_pCommandList->Dispatch(groupCountX, groupCountY, groupCountZ);
+    m_pCommandList->DispatchMesh(groupCountX, groupCountY, groupCountZ);
     ++ m_commandCount;
 }
 

@@ -97,6 +97,12 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{6f395b52-aad1-4a92-8b27-47bfd2cc5415}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\HZB">
+      <UniqueIdentifier>{197359c0-a131-4d8c-8847-61776ca0fdd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\FFX">
+      <UniqueIdentifier>{0c219901-fea8-4144-9814-87d54ee21115}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\RHI\RHI.h">
@@ -429,6 +435,45 @@
     <ClInclude Include="Shaders\FinalTestPass.hlsl">
       <Filter>Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Renderer\RenderPasses\HierarchicalDepthBufferPass.h">
+      <Filter>Source\Renderer\RenderPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\HZB\HZBReprojection.hlsl">
+      <Filter>Shaders\HZB</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\FFX\ffx_a.h">
+      <Filter>Shaders\FFX</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\FFX\ffx_cas.h">
+      <Filter>Shaders\FFX</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\FFX\ffx_spd.h">
+      <Filter>Shaders\FFX</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\FFX\ffx_sssr.h">
+      <Filter>Shaders\FFX</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\HZB\HZB.hlsl">
+      <Filter>Shaders\HZB</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\RenderPasses\BasePassGPUDriven.h">
+      <Filter>Source\Renderer\RenderPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\InstanceCulling.hlsl">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\Stats.hlsli">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\ModelMeshlet.hlsl">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\MeshletCulling.hlsl">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\Meshlet.hlsli">
+      <Filter>Shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\RHI\RHI.cpp">
@@ -703,6 +748,12 @@
     </ClCompile>
     <ClCompile Include="Source\Core\GUI.cpp">
       <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\RenderPasses\HierarchicalDepthBufferPass.cpp">
+      <Filter>Source\Renderer\RenderPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\RenderPasses\BasePassGPUDriven.cpp">
+      <Filter>Source\Renderer\RenderPasses</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

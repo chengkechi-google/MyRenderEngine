@@ -74,7 +74,7 @@ void StaticMesh::UpdateConstants()
     m_instanceData.m_triangleCount = m_indexCount / 3;
 
     m_instanceData.m_meshletCount = m_meshletCount;
-    m_instanceData.m_meshletIndicesBufferAddress = m_meshletBuffer.offset;
+    m_instanceData.m_meshletBufferAddress = m_meshletBuffer.offset;
     m_instanceData.m_meshletVerticesBufferAddress = m_meshletVerticesBuffer.offset;
     m_instanceData.m_meshletIndicesBufferAddress = m_meshletIndicesBuffer.offset;
 
@@ -109,8 +109,9 @@ void StaticMesh::UpdateConstants()
 void StaticMesh::Render(Renderer* pRenderer)
 {
     RenderBatch& basePassBatch = pRenderer->AddBasePassBatch();
-#if 0
-    Dispatch(basePassBatch, m_pMaterial->GetMeshletPSO());
+#if 1
+    //Dispatch(basePassBatch, m_pMaterial->GetMeshletPSO());
+    Dispatch(basePassBatch, m_pMaterial->GetMeshletDirectPSO());
 #else
     Draw(basePassBatch, m_pMaterial->GetPSO());
 #endif
@@ -153,12 +154,17 @@ void StaticMesh::Draw(RenderBatch& batch, IRHIPipelineState* pPSO)
 
 void StaticMesh::Dispatch(RenderBatch& batch, IRHIPipelineState* pPSO)
 {
+    uint32_t rootConsts[2] = {m_instanceIndex, m_meshletCount};
+
     batch.m_label = m_name.c_str();
     batch.SetPipelineState(pPSO);
+    batch.SetConstantBuffer(0, rootConsts, sizeof(rootConsts));
+
     batch.m_center = m_instanceData.m_center;
     batch.m_radius = m_instanceData.m_radius;
     batch.m_meshletCount = m_meshletCount;
     batch.m_instaceIndex = m_instanceIndex;
+    batch.DispatchMesh(m_meshletCount, 1, 1);
 }
 
 void StaticMesh::OnGUI()

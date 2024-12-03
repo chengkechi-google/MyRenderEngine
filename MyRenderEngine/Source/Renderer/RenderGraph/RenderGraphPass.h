@@ -105,7 +105,7 @@ protected:
     };
     AsyncTrasitionContext m_asyncTrasitionContext;                  //< Will do a resource trasition before this pass
 
-    RenderGraphEdgeColorAttachment* m_pColorRT[RHI_MAX_RENDER_TARGET_ACCOUNT];
+    RenderGraphEdgeColorAttachment* m_pColorRT[RHI_MAX_RENDER_TARGET_ACCOUNT] = {};
     RenderGraphEdgeDepthAttachment* m_pDepthRT = nullptr;
 
     // Only for async compute pass

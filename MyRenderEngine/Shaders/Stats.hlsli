@@ -1,0 +1,39 @@
+#pragma once
+
+#include "GlobalConstants.hlsli"
+
+#define STATS_1ST_PHASE_CULLED_OBJECTS 0
+#define STATS_1ST_PHASE_RENDERED_OBJECTS 1
+
+#define STATS_1ST_PHASE_FRUSTUM_CULLED_MESHLET 2
+#define STATS_1ST_PHASE_BACKFACE_CULLED_MESHLET 3
+#define STATS_1ST_PHASE_OCCLUSION_CULLED_MESHLET 4
+#define STATS_1ST_PHASE_RENDERED_MESHLET 5
+
+#define STATS_1ST_PHASE_CULLED_TRIANGLE 6
+#define STATS_1ST_PHASE_RENDERED_TRIANGLE 7
+
+#define STATS_2ND_PHASE_CULLED_OBJECTS 8
+#define STATS_2ND_PHASE_RENDERED_OBJECTS 9
+
+#define STATS_2ND_PHASE_FRUSTUM_CULLED_MESHLET 10
+#define STATS_2ND_PHASE_BACKFACE_CULLED_MESHLET 11
+#define STATS_2ND_PHASE_OCCLUSION_CULLED_MESHLET 12
+#define STATS_2ND_PHASE_RENDERED_MESHLET 13
+
+#define STATS_2ND_PHASE_CULLED_TRIANGLE 14
+#define STATS_2ND_PHASE_RENDERED_TRIANGLE 15
+
+#define STATS_MAX_TYPE_COUNT 1024
+
+#ifndef __cplusplus
+void stats(uint type, uint count)
+{
+    if(SceneCB.m_enableStats && (type < STATS_MAX_TYPE_COUNT))
+    {
+        RWBuffer<uint> statsBuffer = ResourceDescriptorHeap[SceneCB.m_statsBufferUAV];
+        InterlockedAdd(statsBuffer[type], count);
+    }
+}
+#endif
+

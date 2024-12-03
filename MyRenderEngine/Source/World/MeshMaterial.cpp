@@ -51,6 +51,7 @@ IRHIPipelineState* MeshMaterial::GetPSO()
     return m_pPSO;
 }
 
+
 IRHIPipelineState* MeshMaterial::GetMeshletPSO()
 {
     if (m_pMeshletPSO == nullptr)
@@ -73,6 +74,37 @@ IRHIPipelineState* MeshMaterial::GetMeshletPSO()
         psoDesc.m_rtFormat[2] = RHIFormat::RGBA8UNORM;
         psoDesc.m_rtFormat[3] = RHIFormat::R11G11B10F;
         psoDesc.m_rtFormat[4] = RHIFormat::RGBA8UNORM;
+        psoDesc.m_depthStencilFromat = RHIFormat::D32F;
+
+        m_pMeshletPSO = pRenderer->GetPipelineState(psoDesc, "Model meshlet PSO");
+    }
+
+    return m_pMeshletPSO;
+}
+
+IRHIPipelineState* MeshMaterial::GetMeshletDirectPSO()
+{
+    if (m_pMeshletPSO == nullptr)
+    {
+        Renderer* pRenderer = Engine::GetInstance()->GetRenderer();
+
+        eastl::vector<eastl::string> defines;
+        AddMaterialDefines(defines);
+
+        RHIMeshShaderPipelineDesc psoDesc;
+        psoDesc.m_pAS = nullptr;//pRenderer->GetShader("MeshletCulling.hlsl", "as_main", RHIShaderType::AS, defines);
+        psoDesc.m_pMS = pRenderer->GetShader("ModelMeshlet.hlsl", "ms_direct_main", RHIShaderType::MS, defines);
+        psoDesc.m_pPS = pRenderer->GetShader("Model.hlsl", "ps_main", RHIShaderType::PS, defines);
+        psoDesc.m_rasterizerState.m_cullMode = m_bDoubleSided ? RHICullMode::None : RHICullMode::Back;
+        psoDesc.m_rasterizerState.m_frontCCW = m_bFrontFaceCCW;
+        psoDesc.m_depthStencilState.m_depthTest = true;
+        psoDesc.m_depthStencilState.m_depthFunc = RHICompareFunc::GreaterEqual;
+        psoDesc.m_rtFormat[0] = RHIFormat::RGBA8SRGB;
+        psoDesc.m_rtFormat[1] = RHIFormat::RGBA8SRGB;
+        psoDesc.m_rtFormat[2] = RHIFormat::RGBA8UNORM;
+        psoDesc.m_rtFormat[3] = RHIFormat::R11G11B10F;
+        psoDesc.m_rtFormat[4] = RHIFormat::RGBA8UNORM;
+        psoDesc.m_depthStencilFromat = RHIFormat::D32F;
 
         m_pMeshletPSO = pRenderer->GetPipelineState(psoDesc, "Model meshlet PSO");
     }

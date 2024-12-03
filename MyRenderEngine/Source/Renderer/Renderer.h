@@ -138,8 +138,17 @@ public:
     RenderBatch& AddObjectIDPassBatch() { return m_idPassBatchs.emplace_back(*m_pCBAllocator); }
     ComputeBatch& AddAnimationBatch() { return m_animationBatchs.emplace_back(*m_pCBAllocator); }
 
-
     void SetupGlobalConstants(IRHICommandList* pCommandList);
+
+    class HZBPass* GetHZBPass() const { return m_pHZBPass.get(); }
+    class BasePassGPUDriven* GetBasePassGPUDriven() const { return m_pBasePassGPUDriven.get(); }
+
+    bool IsHistoryTextureValid() const { return m_bHistoryValid; };
+    RGHandle GetPrevSceneDepthHandle() const { return m_prevSceneDepthHandle; }
+    RGHandle GetPrevSceneColorHandle() const { return m_prevSceneColorHandle; }
+    RGHandle GetPrevNormalHandle() const { return m_prevNormalHandle; }
+
+    TypedBuffer* GetSPDCounterBuffer() const { return m_pSPDCounterBuffer.get(); };
 
 private:
     void CreateCommonResources();
@@ -162,6 +171,7 @@ private:
     void CopyToBackBuffer(IRHICommandList* pCommandList, RGHandle color, RGHandle depth, bool needUpscaleDepth);    
 
     void BuildRayTracingAS(IRHICommandList* pGraphicsCommandList, IRHICommandList* pComputeCommandList);
+    void ImportPrevFrameTextures();
    
 private:
     // Render resource
@@ -243,6 +253,16 @@ private:
     eastl::unique_ptr<IRHIDescriptor> m_pMinReductionSampler;
     eastl::unique_ptr<IRHIDescriptor> m_pMaxReductionSampler;
 
+    eastl::unique_ptr<Texture2D> m_pPrevSceneDepthTexture;
+    eastl::unique_ptr<Texture2D> m_pPrevNormalTexture;
+    eastl::unique_ptr<Texture2D> m_pPrevSceneColorTexture;
+    RGHandle m_prevSceneDepthHandle;
+    RGHandle m_prevNormalHandle;
+    RGHandle m_prevSceneColorHandle;
+    bool m_bHistoryValid = false;
+
+    eastl::unique_ptr<TypedBuffer> m_pSPDCounterBuffer;
+
     bool m_gpuDrivenStatsEnabled = false;
     bool m_showMeshlets = false;
     bool m_enableAsyncCompute = false;
@@ -264,4 +284,7 @@ private:
     IRHIPipelineState* m_pComputeTestPSO = nullptr;
     IRHIPipelineState* m_pGraphicsTestPSO = nullptr;
     IRHIPipelineState* m_pFinalTestPassPSO = nullptr;
+
+    eastl::unique_ptr<class HZBPass> m_pHZBPass;
+    eastl::unique_ptr<class BasePassGPUDriven> m_pBasePassGPUDriven;
 };

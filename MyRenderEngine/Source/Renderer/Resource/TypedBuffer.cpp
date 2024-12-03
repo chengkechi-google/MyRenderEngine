@@ -25,6 +25,13 @@ bool TypedBuffer::Create(RHIFormat format, uint32_t elementCount, RHIMemoryType 
         desc.m_usage |= RHIBufferUsageBit::RHIBufferUsageUnorderedAccess;
     }
 
+    m_pBuffer.reset(pDevice->CreateBuffer(desc, m_name));
+    if(m_pBuffer == nullptr)
+    {
+        return false;
+    }
+    
+
     RHIShaderResourceViewDesc srvDesc;
     srvDesc.m_type = RHIShaderResourceViewType::TypedBuffer;
     srvDesc.m_format = format;

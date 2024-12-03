@@ -61,7 +61,6 @@ T LoadSceneAnimationBuffer(uint bufferAddress, uint elementID)
 {
     ByteAddressBuffer sceneBuffer = ResourceDescriptorHeap[SceneCB.m_sceneAnimationBufferSRV];
     return sceneBuffer.Load<T>(bufferAddress + sizeof(T) * elementID);
-
 }
 
 template<typename T>

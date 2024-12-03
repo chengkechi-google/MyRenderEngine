@@ -87,4 +87,23 @@ private:
     };
     eastl::vector<PresentTarget> m_outputResources;
 };
+
+class RenderGraphEvent
+{
+public:
+    RenderGraphEvent(RenderGraph* pGraph, const char* name) : m_pRenderGraph(pGraph)
+    {
+        m_pRenderGraph->BeginEvent(name);
+    }
+
+    ~RenderGraphEvent()
+    {
+        m_pRenderGraph->EndEvent();
+    }
+private:
+    RenderGraph* m_pRenderGraph;
+};
+
+#define RENDER_GRAPH_EVENT(graph, eventName) RenderGraphEvent __graph_event__(graph, eventName);
+
 #include "RenderGraph.inl"

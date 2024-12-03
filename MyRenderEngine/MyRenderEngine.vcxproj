@@ -51,6 +51,8 @@
     <ClCompile Include="Source\Renderer\RenderGraph\RenderGraphPass.cpp" />
     <ClCompile Include="Source\Renderer\RenderGraph\RenderGraphResource.cpp" />
     <ClCompile Include="Source\Renderer\RenderGraph\RenderGraphResourceAllocator.cpp" />
+    <ClCompile Include="Source\Renderer\RenderPasses\BasePassGPUDriven.cpp" />
+    <ClCompile Include="Source\Renderer\RenderPasses\HierarchicalDepthBufferPass.cpp" />
     <ClCompile Include="Source\Renderer\Resource\ConstantBuffer.cpp" />
     <ClCompile Include="Source\Renderer\Resource\RawBuffer.cpp" />
     <ClCompile Include="Source\Renderer\Resource\IndexBuffer.cpp" />
@@ -112,6 +114,11 @@
     <ClInclude Include="External\simpleini\SimpleIni.h" />
     <ClInclude Include="External\tinyxml2\tinyxml2.h" />
     <ClInclude Include="External\xxHash\xxhash.h" />
+    <ClInclude Include="Shaders\FFX\ffx_a.h" />
+    <ClInclude Include="Shaders\FFX\ffx_cas.h" />
+    <ClInclude Include="Shaders\FFX\ffx_spd.h" />
+    <ClInclude Include="Shaders\FFX\ffx_sssr.h" />
+    <ClInclude Include="Shaders\HZB\HZB.hlsl" />
     <ClInclude Include="Source\Core\Engine.h" />
     <ClInclude Include="Source\Core\GUI.h" />
     <ClInclude Include="Source\Editor\Editor.h" />
@@ -128,6 +135,8 @@
     <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphPass.h" />
     <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphResource.h" />
     <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphResourceAllocator.h" />
+    <ClInclude Include="Source\Renderer\RenderPasses\BasePassGPUDriven.h" />
+    <ClInclude Include="Source\Renderer\RenderPasses\HierarchicalDepthBufferPass.h" />
     <ClInclude Include="Source\Renderer\Resource\ConstantBuffer.h" />
     <ClInclude Include="Source\Renderer\Resource\indexBuffer.h" />
     <ClInclude Include="Source\Renderer\Resource\RawBuffer.h" />
@@ -248,6 +257,12 @@
       <FileType>Document</FileType>
     </ClInclude>
     <None Include="packages.config" />
+    <ClInclude Include="Shaders\Stats.hlsli">
+      <FileType>Document</FileType>
+    </ClInclude>
+    <ClInclude Include="Shaders\Meshlet.hlsli">
+      <FileType>Document</FileType>
+    </ClInclude>
     <None Include="Source\Renderer\RenderGraph\RenderGraph.inl" />
   </ItemGroup>
   <ItemGroup>
@@ -268,6 +283,24 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shaders\FinalTestPass.hlsl">
+      <FileType>Document</FileType>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Shaders\HZB\HZBReprojection.hlsl">
+      <FileType>Document</FileType>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Shaders\InstanceCulling.hlsl">
+      <FileType>Document</FileType>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Shaders\MeshletCulling.hlsl">
+      <FileType>Document</FileType>
+    </ClInclude>
+    <ClInclude Include="Shaders\ModelMeshlet.hlsl">
       <FileType>Document</FileType>
     </ClInclude>
   </ItemGroup>

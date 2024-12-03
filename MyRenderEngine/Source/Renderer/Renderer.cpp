@@ -3,6 +3,8 @@
 #include "ShaderCompiler.h"
 #include "ShaderCache.h"
 #include "GPUScene.h"
+#include "RenderPasses/HierarchicalDepthBufferPass.h"
+#include "RenderPasses/BasePassGPUDriven.h"
 #include "PipelineCache.h"
 #include "Core/Engine.h"
 #include "Utils/profiler.h"
@@ -81,6 +83,8 @@ bool Renderer::CreateDevice(void* windowHandle, uint32_t windowWidth, uint32_t w
     CreateCommonResources();
     m_pRenderGraph = eastl::make_unique<RenderGraph>(this);   
     m_pGPUScene = eastl::make_unique<GPUScene>(this);
+    m_pHZBPass = eastl::make_unique<HZBPass>(this);
+    m_pBasePassGPUDriven = eastl::make_unique<BasePassGPUDriven>(this);
 
     return true; 
 }
@@ -549,9 +553,9 @@ void Renderer::SetupGlobalConstants(IRHICommandList* pCommandList)
     sceneCB.m_rcpRenderSize = float2(1.0f/ m_renderWidth, 1.0f / m_renderHeight);
     sceneCB.m_displaySize = uint2(m_displayWidth, m_displayHeight);
     sceneCB.m_rcpDisplaySize = float2(1.0f / m_displayWidth, 1.0f / m_displayHeight);
-    sceneCB.m_prevSceneColorSRV = RHI_INVALID_RESOURCE;
-    sceneCB.m_prevSceneDepthSRV = RHI_INVALID_RESOURCE;
-    sceneCB.m_prevNormalSRV = RHI_INVALID_RESOURCE;
+    sceneCB.m_prevSceneColorSRV = m_pPrevSceneColorTexture->GetSRV()->GetHeapIndex();
+    sceneCB.m_prevSceneDepthSRV = m_pPrevSceneDepthTexture->GetSRV()->GetHeapIndex();
+    sceneCB.m_prevNormalSRV = m_pPrevNormalTexture->GetSRV()->GetHeapIndex();
     sceneCB.m_hzbWidth = 1;
     sceneCB.m_hzbHeight = 1;
     sceneCB.m_firstPhaseCullingHZBSRV = RHI_INVALID_RESOURCE;
@@ -676,6 +680,8 @@ void Renderer::CreateCommonResources()
     desc.m_compareFunc = RHICompareFunc::LessEqual;
     m_pShadowSampler.reset(m_pDevice->CreateSampler(desc, "Renderer::m_pShadowSampler"));  
 
+    m_pSPDCounterBuffer.reset(CreateTypedBuffer(nullptr, RHIFormat::R32UI, 1, "Renderer::m_pSPDCounterBuffer", RHIMemoryType::GPUOnly, true));
+
     // Create global shader
     RHIGraphicsPipelineDesc psoDesc;
     psoDesc.m_pVS = GetShader("Copy.hlsl", "vs_main", RHIShaderType::VS);
@@ -787,6 +793,14 @@ void Renderer::Render()
     GPU_EVENT_DEBUG(pCommandList, fmt::format("Render Frame {}", m_pDevice->GetFrameID()).c_str());
     GPU_EVENT_PROFILER(pCommandList, "Render Frame");
 
+
+    if (m_pDevice->GetFrameID() == 0)
+    {
+        pCommandList->BufferBarrier(m_pSPDCounterBuffer->GetBuffer(), RHIAccessBit::RHIAccessComputeShaderUAV, RHIAccessBit::RHIAccessCopyDst);
+        pCommandList->WriteBuffer(m_pSPDCounterBuffer->GetBuffer(), 0, 0);
+        pCommandList->BufferBarrier(m_pSPDCounterBuffer->GetBuffer(), RHIAccessBit::RHIAccessCopyDst, RHIAccessComputeShaderUAV);
+    }
+
     m_pRenderGraph->Clear();
     m_pGPUScene->Update();
 
@@ -820,6 +834,9 @@ void Renderer::Render()
 
 void Renderer::BuildRenderGraph(RGHandle& outColor, RGHandle& outDepth)
 {
+    m_pRenderGraph->Clear();
+    ImportPrevFrameTextures();
+    
     RGHandle outSceneColor, outSceneDepth;
     RGHandle output0, output1, output2;
     BasePass(outSceneColor, outSceneDepth);
@@ -964,7 +981,7 @@ void Renderer::ComputeTestPass(RGHandle input, RGHandle& output)
 
         [=](const ComputeTestPassData& data, IRHICommandList* pCommandList)
         {
-            //RGTexture* pInpute = m_pRenderGraph->GetTexture(data.input);
+            RGTexture* pInput = m_pRenderGraph->GetTexture(data.input);
             RGTexture* pOutput = m_pRenderGraph->GetTexture(data.output);
 
             
@@ -978,7 +995,7 @@ void Renderer::ComputeTestPass(RGHandle input, RGHandle& output)
             };
 
             CB constants;
-            constants.input = 0;//pInpute->GetSRV()->GetHeapIndex();
+            constants.input = pInput->GetSRV()->GetHeapIndex();
             constants.output = pOutput->GetSRV()->GetHeapIndex();
             constants.samplerState = m_pPointClampSampler.get()->GetHeapIndex();
             constants.pixelSize = float2(1.0f / m_renderWidth, 1.0f / m_renderHeight);
@@ -1153,3 +1170,52 @@ void Renderer::BuildRayTracingAS(IRHICommandList* pGraphicsCommandList, IRHIComm
     }
 }
 
+void Renderer::ImportPrevFrameTextures()
+{
+    if (m_pPrevSceneDepthTexture == nullptr ||
+        m_pPrevSceneDepthTexture->GetTexture()->GetDesc().m_width != m_renderWidth ||
+        m_pPrevSceneDepthTexture->GetTexture()->GetDesc().m_height != m_renderHeight)
+    {
+        m_pPrevSceneDepthTexture.reset(CreateTexture2D(m_renderWidth, m_renderHeight, 1, RHIFormat::R32F, RHITextureUsageBit::RHITextureUsageUnorderedAccess, "Pre SceneDepth"));
+        m_pPrevNormalTexture.reset(CreateTexture2D(m_renderWidth, m_renderHeight, 1, RHIFormat::RGBA8UNORM, RHITextureUsageBit::RHITextureUsageUnorderedAccess, "Prev Normal"));
+        m_pPrevSceneColorTexture.reset(CreateTexture2D(m_renderWidth, m_renderHeight, 1, RHIFormat::RGBA16F, RHITextureUsageBit::RHITextureUsageUnorderedAccess, "Prev SceneColor"));
+        m_bHistoryValid = false;
+    }
+    else
+    {
+        m_bHistoryValid = true;
+    }
+
+    m_prevSceneDepthHandle = m_pRenderGraph->Import(m_pPrevSceneColorTexture->GetTexture(), RHIAccessBit::RHIAccessComputeShaderUAV);
+    m_prevNormalHandle = m_pRenderGraph->Import(m_pPrevNormalTexture->GetTexture(), m_bHistoryValid ? RHIAccessBit::RHIAccessCopyDst : RHIAccessBit::RHIAccessComputeShaderUAV);
+    m_prevSceneColorHandle = m_pRenderGraph->Import(m_pPrevSceneColorTexture->GetTexture(), m_bHistoryValid ? RHIAccessBit::RHIAccessCopyDst : RHIAccessBit::RHIAccessComputeShaderUAV);
+
+    if (!m_bHistoryValid)
+    {
+        struct ClearHistoryPassData
+        {
+            RGHandle m_linearDepth;
+            RGHandle m_normal;
+            RGHandle m_color;
+        };
+
+        auto clearPass = m_pRenderGraph->AddPass<ClearHistoryPassData>("Clear History Textures", RenderPassType::Compute,
+            [&](ClearHistoryPassData& data, RGBuilder& builder)
+            {
+                data.m_linearDepth = builder.Write(m_prevSceneDepthHandle);
+                data.m_normal = builder.Write(m_prevNormalHandle);
+                data.m_color = builder.Write(m_prevSceneColorHandle);
+            },
+            [=](const ClearHistoryPassData& data, IRHICommandList* pCommandList)
+            {
+                float clearValue[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+                pCommandList->ClearUAV(m_pPrevSceneDepthTexture->GetTexture(), m_pPrevSceneDepthTexture->GetUAV(), clearValue);
+                pCommandList->ClearUAV(m_pPrevNormalTexture->GetTexture(), m_pPrevNormalTexture->GetUAV(), clearValue);
+                pCommandList->ClearUAV(m_pPrevSceneColorTexture->GetTexture(), m_pPrevSceneColorTexture->GetUAV(), clearValue);
+            });
+
+        m_prevSceneDepthHandle = clearPass->m_linearDepth;
+        m_prevNormalHandle = clearPass->m_normal;
+        m_prevSceneColorHandle = clearPass->m_color;
+    }
+}
