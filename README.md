@@ -1,16 +1,24 @@
 # MyRenderEngine
 
-I am trying to build this rendering engine when I am learning D3D12. It can not compile after I decided to refine it because I want to implement some ideas from Unreal Engine, and I hope I can implement most of new graphics API features.
+I am trying to build this rendering engine when I am learning D3D12. I am trying to implement new graphics features in this learning project
 ## Planned feature:
 ### Abstract Rendering Interface
 ### Render Graph
 - Auto resource barrier
-- Multi Thread Rendering Command recording
-- Resource Memory aliase
-- Output graph
+- Multi Thread Rendering Command recording (pending)
+- Resource Memory alias
+- Output render graph
+- Async Compute with the correct resource barrier
 ### Bindless Resource
-### Ray Tracing
+- Dynamic Descriptor Index
 ### Mesh Shading
+- Meshlet support
+### GPU Driven
+- 2 Phase Occlusion Culling
+- Meshlet culling
+- Compute indirect argument Buffer
+### Ray Tracing
+
 
 
 
