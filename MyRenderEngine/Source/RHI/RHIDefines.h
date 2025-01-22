@@ -725,10 +725,10 @@ struct RHISamplerDesc
     RHISamplerAddressMode m_addressV = RHISamplerAddressMode::Repeat;
     RHISamplerAddressMode m_addressW = RHISamplerAddressMode::Repeat;
     RHICompareFunc m_compareFunc = RHICompareFunc::Always;
+    bool m_enableAnisotropy = false;
     float m_maxAnisotropy = 1.0f;
     float m_mipBias = 0.0f;
     float m_minLOD = 0.0f;
-    float m_maxLOD = 0.0f;
+    float m_maxLOD = FLT_MAX;
     float m_borderColor[4] = {};
-    bool m_enableAnisotropy = false;
 };

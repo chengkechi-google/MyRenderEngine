@@ -281,12 +281,12 @@ void D3D12CommandList::CopyTexture(IRHITexture* pDstTexture, uint32_t dstMip, ui
     FlushBarriers();
 
     D3D12_TEXTURE_COPY_LOCATION dstTexture = {};
-    dstTexture.pResource = (ID3D12Resource*) pDstTexture;
+    dstTexture.pResource = (ID3D12Resource*) pDstTexture->GetHandle();
     dstTexture.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
     dstTexture.SubresourceIndex = CalcSubresource(pDstTexture->GetDesc(), dstMip, dstArray);
     
     D3D12_TEXTURE_COPY_LOCATION srcTexture = {};
-    srcTexture.pResource = (ID3D12Resource*) pSrcTexture;
+    srcTexture.pResource = (ID3D12Resource*) pSrcTexture->GetHandle();
     srcTexture.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
     srcTexture.SubresourceIndex = CalcSubresource(pSrcTexture->GetDesc(), srcMip, srcArray);
 
@@ -310,7 +310,7 @@ void D3D12CommandList::ClearUAV(IRHIResource* pResource, IRHIDescriptor* pUAV, c
 
 void D3D12CommandList::ClearUAV(IRHIResource* pResource, IRHIDescriptor* pUAV, const uint32_t* clearValue)
 {
-    MY_ASSERT(pResource->IsTexture() || pResource->IsTexture());
+    MY_ASSERT(pResource->IsTexture() || pResource->IsBuffer());
 
     FlushBarriers();
     

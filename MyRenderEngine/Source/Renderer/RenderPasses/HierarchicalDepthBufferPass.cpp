@@ -75,7 +75,7 @@ void HZBPass::Generate1stPhaseCullingHZB(RenderGraph* pGraph)
             desc.m_mipLevels = m_hzbMipCount;
             desc.m_format = RHIFormat::R16F;
             hzb = builder.Create<RGTexture>(desc, "1st phase HZB");
-            data.m_dilatedDepth = builder.Write(data.m_dilatedDepth);   //< Create node for 0 mip level
+            data.m_dilatedDepth = builder.Write(hzb);   //< Create node for 0 mip level
         },
         [=](const DepthDilationData& data, IRHICommandList* pCommandList)
         {

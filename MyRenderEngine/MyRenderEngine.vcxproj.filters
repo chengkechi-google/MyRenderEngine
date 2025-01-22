@@ -474,6 +474,12 @@
     <ClInclude Include="Shaders\Meshlet.hlsli">
       <Filter>Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Renderer\GPUDrivenStats.h">
+      <Filter>Source\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\stats.hlsl">
+      <Filter>Shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\RHI\RHI.cpp">
@@ -754,6 +760,9 @@
     </ClCompile>
     <ClCompile Include="Source\Renderer\RenderPasses\BasePassGPUDriven.cpp">
       <Filter>Source\Renderer\RenderPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\GPUDrivenStats.cpp">
+      <Filter>Source\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -132,7 +132,8 @@ public:
     void UpdateRayTracingBLAS(IRHIRayTracingBLAS* pBLAS, IRHIBuffer* vertexBuffer, uint32_t vertexBufferOffset);
 
     LinearAllocator* GetConstantAllocator() const { return m_pCBAllocator.get(); }
-    RenderBatch& AddBasePassBatch();
+    RenderBatch& AddGPUDrivenBasePassBatch();
+    RenderBatch& AddBasePassBatch() { return m_BaseBatchs.emplace_back(*m_pCBAllocator); }
     RenderBatch& AddForwardPassBatch() { return m_forwardPassBatchs.emplace_back(*m_pCBAllocator); }
     RenderBatch& AddVelocityPassBatch() { return m_velocityPassBatchs.emplace_back(*m_pCBAllocator); }
     RenderBatch& AddObjectIDPassBatch() { return m_idPassBatchs.emplace_back(*m_pCBAllocator); }
@@ -146,7 +147,7 @@ public:
     bool IsHistoryTextureValid() const { return m_bHistoryValid; };
     RGHandle GetPrevSceneDepthHandle() const { return m_prevSceneDepthHandle; }
     RGHandle GetPrevSceneColorHandle() const { return m_prevSceneColorHandle; }
-    RGHandle GetPrevNormalHandle() const { return m_prevNormalHandle; }
+    RGHandle GetPrevNormalHandle() const { return m_prevSceneNormalHandle; }
 
     TypedBuffer* GetSPDCounterBuffer() const { return m_pSPDCounterBuffer.get(); };
 
@@ -169,7 +170,7 @@ private:
     void FinalTestPass(RGHandle input1, RGHandle input2, RGHandle& output);
     void RenderBackBufferPass(IRHICommandList* pCommandList, RGHandle color, RGHandle depth);
     void CopyToBackBuffer(IRHICommandList* pCommandList, RGHandle color, RGHandle depth, bool needUpscaleDepth);    
-
+    void CopyHistoryPass(RGHandle sceneDepth, RGHandle sceneColor, RGHandle sceneNormal);
     void BuildRayTracingAS(IRHICommandList* pGraphicsCommandList, IRHICommandList* pComputeCommandList);
     void ImportPrevFrameTextures();
    
@@ -254,10 +255,10 @@ private:
     eastl::unique_ptr<IRHIDescriptor> m_pMaxReductionSampler;
 
     eastl::unique_ptr<Texture2D> m_pPrevSceneDepthTexture;
-    eastl::unique_ptr<Texture2D> m_pPrevNormalTexture;
+    eastl::unique_ptr<Texture2D> m_pPrevSceneNormalTexture;
     eastl::unique_ptr<Texture2D> m_pPrevSceneColorTexture;
     RGHandle m_prevSceneDepthHandle;
-    RGHandle m_prevNormalHandle;
+    RGHandle m_prevSceneNormalHandle;
     RGHandle m_prevSceneColorHandle;
     bool m_bHistoryValid = false;
 
@@ -281,10 +282,13 @@ private:
     eastl::vector<RenderBatch> m_idPassBatchs;
 
     IRHIPipelineState* m_pCopyColorPSO = nullptr;
+    IRHIPipelineState* m_pCopyDepthPSO = nullptr;
     IRHIPipelineState* m_pComputeTestPSO = nullptr;
     IRHIPipelineState* m_pGraphicsTestPSO = nullptr;
     IRHIPipelineState* m_pFinalTestPassPSO = nullptr;
 
     eastl::unique_ptr<class HZBPass> m_pHZBPass;
     eastl::unique_ptr<class BasePassGPUDriven> m_pBasePassGPUDriven;
+
+    eastl::unique_ptr<class GPUDrivenStats> m_pGPUStats;
 };

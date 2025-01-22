@@ -4,7 +4,6 @@
 cbuffer MeshletDirectConstants : register(b0)
 {
     uint c_instanceIndex;
-    uint c_meshletCount;
 }
 
 // Per mesh shader output 1 meshlet
@@ -64,7 +63,7 @@ void ms_direct_main(
     uint meshletIndex = groupID;
     
     InstanceData instanceData = GetInstanceData(instanceIndex);
-    if(meshletIndex > c_meshletCount)
+    if(meshletIndex > instanceData.m_meshletCount)
     {
         return;    
     }
@@ -74,10 +73,10 @@ void ms_direct_main(
     
     if(groupThreadID < meshlet.m_triangleCount)
     {
+        // uint16_t3 is 4 component, 64 byte, so can not just use uint16_t3 to load static scene buffer
         uint3 index = uint3(LoadSceneStaticBuffer<uint16_t>(instanceData.m_meshletIndicesBufferAddress, meshlet.m_triangleOffset + groupThreadID * 3),
                             LoadSceneStaticBuffer<uint16_t>(instanceData.m_meshletIndicesBufferAddress, meshlet.m_triangleOffset + groupThreadID * 3 + 1),
                             LoadSceneStaticBuffer<uint16_t>(instanceData.m_meshletIndicesBufferAddress, meshlet.m_triangleOffset + groupThreadID * 3 + 2));
-        
         indices[groupThreadID] = index;
     }
     

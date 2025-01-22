@@ -32,7 +32,7 @@ public:
 
     RGHandle Import(IRHITexture* pTexture, RHIAccessFlags state);
     RGHandle Import(IRHIBuffer* pBuffer, RHIAccessFlags state);
-
+    
     RGTexture* GetTexture(const RGHandle& handle);
     RGBuffer* GetBuffer(const RGHandle& handle);
 

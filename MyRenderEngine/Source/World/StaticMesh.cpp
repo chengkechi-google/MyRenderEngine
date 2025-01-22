@@ -4,6 +4,9 @@
 #include "Core/Engine.h"
 #include "Utils/guiUtil.h"
 
+#define GPU_DRIVEN_BASE_PASS 1
+#define MESHLET_BASE_PASS 0
+
 StaticMesh::StaticMesh(const eastl::string& name)
 {
     m_name = name;
@@ -108,11 +111,15 @@ void StaticMesh::UpdateConstants()
 
 void StaticMesh::Render(Renderer* pRenderer)
 {
+#if GPU_DRIVEN_BASE_PASS
+    RenderBatch& basePassBatch = pRenderer->AddGPUDrivenBasePassBatch();
+    //DispatchGPUDriven(basePassBatch, m_pMaterial->GetMeshletGPUDrivenPSO());
+    DisptachGPUDrivenWithCustomPSO(basePassBatch, m_pMaterial->GetMeshletGPUDrivenPSO(), m_pMaterial->GetShowCulledMeshletGPUDrivenPSO());
+#elif MESHLET_BASE_PASS
     RenderBatch& basePassBatch = pRenderer->AddBasePassBatch();
-#if 1
-    //Dispatch(basePassBatch, m_pMaterial->GetMeshletPSO());
-    Dispatch(basePassBatch, m_pMaterial->GetMeshletDirectPSO());
+    Dispatch(basePassBatch, m_pMaterial->GetMeshletPSO());
 #else
+    RenderBatch& basePassBatch = pRenderer->AddBasePassBatch();
     Draw(basePassBatch, m_pMaterial->GetPSO());
 #endif
 
@@ -154,7 +161,7 @@ void StaticMesh::Draw(RenderBatch& batch, IRHIPipelineState* pPSO)
 
 void StaticMesh::Dispatch(RenderBatch& batch, IRHIPipelineState* pPSO)
 {
-    uint32_t rootConsts[2] = {m_instanceIndex, m_meshletCount};
+    uint32_t rootConsts[2] = {m_instanceIndex};
 
     batch.m_label = m_name.c_str();
     batch.SetPipelineState(pPSO);
@@ -165,6 +172,29 @@ void StaticMesh::Dispatch(RenderBatch& batch, IRHIPipelineState* pPSO)
     batch.m_meshletCount = m_meshletCount;
     batch.m_instaceIndex = m_instanceIndex;
     batch.DispatchMesh(m_meshletCount, 1, 1);
+}
+
+void StaticMesh::DispatchGPUDriven(RenderBatch& batch, IRHIPipelineState* pPSO)
+{
+    batch.m_label = m_name.c_str();
+    batch.SetPipelineState(pPSO);
+
+    batch.m_center = m_instanceData.m_center;
+    batch.m_radius = m_instanceData.m_radius;
+    batch.m_meshletCount = m_meshletCount;
+    batch.m_instaceIndex = m_instanceIndex;
+}
+
+void StaticMesh::DisptachGPUDrivenWithCustomPSO(RenderBatch& batch, IRHIPipelineState* pPSO, IRHIPipelineState* pCustomPSO)
+{
+    batch.m_label = m_name.c_str();
+    batch.SetPipelineState(pPSO);
+    batch.SetCustomPipelineState(pCustomPSO);
+
+    batch.m_center = m_instanceData.m_center;
+    batch.m_radius = m_instanceData.m_radius;
+    batch.m_meshletCount = m_meshletCount;
+    batch.m_instaceIndex = m_instanceIndex;
 }
 
 void StaticMesh::OnGUI()

@@ -16,8 +16,9 @@ public:
     IRHIPipelineState* GetVelocityPSO();
     IRHIPipelineState* GetIDPSO();
     IRHIPipelineState* GetOutlinePSO();
+    IRHIPipelineState* GetMeshletGPUDrivenPSO();
+    IRHIPipelineState* GetShowCulledMeshletGPUDrivenPSO();
     IRHIPipelineState* GetMeshletPSO();
-    IRHIPipelineState* GetMeshletDirectPSO();
     IRHIPipelineState* GetVertexSkinningPSO();
 
     void UpdateConstants();
@@ -42,6 +43,7 @@ private:
     IRHIPipelineState* m_pIDPSO = nullptr;
     IRHIPipelineState* m_pOutlinePSO = nullptr;
     IRHIPipelineState* m_pMeshletPSO = nullptr;
+    IRHIPipelineState* m_pShowCulledMeshletGPUDrivenPSO = nullptr;
     IRHIPipelineState* m_pMeshletDirectPSO = nullptr;
     IRHIPipelineState* m_pVertexSkinningPSO = nullptr;
 

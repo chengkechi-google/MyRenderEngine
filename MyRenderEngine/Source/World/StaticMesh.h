@@ -33,6 +33,8 @@ private:
     void UpdateConstants();
     void Draw(RenderBatch& batch, IRHIPipelineState* pPSO);
     void Dispatch(RenderBatch& batch, IRHIPipelineState* pPSO);
+    void DispatchGPUDriven(RenderBatch& batch, IRHIPipelineState* pPSO);
+    void DisptachGPUDrivenWithCustomPSO(RenderBatch& batch, IRHIPipelineState* pPSO, IRHIPipelineState* pCustomPSO);
 private:
     Renderer* m_pRenderer = nullptr;
     eastl::string m_name;

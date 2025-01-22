@@ -52,7 +52,7 @@ IRHIPipelineState* MeshMaterial::GetPSO()
 }
 
 
-IRHIPipelineState* MeshMaterial::GetMeshletPSO()
+IRHIPipelineState* MeshMaterial::GetMeshletGPUDrivenPSO()
 {
     if (m_pMeshletPSO == nullptr)
     {
@@ -82,7 +82,34 @@ IRHIPipelineState* MeshMaterial::GetMeshletPSO()
     return m_pMeshletPSO;
 }
 
-IRHIPipelineState* MeshMaterial::GetMeshletDirectPSO()
+IRHIPipelineState* MeshMaterial::GetShowCulledMeshletGPUDrivenPSO()
+{
+    if (m_pShowCulledMeshletGPUDrivenPSO == nullptr)
+    {
+        Renderer* pRenderer = Engine::GetInstance()->GetRenderer();
+
+        eastl::vector<eastl::string> defines;
+        AddMaterialDefines(defines);
+
+        RHIMeshShaderPipelineDesc psoDesc;
+        psoDesc.m_pAS = pRenderer->GetShader("ModelShowCulledInstance.hlsl", "as_main", RHIShaderType::AS, defines);
+        psoDesc.m_pMS = pRenderer->GetShader("ModelShowCulledInstance.hlsl", "ms_main", RHIShaderType::MS, defines);
+        psoDesc.m_pPS = pRenderer->GetShader("Model.hlsl", "ps_main", RHIShaderType::PS, defines);
+        psoDesc.m_rasterizerState.m_cullMode = RHICullMode::None;
+        psoDesc.m_rasterizerState.m_frontCCW = m_bFrontFaceCCW;
+        psoDesc.m_depthStencilState.m_depthTest = true;
+        psoDesc.m_depthStencilState.m_depthFunc = RHICompareFunc::GreaterEqual;
+        psoDesc.m_rtFormat[0] = RHIFormat::RGBA8SRGB;
+        psoDesc.m_depthStencilFromat = RHIFormat::D32F;
+
+        m_pShowCulledMeshletGPUDrivenPSO = pRenderer->GetPipelineState(psoDesc, "Show Culled Meshlet PSO");
+    }
+
+    return m_pShowCulledMeshletGPUDrivenPSO;
+}
+
+
+IRHIPipelineState* MeshMaterial::GetMeshletPSO()
 {
     if (m_pMeshletPSO == nullptr)
     {

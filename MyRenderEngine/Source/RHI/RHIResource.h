@@ -10,7 +10,7 @@ public:
     
     virtual void* GetHandle() const = 0;
     virtual bool IsTexture() const { return false; }
-    virtual bool IsBuffer() { return false; }
+    virtual bool IsBuffer() const { return false; }
 
     IRHIDevice* GetDevice() { return m_pDevice; }
     const eastl::string& GetName() { return m_name; }

@@ -539,7 +539,7 @@ StaticMesh* GLTFLoader::LoadStaticMesh(const cgltf_primitive* pPrimitive, const 
         bound.m_axixX = meshoptBound.cone_axis_s8[0];
         bound.m_axisY = meshoptBound.cone_axis_s8[1];
         bound.m_axisZ = meshoptBound.cone_axis_s8[2];
-        bound.m_cutoff = meshoptBound.cone_cutoff;
+        bound.m_cutoff = meshoptBound.cone_cutoff_s8;
         bound.m_vertexCount = m.vertex_count;
         bound.m_triangleCount = m.triangle_count;
         bound.m_vertexOffset = m.vertex_offset;

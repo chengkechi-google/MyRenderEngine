@@ -13,6 +13,17 @@ public:
     RenderBatch& AddBatch();
     void Render1stPhase(RenderGraph* pRenderGraph);
     void Render2ndPhase(RenderGraph* pRenderGraph);
+
+    RGHandle GetDiffuseRT() const { return m_diffuseRT; }
+    RGHandle GetSoecularRT() const { return m_specularRT; }
+    RGHandle GetNormalRT() const { return m_normalRT; }
+    RGHandle GetEmissiveRT() const { return m_emissiveRT; }
+    RGHandle GetCustomDataRT() const { return m_customDataRT; }
+    RGHandle GetDepthRT() const { return m_depthRT; }
+    RGHandle GetCulledObjectsDiffuseRT() const { return m_culledObjectsDiffuseRT; }
+
+    RGHandle GetSecondPhaseMeshletListBuffer() const { return m_2ndPhaseMeshletListBuffer; }
+    RGHandle GetSecondPhaseMeshletListCounterBuffer() const { return m_2ndPhaseMeshletListCounterBuffer; }
     
 
 private:
@@ -61,6 +72,9 @@ private:
     RGHandle m_emissiveRT;
     RGHandle m_customDataRT;
     RGHandle m_depthRT;
+
+    RGHandle m_culledObjectsDiffuseRT;
+    RGHandle m_culledObjectsDepthRT;
 
     RGHandle m_2ndPhaseObjectListBuffer;
     RGHandle m_2ndPhaseObjectListCounterBuffer;

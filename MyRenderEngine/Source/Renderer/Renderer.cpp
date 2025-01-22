@@ -2,6 +2,7 @@
 #include "TextureLoader.h"
 #include "ShaderCompiler.h"
 #include "ShaderCache.h"
+#include "GPUDrivenStats.h"
 #include "GPUScene.h"
 #include "RenderPasses/HierarchicalDepthBufferPass.h"
 #include "RenderPasses/BasePassGPUDriven.h"
@@ -85,6 +86,7 @@ bool Renderer::CreateDevice(void* windowHandle, uint32_t windowWidth, uint32_t w
     m_pGPUScene = eastl::make_unique<GPUScene>(this);
     m_pHZBPass = eastl::make_unique<HZBPass>(this);
     m_pBasePassGPUDriven = eastl::make_unique<BasePassGPUDriven>(this);
+    m_pGPUStats = eastl::make_unique<GPUDrivenStats>(this);
 
     return true; 
 }
@@ -520,10 +522,9 @@ void Renderer::UpdateRayTracingBLAS(IRHIRayTracingBLAS* pBLAS, IRHIBuffer* verte
     m_pendingBLASUpdates.push_back({pBLAS, vertexBuffer, vertexBufferOffset});
 }
 
-RenderBatch& Renderer::AddBasePassBatch()
+RenderBatch& Renderer::AddGPUDrivenBasePassBatch()
 {
-    // Using forward pass for render tesing
-    return m_BaseBatchs.emplace_back(*m_pCBAllocator);
+    return m_pBasePassGPUDriven->AddBatch();
 }
 
 void Renderer::SetupGlobalConstants(IRHICommandList* pCommandList)
@@ -533,6 +534,19 @@ void Renderer::SetupGlobalConstants(IRHICommandList* pCommandList)
 
     bool enableJitter = false;
     pCamera->EnableJitter(enableJitter);
+
+    RGHandle firstPhaseHABHandle = m_pHZBPass->Get1stPhaseCullingHZBMip(0);
+    RGHandle secondPhaseHZBHandle = m_pHZBPass->Get2ndPhaseCullingHZBMip(0);
+    RGHandle sceneHZBHandle = m_pHZBPass->GetSceneHZBMip(0);
+    RGTexture* pFirstPhaseHZBTexture = m_pRenderGraph->GetTexture(firstPhaseHABHandle);
+    RGTexture* pSecondPhaseHZBTexture = m_pRenderGraph->GetTexture(secondPhaseHZBHandle);
+    RGTexture* pSceneHZBTexture = m_pRenderGraph->GetTexture(sceneHZBHandle);
+
+    RGHandle occlusionCulledMeshletBufferHandle = m_pBasePassGPUDriven->GetSecondPhaseMeshletListBuffer();
+    RGHandle occlusionCUlledMeshletCounterBufferHandle = m_pBasePassGPUDriven->GetSecondPhaseMeshletListCounterBuffer();
+    RGBuffer* pOcclusionCulledMeshletBuffer = m_pRenderGraph->GetBuffer(occlusionCulledMeshletBufferHandle);
+    RGBuffer* pOcclusionCulledMeshletCounterBuffer = m_pRenderGraph->GetBuffer(occlusionCUlledMeshletCounterBufferHandle);
+    
 
     SceneConstant sceneCB;
     pCamera->SetupCameraCB(sceneCB.m_cameraCB);
@@ -544,8 +558,8 @@ void Renderer::SetupGlobalConstants(IRHICommandList* pCommandList)
     sceneCB.m_instanceDataAddress = m_pGPUScene->GetInstanceDataAddress();
     sceneCB.m_sceneRayTracingTLAS = m_pGPUScene->GetRayTracingTLASSRV()->GetHeapIndex();
     sceneCB.m_showMeshlets = m_showMeshlets;
-    sceneCB.m_secondPhaseMeshletsListUAV = RHI_INVALID_RESOURCE;
-    sceneCB.m_secondPhaseMeshletsCounterUAV = RHI_INVALID_RESOURCE;
+    sceneCB.m_secondPhaseMeshletsListUAV = RHI_INVALID_RESOURCE;//pOcclusionCulledMeshletBuffer->GetUAV()->GetHeapIndex();
+    sceneCB.m_secondPhaseMeshletsCounterUAV = RHI_INVALID_RESOURCE;//pOcclusionCulledMeshletCounterBuffer->GetUAV()->GetHeapIndex();
     sceneCB.m_lightDir = float3(0.0f, -1.0f, 0.0f);
     sceneCB.m_lightColor = float3(1.0f, 1.0f, 1.0f);
     sceneCB.m_lightRadius = 1.0f;
@@ -555,19 +569,19 @@ void Renderer::SetupGlobalConstants(IRHICommandList* pCommandList)
     sceneCB.m_rcpDisplaySize = float2(1.0f / m_displayWidth, 1.0f / m_displayHeight);
     sceneCB.m_prevSceneColorSRV = m_pPrevSceneColorTexture->GetSRV()->GetHeapIndex();
     sceneCB.m_prevSceneDepthSRV = m_pPrevSceneDepthTexture->GetSRV()->GetHeapIndex();
-    sceneCB.m_prevNormalSRV = m_pPrevNormalTexture->GetSRV()->GetHeapIndex();
-    sceneCB.m_hzbWidth = 1;
-    sceneCB.m_hzbHeight = 1;
-    sceneCB.m_firstPhaseCullingHZBSRV = RHI_INVALID_RESOURCE;
-    sceneCB.m_secondPhaseCullingHZBSRV = RHI_INVALID_RESOURCE;
-    sceneCB.m_sceneHZBSRV = RHI_INVALID_RESOURCE;
+    sceneCB.m_prevNormalSRV = m_pPrevSceneNormalTexture->GetSRV()->GetHeapIndex();
+    sceneCB.m_hzbWidth = m_pHZBPass->GetHZBWidth();
+    sceneCB.m_hzbHeight = m_pHZBPass->GetHZBHeight();
+    sceneCB.m_firstPhaseCullingHZBSRV = pFirstPhaseHZBTexture->GetSRV()->GetHeapIndex();
+    sceneCB.m_secondPhaseCullingHZBSRV = RHI_INVALID_RESOURCE;//pSecondPhaseHZBTexture->GetSRV()->GetHeapIndex();
+    sceneCB.m_sceneHZBSRV = RHI_INVALID_RESOURCE;//pSceneHZBTexture->GetSRV()->GetHeapIndex();
     sceneCB.m_debugLineDrawCommandUAV = RHI_INVALID_RESOURCE;
     sceneCB.m_debugLineVertexBufferUAV = RHI_INVALID_RESOURCE;
     sceneCB.m_debugTextCounterBufferUAV = RHI_INVALID_RESOURCE;
     sceneCB.m_debugTextBufferUAV = RHI_INVALID_RESOURCE;
     sceneCB.m_debugFontCharBufferSRV = RHI_INVALID_RESOURCE;
     sceneCB.m_enableStats = m_gpuDrivenStatsEnabled;
-    sceneCB.m_statsBufferUAV = RHI_INVALID_RESOURCE;
+    sceneCB.m_statsBufferUAV = m_pGPUStats->GetStatsBufferUAV()->GetHeapIndex();
     sceneCB.m_minReductionSampler = m_pMinReductionSampler->GetHeapIndex();
     sceneCB.m_maxReductionSampler = m_pMaxReductionSampler->GetHeapIndex();
     sceneCB.m_pointRepeatSampler = m_pPointRepeatSampler->GetHeapIndex();
@@ -690,11 +704,7 @@ void Renderer::CreateCommonResources()
     psoDesc.m_rtFormat[0] = m_pSwapChain->GetDesc().m_format;
     psoDesc.m_depthStencilFromat = RHIFormat::D32F;
     m_pCopyColorPSO = GetPipelineState(psoDesc, "Copy PSO");
-
-    RHIComputePipelineDesc computePSODesc;
-    computePSODesc.m_pCS = GetShader("ComputeTest.hlsl", "cs_main", RHIShaderType::CS);
-    m_pComputeTestPSO = GetPipelineState(computePSODesc, "Compute Test");
-
+    
     psoDesc.m_pPS = GetShader("Copy.hlsl", "ps_main_graphics_test", RHIShaderType::PS);
     psoDesc.m_rtFormat[0] = m_pSwapChain->GetDesc().m_format;
     m_pGraphicsTestPSO = GetPipelineState(psoDesc, "Graphics Test");
@@ -703,6 +713,13 @@ void Renderer::CreateCommonResources()
     psoDesc.m_pPS = GetShader("FinalTestPass.hlsl", "ps_main", RHIShaderType::PS);
     psoDesc.m_rtFormat[0] = m_pSwapChain->GetDesc().m_format;
     m_pFinalTestPassPSO = GetPipelineState(psoDesc, "Pass Test Final");
+
+    RHIComputePipelineDesc computePSODesc;
+    computePSODesc.m_pCS = GetShader("ComputeTest.hlsl", "cs_main", RHIShaderType::CS);
+    m_pComputeTestPSO = GetPipelineState(computePSODesc, "Compute Test");
+
+    computePSODesc.m_pCS = GetShader("Copy.hlsl", "cs_copy_depth_main", RHIShaderType::CS);
+    m_pCopyDepthPSO = GetPipelineState(computePSODesc, "Copy Depth PSO");
 }
 
 void Renderer::OnWindowResize(void* window, uint32_t width, uint32_t height)
@@ -809,11 +826,10 @@ void Renderer::Render()
     RGHandle outputColorHandle, outputDepthHandle;
     BuildRenderGraph(outputColorHandle, outputDepthHandle);
 
-    m_pRenderGraph->Compile();
 
     // m_pGPUDebugLine->Clear(pCommandList);
     // m_pGPUDebugPring->Clear(pCommandList);
-    // m_pGPUStates->Clear(pCommandList);
+    m_pGPUStats->Clear(pCommandList);
 
     SetupGlobalConstants(pCommandList);
     //FlushComputePass(pCommandList);
@@ -837,19 +853,33 @@ void Renderer::BuildRenderGraph(RGHandle& outColor, RGHandle& outDepth)
     m_pRenderGraph->Clear();
     ImportPrevFrameTextures();
     
-    RGHandle outSceneColor, outSceneDepth;
-    RGHandle output0, output1, output2;
-    BasePass(outSceneColor, outSceneDepth);
-    GraphicsTestPass(outSceneColor, output0);
-    ComputeTestPass(outSceneColor, output1);
-    FinalTestPass(output0, output1, output2);
+    //RGHandle outSceneColor, outSceneDepth;
+    //RGHandle output0, output1, output2;
+    //BasePass(outSceneColor, outSceneDepth);
+    //GraphicsTestPass(outSceneColor, output0);
+    //ComputeTestPass(outSceneColor, output1);
+    //FinalTestPass(output0, output1, output2);
+
+    m_pHZBPass->Generate1stPhaseCullingHZB(m_pRenderGraph.get());
+    m_pBasePassGPUDriven->Render1stPhase(m_pRenderGraph.get());
+
+    CopyHistoryPass(m_pBasePassGPUDriven->GetDepthRT(), m_pBasePassGPUDriven->GetDiffuseRT(), m_pBasePassGPUDriven->GetNormalRT());
+
+    RGHandle sceneDiffuseRT = m_pBasePassGPUDriven->GetDiffuseRT();
+    RGHandle showCulledDiffuseRT = m_pBasePassGPUDriven->GetCulledObjectsDiffuseRT();
+    RGHandle sceneDepthRT = m_pBasePassGPUDriven->GetDepthRT();
     
     //m_pRenderGraph->Present(outSceneColor, RHIAccessBit::RHIAccessPixelShaderSRV);
     //m_pRenderGraph->Present(output1, RHIAccessBit::RHIAccessPixelShaderSRV);
-    m_pRenderGraph->Present(output2, RHIAccessBit::RHIAccessPixelShaderSRV);
-    outColor = output2;
-    outDepth = outSceneDepth;
+    //m_pRenderGraph->Present(output2, RHIAccessBit::RHIAccessPixelShaderSRV);
+    outColor = showCulledDiffuseRT;
+    outDepth = sceneDepthRT;
     //m_pRenderGraph->Present(outDepth, RHIAccessBit::RHIAccessDSVReadOnly);
+    m_pRenderGraph->Present(sceneDiffuseRT, RHIAccessBit::RHIAccessPixelShaderSRV);
+    m_pRenderGraph->Present(outDepth, RHIAccessBit::RHIAccessPixelShaderSRV);
+    m_pRenderGraph->Present(showCulledDiffuseRT, RHIAccessBit::RHIAccessPixelShaderSRV);
+
+    m_pRenderGraph->Compile();
 }
 
 void Renderer::EndFrame()
@@ -1091,6 +1121,8 @@ void Renderer::RenderBackBufferPass(IRHICommandList* pCommandList, RGHandle colo
 
     m_pSwapChain->AcquireNextBackBuffer();
     pCommandList->TextureBarrier(m_pSwapChain->GetBackBuffer(), 0, RHIAccessBit::RHIAccessPresent, RHIAccessBit::RHIAccessRTV);
+    //m_pRenderGraph->GetTexture(m_prevSceneDepthHandle)->Barrier(pCommandList, 0, RHIAccessBit::RHIAccessMaskUAV, RHIAccessBit::RHIAccessMaskSRV);
+    pCommandList->TextureBarrier(m_pPrevSceneDepthTexture->GetTexture(), 0, RHIAccessBit::RHIAccessMaskUAV, RHIAccessMaskSRV);
     //RGTexture* pDepth = m_pRenderGraph->GetTexture(depth);
 
     RHIRenderPassDesc renderPass;
@@ -1117,12 +1149,68 @@ void Renderer::CopyToBackBuffer(IRHICommandList* pCommandList, RGHandle color, R
     
     RGTexture* pColorRT = m_pRenderGraph->GetTexture(color);
     RGTexture* pDepthRT = m_pRenderGraph->GetTexture(depth);
-
-    uint32_t constants[3] = { pColorRT->GetSRV()->GetHeapIndex(), /*pDepthRT->GetSRV()->GetHeapIndex(),*/ m_pPointClampSampler->GetHeapIndex(), 0};
+    
+    uint32_t constants[3] = { pColorRT->GetSRV()->GetHeapIndex(), /*m_pPrevSceneDepthTexture->GetSRV()->GetHeapIndex(),*/ /*pDepthRT->GetSRV()->GetHeapIndex(),*/ m_pPointClampSampler->GetHeapIndex(), 0};
     pCommandList->SetGraphicsConstants(0, constants, sizeof(constants));
     pCommandList->SetPipelineState(m_pCopyColorPSO);
     pCommandList->Draw(3);
 }
+
+void Renderer::CopyHistoryPass(RGHandle sceneDepth, RGHandle sceneColor, RGHandle sceneNormal)
+{
+    struct CopyDepthPassData
+    {
+        RGHandle m_srcSceneDepthTexture;
+        RGHandle m_dstSceneDepthTexture;
+    };
+
+    m_pRenderGraph->AddPass<CopyDepthPassData>("Copy History Depth Texture", RenderPassType::Compute,
+        [&](CopyDepthPassData& data, RGBuilder& builder)
+        {
+            data.m_srcSceneDepthTexture = builder.Read(sceneDepth);
+            data.m_dstSceneDepthTexture = builder.Write(m_prevSceneDepthHandle);
+            builder.SkipCulling();
+        },
+        [&](const CopyDepthPassData& data, IRHICommandList* pCommandList)
+        {
+            RGTexture* pSrcSceneDepthTexture = m_pRenderGraph->GetTexture(data.m_srcSceneDepthTexture);
+            uint32_t cb[2] = {pSrcSceneDepthTexture->GetSRV()->GetHeapIndex(), m_pPrevSceneDepthTexture->GetUAV()->GetHeapIndex()};
+
+            pCommandList->SetPipelineState(m_pCopyDepthPSO);
+            pCommandList->SetComputeConstants(0, cb, sizeof(cb));
+            pCommandList->Dispatch(DivideRoundingUp(m_renderWidth, 8), DivideRoundingUp(m_renderHeight, 8), 1);
+        });
+
+    struct CopyPassData
+    {
+        RGHandle m_srcNormalTexture;
+        RGHandle m_dstNormalTexture;
+
+        RGHandle m_srcColorTexture;
+        RGHandle m_dstColorTexture;
+    };
+
+    /*m_pRenderGraph->AddPass<CopyPassData>("Copy History Textures", RenderPassType::Copy,
+        [&](CopyPassData& data, RGBuilder& builder)
+        {
+            data.m_srcNormalTexture = builder.Read(sceneNormal);
+            data.m_dstNormalTexture = builder.Write(m_prevSceneNormalHandle);
+    
+            data.m_srcColorTexture = builder.Read(sceneColor);
+            data.m_dstColorTexture = builder.Write(m_prevSceneColorHandle);
+
+            builder.SkipCulling();
+        },
+        [&](const CopyPassData& data, IRHICommandList* pCommandList)
+        {
+            RGTexture* pSrcNormalTexture = m_pRenderGraph->GetTexture(data.m_srcNormalTexture);
+            RGTexture* pSrcColorTexture = m_pRenderGraph->GetTexture(data.m_srcColorTexture);
+
+            pCommandList->CopyTexture(m_pPrevSceneNormalTexture->GetTexture(), 0, 0, pSrcNormalTexture->GetTexture(), 0, 0);
+            //pCommandList->CopyTexture(m_pPrevSceneColorTexture->GetTexture(), 0, 0, pSrcColorTexture->GetTexture(), 0, 0);
+        });*/
+}
+
 
 void Renderer::BuildRayTracingAS(IRHICommandList* pGraphicsCommandList, IRHICommandList* pComputeCommandList)
 {
@@ -1177,7 +1265,7 @@ void Renderer::ImportPrevFrameTextures()
         m_pPrevSceneDepthTexture->GetTexture()->GetDesc().m_height != m_renderHeight)
     {
         m_pPrevSceneDepthTexture.reset(CreateTexture2D(m_renderWidth, m_renderHeight, 1, RHIFormat::R32F, RHITextureUsageBit::RHITextureUsageUnorderedAccess, "Pre SceneDepth"));
-        m_pPrevNormalTexture.reset(CreateTexture2D(m_renderWidth, m_renderHeight, 1, RHIFormat::RGBA8UNORM, RHITextureUsageBit::RHITextureUsageUnorderedAccess, "Prev Normal"));
+        m_pPrevSceneNormalTexture.reset(CreateTexture2D(m_renderWidth, m_renderHeight, 1, RHIFormat::RGBA8UNORM, RHITextureUsageBit::RHITextureUsageUnorderedAccess, "Prev SceneNormal"));
         m_pPrevSceneColorTexture.reset(CreateTexture2D(m_renderWidth, m_renderHeight, 1, RHIFormat::RGBA16F, RHITextureUsageBit::RHITextureUsageUnorderedAccess, "Prev SceneColor"));
         m_bHistoryValid = false;
     }
@@ -1186,8 +1274,8 @@ void Renderer::ImportPrevFrameTextures()
         m_bHistoryValid = true;
     }
 
-    m_prevSceneDepthHandle = m_pRenderGraph->Import(m_pPrevSceneColorTexture->GetTexture(), RHIAccessBit::RHIAccessComputeShaderUAV);
-    m_prevNormalHandle = m_pRenderGraph->Import(m_pPrevNormalTexture->GetTexture(), m_bHistoryValid ? RHIAccessBit::RHIAccessCopyDst : RHIAccessBit::RHIAccessComputeShaderUAV);
+    m_prevSceneDepthHandle = m_pRenderGraph->Import(m_pPrevSceneDepthTexture->GetTexture(), m_bHistoryValid?  RHIAccessBit::RHIAccessPixelShaderSRV : RHIAccessBit::RHIAccessComputeShaderUAV);
+    m_prevSceneNormalHandle = m_pRenderGraph->Import(m_pPrevSceneNormalTexture->GetTexture(), m_bHistoryValid ? RHIAccessBit::RHIAccessCopyDst : RHIAccessBit::RHIAccessComputeShaderUAV);
     m_prevSceneColorHandle = m_pRenderGraph->Import(m_pPrevSceneColorTexture->GetTexture(), m_bHistoryValid ? RHIAccessBit::RHIAccessCopyDst : RHIAccessBit::RHIAccessComputeShaderUAV);
 
     if (!m_bHistoryValid)
@@ -1203,19 +1291,19 @@ void Renderer::ImportPrevFrameTextures()
             [&](ClearHistoryPassData& data, RGBuilder& builder)
             {
                 data.m_linearDepth = builder.Write(m_prevSceneDepthHandle);
-                data.m_normal = builder.Write(m_prevNormalHandle);
+                data.m_normal = builder.Write(m_prevSceneNormalHandle);
                 data.m_color = builder.Write(m_prevSceneColorHandle);
             },
             [=](const ClearHistoryPassData& data, IRHICommandList* pCommandList)
             {
                 float clearValue[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
                 pCommandList->ClearUAV(m_pPrevSceneDepthTexture->GetTexture(), m_pPrevSceneDepthTexture->GetUAV(), clearValue);
-                pCommandList->ClearUAV(m_pPrevNormalTexture->GetTexture(), m_pPrevNormalTexture->GetUAV(), clearValue);
+                pCommandList->ClearUAV(m_pPrevSceneNormalTexture->GetTexture(), m_pPrevSceneNormalTexture->GetUAV(), clearValue);
                 pCommandList->ClearUAV(m_pPrevSceneColorTexture->GetTexture(), m_pPrevSceneColorTexture->GetUAV(), clearValue);
             });
 
         m_prevSceneDepthHandle = clearPass->m_linearDepth;
-        m_prevNormalHandle = clearPass->m_normal;
+        m_prevSceneNormalHandle = clearPass->m_normal;
         m_prevSceneColorHandle = clearPass->m_color;
     }
 }

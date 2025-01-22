@@ -18,6 +18,11 @@ public:
         m_pPSO = pPSO;
     }
 
+    void SetCustomPipelineState(IRHIPipelineState* pPSO)
+    {
+        m_pCustomPSO = pPSO;
+    }
+
     void SetConstantBuffer(uint32_t slot, const void* pData, size_t dataSize)
     {
         MY_ASSERT(slot < MAX_RENDER_BATCH_CB_COUNT);
@@ -58,6 +63,7 @@ public:
 public:
     const char* m_label = "";
     IRHIPipelineState* m_pPSO = nullptr;
+    IRHIPipelineState* m_pCustomPSO = nullptr; //< Something that can use for replace original PSO
 
     struct
     {

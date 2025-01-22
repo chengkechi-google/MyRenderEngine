@@ -140,7 +140,7 @@ void RenderGraph::Execute(Renderer* pRenderer, IRHICommandList* pCommandList, IR
 
     m_computeQueueFenceValue = context.m_lastSignaledComputeValue;
     m_graphicsQueueFenceValue = context.m_lastSignaledGraphicsValue;
-
+    
     for (size_t i = 0; i < m_outputResources.size(); ++i)
     {
         const PresentTarget& target = m_outputResources[i];

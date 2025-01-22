@@ -43,6 +43,7 @@
     <ClCompile Include="External\xxHash\xxhash.c" />
     <ClCompile Include="Source\Core\GUI.cpp" />
     <ClCompile Include="Source\Editor\Editor.cpp" />
+    <ClCompile Include="Source\Renderer\GPUDrivenStats.cpp" />
     <ClCompile Include="Source\Renderer\GPUScene.cpp" />
     <ClCompile Include="Source\Renderer\PipelineCache.cpp" />
     <ClCompile Include="Source\Renderer\Renderer.cpp" />
@@ -124,6 +125,7 @@
     <ClInclude Include="Source\Editor\Editor.h" />
     <ClInclude Include="Source\Physics\PhysicsRigidBody.h" />
     <ClInclude Include="Source\Physics\PhysicsShape.h" />
+    <ClInclude Include="Source\Renderer\GPUDrivenStats.h" />
     <ClInclude Include="Source\Renderer\GPUScene.h" />
     <ClInclude Include="Source\Renderer\PipelineCache.h" />
     <ClInclude Include="Source\Renderer\RenderBatch.h" />
@@ -303,6 +305,14 @@
     <ClInclude Include="Shaders\ModelMeshlet.hlsl">
       <FileType>Document</FileType>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Shaders\stats.hlsl">
+      <FileType>Document</FileType>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Shaders\ModelShowCulledInstance.hlsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

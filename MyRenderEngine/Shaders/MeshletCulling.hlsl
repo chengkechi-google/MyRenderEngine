@@ -92,8 +92,8 @@ void as_main(uint3 dispatchThreadID : SV_DispatchThreadID)
         uint meshletIndex = dataPerMeshlet.y;
         
         Meshlet meshLet = LoadSceneStaticBuffer<Meshlet>(GetInstanceData(instanceIndex).m_meshletBufferAddress, meshletIndex);
-        bIsVisible = true;//Cull(meshLet, instanceIndex, meshletIndex);
-        
+        bIsVisible = Cull(meshLet, instanceIndex, meshletIndex);
+  
         if(c_bIsFirstPass)
         {
             stats(bIsVisible ? STATS_1ST_PHASE_RENDERED_TRIANGLE : STATS_1ST_PHASE_CULLED_TRIANGLE, meshLet.m_triangleCount);
@@ -113,3 +113,4 @@ void as_main(uint3 dispatchThreadID : SV_DispatchThreadID)
     uint visibleMeshletCount = WaveActiveCountBits(bIsVisible);
     DispatchMesh(visibleMeshletCount, 1, 1, s_Payload); //< Dispatch threadgroups of mesh shader
 }
+

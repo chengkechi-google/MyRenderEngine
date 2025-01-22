@@ -53,14 +53,12 @@ void DepthDilation(uint3 dispatchThreadID : SV_DispatchThreadID)
             {
                 minDepth = d;
             }
-            
         }
         
         if(minDepth != 1.0f)
         {
             depth = minDepth;    
         }
-
     }
     
     hzbMip0UAV[dispatchThreadID.xy] = depth;
