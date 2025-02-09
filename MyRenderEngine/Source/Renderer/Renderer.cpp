@@ -863,6 +863,9 @@ void Renderer::BuildRenderGraph(RGHandle& outColor, RGHandle& outDepth)
     m_pHZBPass->Generate1stPhaseCullingHZB(m_pRenderGraph.get());
     m_pBasePassGPUDriven->Render1stPhase(m_pRenderGraph.get());
 
+    m_pHZBPass->Generate2ndPhaseCullingHZB(m_pRenderGraph.get(), m_pBasePassGPUDriven->GetDepthRT());
+    m_pBasePassGPUDriven->Render2ndPhase(m_pRenderGraph.get());
+
     CopyHistoryPass(m_pBasePassGPUDriven->GetDepthRT(), m_pBasePassGPUDriven->GetDiffuseRT(), m_pBasePassGPUDriven->GetNormalRT());
 
     RGHandle sceneDiffuseRT = m_pBasePassGPUDriven->GetDiffuseRT();
@@ -872,12 +875,12 @@ void Renderer::BuildRenderGraph(RGHandle& outColor, RGHandle& outDepth)
     //m_pRenderGraph->Present(outSceneColor, RHIAccessBit::RHIAccessPixelShaderSRV);
     //m_pRenderGraph->Present(output1, RHIAccessBit::RHIAccessPixelShaderSRV);
     //m_pRenderGraph->Present(output2, RHIAccessBit::RHIAccessPixelShaderSRV);
-    outColor = showCulledDiffuseRT;
+    outColor = sceneDiffuseRT;
     outDepth = sceneDepthRT;
     //m_pRenderGraph->Present(outDepth, RHIAccessBit::RHIAccessDSVReadOnly);
     m_pRenderGraph->Present(sceneDiffuseRT, RHIAccessBit::RHIAccessPixelShaderSRV);
     m_pRenderGraph->Present(outDepth, RHIAccessBit::RHIAccessPixelShaderSRV);
-    m_pRenderGraph->Present(showCulledDiffuseRT, RHIAccessBit::RHIAccessPixelShaderSRV);
+    //m_pRenderGraph->Present(showCulledDiffuseRT, RHIAccessBit::RHIAccessPixelShaderSRV);
 
     m_pRenderGraph->Compile();
 }

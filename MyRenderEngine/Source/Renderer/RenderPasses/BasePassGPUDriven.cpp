@@ -1,4 +1,7 @@
 #include "BasePassGPUDriven.h"
+
+#include <fmt/core.h>
+
 #include "Renderer/Renderer.h"
 #include "HierarchicalDepthBufferPass.h"
 #include "Utils/profiler.h"
@@ -266,7 +269,7 @@ void BasePassGPUDriven::Render1stPhase(RenderGraph* pRenderGraph)
         RGHandle m_cullingResultBuffer;
     };
 
-    auto ShowCulledInstancePass = pRenderGraph->AddPass<ShowCulledInstancePassData>("ShowCulledInstancePass", RenderPassType::Graphics,
+    /*auto ShowCulledInstancePass = pRenderGraph->AddPass<ShowCulledInstancePassData>("ShowCulledInstancePass", RenderPassType::Graphics,
         [&](ShowCulledInstancePassData& data, RGBuilder& builder)
         {
             RGTexture::Desc desc;
@@ -294,7 +297,7 @@ void BasePassGPUDriven::Render1stPhase(RenderGraph* pRenderGraph)
             }
             
             instances.clear();
-        });
+        });*/
 
     //auto showCulledMeshletPass = pRenderGraph->AddPass<ShowCulledMeshletPassData>("Show Culled Meshlet Pass", RenderPassType::Graphics, )
     //m_instances.clear();
@@ -312,8 +315,8 @@ void BasePassGPUDriven::Render1stPhase(RenderGraph* pRenderGraph)
     m_2ndPhaseMeshletListBuffer = gBufferPass->m_occlusionCulledMeshletsBuffer;
     m_2ndPhaseMeshletListCounterBuffer = gBufferPass->m_occlusionCulledMeshletsCounterBuffer;
 
-    m_culledObjectsDiffuseRT = ShowCulledInstancePass->m_outCulledDiffuseRT;
-    m_culledObjectsDepthRT = ShowCulledInstancePass->m_outCulledDepthRT;
+    //m_culledObjectsDiffuseRT = ShowCulledInstancePass->m_outCulledDiffuseRT;
+    //m_culledObjectsDepthRT = ShowCulledInstancePass->m_outCulledDepthRT;
 }
 
 void BasePassGPUDriven::Render2ndPhase(RenderGraph* pRenderGraph)
@@ -324,6 +327,156 @@ void BasePassGPUDriven::Render2ndPhase(RenderGraph* pRenderGraph)
 
     uint32_t maxDispatchNum = roundup((uint32_t)m_indirectBatches.size(), 65536 / sizeof(uint32_t));
     uint32_t maxInstanceNum = roundup(m_pRenderer->GetInstanceCount(), 65536 / sizeof(uint8_t));
+    uint32_t maxMeshletsNum = roundup(m_totalMeshletCount, 65536 / sizeof(uint2));
+
+    struct BuildCullingCommandData
+    {
+        RGHandle m_objectListCounterBuffer;
+        RGHandle m_commandBuffer;
+    };
+
+    auto buildCullingCommandPass = pRenderGraph->AddPass<BuildCullingCommandData>("Build Instance Culling Command", RenderPassType::Compute,
+        [&](BuildCullingCommandData& data, RGBuilder& builder)
+        {
+            RGBuffer::Desc desc;
+            desc.m_stride = sizeof(uint3);
+            desc.m_size = desc.m_stride;
+            desc.m_usage = RHIBufferUsageBit::RHIBufferUsageStructedBuffer;
+            data.m_commandBuffer = builder.Create<RGBuffer>(desc, "2nd phase instance culling command");
+            data.m_commandBuffer = builder.Write(data.m_commandBuffer);
+
+            data.m_objectListCounterBuffer = builder.Read(m_2ndPhaseObjectListCounterBuffer);
+        },
+        [=](const BuildCullingCommandData& data, IRHICommandList* pCommandList)
+        {
+            RGBuffer* pCommandBuffer = pRenderGraph->GetBuffer(data.m_commandBuffer);
+            RGBuffer* pObjectListCounterBuffer = pRenderGraph->GetBuffer(data.m_objectListCounterBuffer);
+
+            pCommandList->SetPipelineState(m_pBuildInstanceCullingCommandPSO);
+
+            uint32_t rootConsts[2] = {pCommandBuffer->GetUAV()->GetHeapIndex(), pObjectListCounterBuffer->GetSRV()->GetHeapIndex()};
+            pCommandList->SetComputeConstants(0, rootConsts, sizeof(rootConsts));
+            pCommandList->Dispatch(1, 1, 1);
+        });
+
+    struct InstanceCullingData
+    {
+        RGHandle m_indirectCommandBuffer;
+        RGHandle m_hzbTexture;
+        RGHandle m_cullingResultBuffer;
+        RGHandle m_objectListBuffer;
+        RGHandle m_objectListCounterBuffer;
+    };
+
+    auto instanceCullingPass = pRenderGraph->AddPass<InstanceCullingData>("Instance Culling Pass", RenderPassType::Compute,
+        [&](InstanceCullingData& data, RGBuilder& builder)
+        {
+            RGBuffer::Desc desc;
+            desc.m_stride = 1;
+            desc.m_size = desc.m_stride * maxInstanceNum;
+            desc.m_format = RHIFormat::R8UI;
+            desc.m_usage = RHIBufferUsageBit::RHIBufferUsageTypedBuffer;
+            data.m_cullingResultBuffer = builder.Create<RGBuffer>(desc, "2nd Phase Instance Culling Result");
+            data.m_cullingResultBuffer = builder.Write(data.m_cullingResultBuffer);
+
+            data.m_indirectCommandBuffer = builder.ReadIndirectArg(buildCullingCommandPass->m_commandBuffer);
+            data.m_objectListBuffer = builder.Read(m_2ndPhaseObjectListBuffer);
+            data.m_objectListCounterBuffer = builder.Read(m_2ndPhaseObjectListCounterBuffer);
+
+            for (uint32_t i = 0; i < pHZBPass->GetHZBMipCount(); ++ i)
+            {
+                data.m_hzbTexture = builder.Read(pHZBPass->Get2ndPhaseCullingHZBMip(i), i);
+            }
+        },
+        [=](const InstanceCullingData& data, IRHICommandList* pCommandList)
+        {
+            InstanceCulling2ndPhase(pCommandList,
+                pRenderGraph->GetBuffer(data.m_indirectCommandBuffer),
+                pRenderGraph->GetBuffer(data.m_cullingResultBuffer),
+                pRenderGraph->GetBuffer(data.m_objectListBuffer),
+                pRenderGraph->GetBuffer(data.m_objectListCounterBuffer));
+        });
+
+    struct BuildMeshletListData
+    {
+        RGHandle m_cullingResultBuffer;
+        RGHandle m_meshletListBuffer;
+        RGHandle m_meshletListCounterBuffer;
+    };
+
+    auto buildMeshletListPass = pRenderGraph->AddPass<BuildMeshletListData>("Build Meshlet List", RenderPassType::Compute,
+        [&](BuildMeshletListData& data, RGBuilder& builder)
+        {
+            data.m_cullingResultBuffer = builder.Read(instanceCullingPass->m_cullingResultBuffer);
+            data.m_meshletListBuffer = builder.Write(m_2ndPhaseMeshletListBuffer);
+            data.m_meshletListCounterBuffer = builder.Read(m_2ndPhaseMeshletListCounterBuffer);
+        },
+        [=](const BuildMeshletListData& data, IRHICommandList* pCommandList)
+        {
+            BuildMeshletList(pCommandList,
+                pRenderGraph->GetBuffer(data.m_cullingResultBuffer),
+                pRenderGraph->GetBuffer(data.m_meshletListBuffer),
+                pRenderGraph->GetBuffer(data.m_meshletListCounterBuffer));
+        });
+
+    struct BuildIndirectCommandPassData
+    {
+        RGHandle m_meshletListCounterBuffer;
+        RGHandle m_indirectCommandBuffer;
+    };
+
+    auto buildIndirectCommand = pRenderGraph->AddPass<BuildIndirectCommandPassData>("Build Indirect Command", RenderPassType::Compute,
+        [&](BuildIndirectCommandPassData& data, RGBuilder& builder)
+        {
+            RGBuffer::Desc desc;
+            desc.m_stride = sizeof(uint3);
+            desc.m_size = desc.m_stride * maxDispatchNum;
+            desc.m_usage = RHIBufferUsageBit::RHIBufferUsageStructedBuffer;
+            data.m_indirectCommandBuffer = builder.Create<RGBuffer>(desc, "2nd Phase Indirect Command");
+            data.m_indirectCommandBuffer = builder.Write(data.m_indirectCommandBuffer);
+
+            data.m_meshletListCounterBuffer = builder.Read(buildMeshletListPass->m_meshletListCounterBuffer);
+        },
+        [=](const BuildIndirectCommandPassData& data, IRHICommandList* pCommandList)
+        {
+            BuildIndirectCommand(pCommandList,
+                pRenderGraph->GetBuffer(data.m_meshletListCounterBuffer),
+                pRenderGraph->GetBuffer(data.m_indirectCommandBuffer));
+        });
+
+    auto gBufferPass = pRenderGraph->AddPass<BasePassData>("GBuffer Pass", RenderPassType::Graphics,
+        [&](BasePassData& data, RGBuilder& builder)
+        {
+            data.m_outDiffuseRT = builder.WriteColor(0, m_diffuseRT, 0, RHIRenderPassLoadOp::Load);
+            data.m_outSpecularRT = builder.WriteColor(1, m_specularRT, 0, RHIRenderPassLoadOp::Load);
+            data.m_outNormalRT = builder.WriteColor(2, m_normalRT, 0,RHIRenderPassLoadOp::Load);
+            data.m_outEmissiveRT = builder.WriteColor(3, m_emissiveRT, 0, RHIRenderPassLoadOp::Load);
+            data.m_outCustomRT = builder.WriteColor(4, m_customDataRT, 0, RHIRenderPassLoadOp::Load);
+            data.m_outDepthRT = builder.WriteDepth(m_depthRT, 0, RHIRenderPassLoadOp::Load, RHIRenderPassLoadOp::Load);
+
+            for (uint32_t i = 0; i < pHZBPass->GetHZBMipCount(); ++ i)
+            {
+                data.m_inHZB = builder.Read(pHZBPass->Get2ndPhaseCullingHZBMip(i), i, RGBuilderFlag::ShaderStageNonPS);
+            }
+
+            data.m_meshletListBuffer = builder.Read(buildMeshletListPass->m_meshletListBuffer, 0, RGBuilderFlag::ShaderStageNonPS);
+            data.m_meshletListCounterBuffer = builder.Read(buildMeshletListPass->m_meshletListCounterBuffer, 0, RGBuilderFlag::ShaderStageNonPS);
+            data.m_indirectCommandBuffer = builder.ReadIndirectArg(buildIndirectCommand->m_indirectCommandBuffer);
+        },
+        [=](const BasePassData& data, IRHICommandList* pCommandList)
+        {
+            Flush2ndPhaseBatches(pCommandList,
+                pRenderGraph->GetBuffer(data.m_indirectCommandBuffer),
+                pRenderGraph->GetBuffer(data.m_meshletListBuffer),
+                pRenderGraph->GetBuffer(data.m_meshletListCounterBuffer));
+        });
+
+    m_diffuseRT = gBufferPass->m_outDiffuseRT;
+    m_specularRT = gBufferPass->m_outSpecularRT;
+    m_normalRT = gBufferPass->m_outNormalRT;
+    m_emissiveRT = gBufferPass->m_outEmissiveRT;
+    m_customDataRT = gBufferPass->m_outCustomRT;
+    m_depthRT = gBufferPass->m_outDepthRT;
 }
 
 void BasePassGPUDriven::MergeBatch()
@@ -376,7 +529,7 @@ void BasePassGPUDriven::MergeBatch()
     }
 
     uint32_t meshletListOffset = 0;
-    for (auto iter = mergedBatches.begin(); iter != mergedBatches.end(); ++iter) //< iterate efvery different PSO
+    for (auto iter = mergedBatches.begin(); iter != mergedBatches.end(); ++iter) //< iterate every different PSO
     {
         const MergedBatch& batch = iter->second;
         
@@ -398,7 +551,7 @@ void BasePassGPUDriven::MergeBatch()
         meshletListOffset += batch.m_meshletCount;
     }
 
-    //m_instances.clear();
+    m_instances.clear();
 }
 
 void BasePassGPUDriven::ResetCounter(IRHICommandList* pCommandList, RGBuffer* pFirstPhaseMeshletCounter, RGBuffer* pSecondPhaseObjectCounter, RGBuffer* pSecondPhaseMeshletCounter)
