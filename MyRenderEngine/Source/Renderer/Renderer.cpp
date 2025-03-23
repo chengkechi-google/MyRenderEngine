@@ -6,6 +6,7 @@
 #include "GPUScene.h"
 #include "RenderPasses/HierarchicalDepthBufferPass.h"
 #include "RenderPasses/BasePassGPUDriven.h"
+#include "RenderPasses/Lighting/LightingPasses.h"
 #include "PipelineCache.h"
 #include "Core/Engine.h"
 #include "Utils/profiler.h"
@@ -86,6 +87,7 @@ bool Renderer::CreateDevice(void* windowHandle, uint32_t windowWidth, uint32_t w
     m_pGPUScene = eastl::make_unique<GPUScene>(this);
     m_pHZBPass = eastl::make_unique<HZBPass>(this);
     m_pBasePassGPUDriven = eastl::make_unique<BasePassGPUDriven>(this);
+    m_pLightingPasses = eastl::make_unique<LightingPasses>(this);
     m_pGPUStats = eastl::make_unique<GPUDrivenStats>(this);
 
     return true; 
@@ -866,11 +868,18 @@ void Renderer::BuildRenderGraph(RGHandle& outColor, RGHandle& outDepth)
     m_pHZBPass->Generate2ndPhaseCullingHZB(m_pRenderGraph.get(), m_pBasePassGPUDriven->GetDepthRT());
     m_pBasePassGPUDriven->Render2ndPhase(m_pRenderGraph.get());
 
+    RGHandle sceneDepthRT = m_pBasePassGPUDriven->GetDepthRT();
+    RGHandle linearRT;
+    RGHandle velocityRT;
+    RGHandle gtao = m_pLightingPasses->AddPass(m_pRenderGraph.get(), sceneDepthRT, linearRT, velocityRT, m_renderWidth, m_renderHeight);
+    
     CopyHistoryPass(m_pBasePassGPUDriven->GetDepthRT(), m_pBasePassGPUDriven->GetDiffuseRT(), m_pBasePassGPUDriven->GetNormalRT());
 
-    RGHandle sceneDiffuseRT = m_pBasePassGPUDriven->GetDiffuseRT();
+
+
+    RGHandle sceneDiffuseRT = gtao;//m_pBasePassGPUDriven->GetNormalRT();
     RGHandle showCulledDiffuseRT = m_pBasePassGPUDriven->GetCulledObjectsDiffuseRT();
-    RGHandle sceneDepthRT = m_pBasePassGPUDriven->GetDepthRT();
+    
     
     //m_pRenderGraph->Present(outSceneColor, RHIAccessBit::RHIAccessPixelShaderSRV);
     //m_pRenderGraph->Present(output1, RHIAccessBit::RHIAccessPixelShaderSRV);

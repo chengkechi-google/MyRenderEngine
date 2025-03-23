@@ -9,7 +9,11 @@ model::VertexOutput vs_main(uint vertexID : SV_VertexID)
 
 struct GBufferOutput
 {
-    float4 m_diffuseRT : SV_TARGET0;    
+    float4 m_diffuseRT : SV_TARGET0;
+    float4 m_specularRT : SV_TARGET1;
+    float4 m_normalRT : SV_TARGET2;
+    float3 m_emissiveRT : SV_TARGET3;
+    float4 m_customDataRT : SV_TARGET4;
 };
 
 GBufferOutput ps_main(model::VertexOutput input, bool isFrontFace : SV_IsFrontFace)
@@ -25,16 +29,17 @@ GBufferOutput ps_main(model::VertexOutput input, bool isFrontFace : SV_IsFrontFa
     model::PBRMetallicRoughness pbrMetallicRoughness = model::GetMaterialMetallicRoughness(instanceID, input.m_uv);
     model::PBRSpecularGlossiness pbrSpecularGlossiness = model::GetMaterialSpecularGlossiness(instanceID, input.m_uv);
     
-    float3 N = input.m_normal;
+    float3 normal = input.m_normal;
 #if NORMAL_TEXTURE
-    N = model::GetMaterialNormal(instanceID, input.m_uv, input.m_tangent, input.m_bitangent, N);
+    normal = model::GetMaterialNormal(instanceID, input.m_uv, input.m_tangent, input.m_bitangent, normal);
 #endif
     
 #if DOUBLE_SIDE
-    N *= isFrontFace ? 1.0 : -1.0;
+    normal *= isFrontFace ? 1.0 : -1.0;
 #endif
-    
-    float ao = 1.0;
+    float3 anisotropyT = model::GetMaterialAnisotropyTangent(instanceID, input.m_uv, input.m_tangent, input.m_bitangent, normal);
+    float ao = model::GetMaterialAO(instanceID, input.m_uv);
+    float3 emissive = model::GetMaterialEmissive(instanceID, input.m_uv);
     
     float3 diffuse = float3(1, 1, 1);
     float3 specular = float3(0, 0, 0);
@@ -48,9 +53,18 @@ GBufferOutput ps_main(model::VertexOutput input, bool isFrontFace : SV_IsFrontFa
     alpha = pbrMetallicRoughness.m_alpha;
     ao *= pbrMetallicRoughness.m_ao;
 #endif // PBR_METALLIC_ROUGHNESS
+
+    if (SceneCB.m_showMeshlets)
+    {
+        //uint hash = 
+    }
     
     GBufferOutput output;
     output.m_diffuseRT = float4(diffuse, 1.0);
+    output.m_specularRT = float4(specular, EncodeShadingModel(shadingModel));
+    output.m_normalRT = float4(EncodeNormal(normal), roughness);
+    output.m_emissiveRT = emissive;
+    output.m_customDataRT = float4(0, 0, 0, 0);
     
     return output;
 }

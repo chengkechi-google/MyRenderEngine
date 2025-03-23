@@ -30,7 +30,7 @@ struct ModelMaterialConstant
     MaterialTextureInfo m_aoTexture;
     MaterialTextureInfo m_diffuseTexture;
     MaterialTextureInfo m_specularGlossinessTexture;
-    MaterialTextureInfo m_anisotrupyTexture;
+    MaterialTextureInfo m_anisotropyTexture;
     MaterialTextureInfo m_sheenColorTexture;
     MaterialTextureInfo m_sheenRoughnessTexture;
     MaterialTextureInfo m_clearCoatTexture;

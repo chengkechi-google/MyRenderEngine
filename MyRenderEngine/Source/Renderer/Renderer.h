@@ -289,6 +289,7 @@ private:
 
     eastl::unique_ptr<class HZBPass> m_pHZBPass;
     eastl::unique_ptr<class BasePassGPUDriven> m_pBasePassGPUDriven;
+    eastl::unique_ptr<class LightingPasses> m_pLightingPasses;
 
     eastl::unique_ptr<class GPUDrivenStats> m_pGPUStats;
 };

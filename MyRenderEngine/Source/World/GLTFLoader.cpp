@@ -282,7 +282,7 @@ MeshMaterial* GLTFLoader::LoadMaterial(const cgltf_material* pGLTFMaterial)
         // todo: GLTF 2.0 support anisotropy, should set up the anisotrppy parameters form GFLTF aniso material
         pMaterial->m_shadingModel = ShadingModel::Anisotropy;
         pMaterial->m_pAnisotropicTagentTexture = LoadTexture(pGLTFMaterial->anisotropy.anisotropy_texture, false);
-        pMaterial->m_materialCB.m_anisotrupyTexture = LoadTextureInfo(pMaterial->m_pAnisotropicTagentTexture, pGLTFMaterial->anisotropy.anisotropy_texture);
+        pMaterial->m_materialCB.m_anisotropyTexture = LoadTextureInfo(pMaterial->m_pAnisotropicTagentTexture, pGLTFMaterial->anisotropy.anisotropy_texture);
     }
 
     if (pGLTFMaterial->has_sheen)
@@ -386,7 +386,7 @@ StaticMesh* GLTFLoader::LoadStaticMesh(const cgltf_primitive* pPrimitive, const 
 
             case cgltf_attribute_type_normal:
             {
-                vertexStreams.push_back(LoadBufferStream(pPrimitive->attributes[i].data, false, vertexCount));
+                vertexStreams.push_back(LoadBufferStream(pPrimitive->attributes[i].data, true, vertexCount));
                 vertexTypes.push_back(pPrimitive->attributes[i].type);
                 break;
             }

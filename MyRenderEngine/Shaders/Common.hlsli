@@ -127,20 +127,21 @@ float3 OctDecode(float2 uv)
     return normalize(n);
 }
 
+// Using 12bits save float normal, it has higher precision
 float3 EncodeNormal(float3 n)
 {
     float2 uv = OctEncode(n) * 0.5 + 0.5;
     
-    uint2 int12 = (uint2) round(4096);
+    uint2 int12 = (uint2) round(uv * 4095);
     uint3 int8 = uint3(int12.x & 0xFF, int12.y & 0xFF, ((int12.x >> 4) & 0xF0) | ((int12.y >> 8) & 0x0F));
-    return int8 / 255.0f;
+    return int8 / 255.0;
 }
 
 float3 DecodeNormal(float3 f)
 {
-    uint3 int8 = (uint) round(f * 255.0f);
-    uint2 int12 = uint2(int8.x | ((int8.z & 0xF0) << 4), (int8.y | (int8.z & 0x0F) << 8));
-    float2 uv = int12 / 4096;
+    uint3 int8 = (uint3) round(f * 255.0);
+    uint2 int12 = uint2(int8.x | ((int8.z & 0xF0) << 4), int8.y | ((int8.z & 0x0F) << 8));
+    float2 uv = int12 / 4095.0;
     
     return OctDecode(uv * 2.0 - 1.0);
 }

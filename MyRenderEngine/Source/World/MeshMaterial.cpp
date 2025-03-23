@@ -100,6 +100,10 @@ IRHIPipelineState* MeshMaterial::GetShowCulledMeshletGPUDrivenPSO()
         psoDesc.m_depthStencilState.m_depthTest = true;
         psoDesc.m_depthStencilState.m_depthFunc = RHICompareFunc::GreaterEqual;
         psoDesc.m_rtFormat[0] = RHIFormat::RGBA8SRGB;
+        psoDesc.m_rtFormat[1] = RHIFormat::RGBA8SRGB;
+        psoDesc.m_rtFormat[2] = RHIFormat::RGBA8UNORM;
+        psoDesc.m_rtFormat[3] = RHIFormat::R11G11B10F;
+        psoDesc.m_rtFormat[4] = RHIFormat::RGBA8UNORM;
         psoDesc.m_depthStencilFromat = RHIFormat::D32F;
 
         m_pShowCulledMeshletGPUDrivenPSO = pRenderer->GetPipelineState(psoDesc, "Show Culled Meshlet PSO");

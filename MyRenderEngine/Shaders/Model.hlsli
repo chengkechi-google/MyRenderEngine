@@ -67,8 +67,8 @@ namespace model
         output.m_pos = mul(GetCameraCB().m_mtxViewProjection, worldPos);
         output.m_worldPos = worldPos.xyz;
         output.m_uv = v.m_uv;
-        output.m_normal = normalize(mul(instanceData.m_mtxWorldInverseTranspose, float4(v.m_normal, 1.0)).xyz);
-        output.m_tangent = normalize(mul(instanceData.m_mtxWorldInverseTranspose, float4(v.m_tangent.xyz, 1.0)).xyz);
+        output.m_normal = normalize(mul(instanceData.m_mtxWorldInverseTranspose, float4(v.m_normal, 0.0)).xyz);
+        output.m_tangent = normalize(mul(instanceData.m_mtxWorldInverseTranspose, float4(v.m_tangent.xyz, 0.0)).xyz);
         output.m_bitangent = normalize(cross(output.m_normal, output.m_tangent) * v.m_tangent.w);   //< Tangent w is bitangent sign
         
         // Need debug info
@@ -415,7 +415,7 @@ namespace model
         if(IsAnisotropyTextureEnabled(instanceID))
         {
             ModelMaterialConstant material = GetMaterialConstant(instanceID);
-            float2 anisotropy = SampleMaterialTexture(material.m_anisotrupyTexture, uv, mipLOD).xy * 2.0 - 1.0;
+            float2 anisotropy = SampleMaterialTexture(material.m_anisotropyTexture, uv, mipLOD).xy * 2.0 - 1.0;
             anisotropyT = T * anisotropy.x + B * anisotropy.y;
         }
         

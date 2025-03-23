@@ -26,10 +26,10 @@ cbuffer CB : register(b0)
 
 float4 ps_main(VSOutput input) : SV_TARGET
 {
-    Texture2D inputTexture = ResourceDescriptorHeap[c_inputTexture];
+    Texture2D<uint> inputTexture = ResourceDescriptorHeap[c_inputTexture];
     SamplerState pointSampler = SamplerDescriptorHeap[c_pointSampler];
 
-    return inputTexture.SampleLevel(pointSampler, input.m_uv, 0);
+    return inputTexture[input.m_uv * uint2(1920, 1080)].rrrr / 255.0;//inputTexture.SampleLevel(pointSampler, input.m_uv, 0).rrrr / 255.0;
 }
 
 float4 ps_main_graphics_test(VSOutput input) : SV_TARGET

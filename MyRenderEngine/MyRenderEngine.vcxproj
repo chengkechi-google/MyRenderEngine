@@ -41,6 +41,7 @@
     <ClCompile Include="External\meshoptimizer\vfetchoptimizer.cpp" />
     <ClCompile Include="External\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="External\xxHash\xxhash.c" />
+    <ClInclude Include="Shaders\GTAO\GTAO.hlsl" />
     <ClCompile Include="Source\Core\GUI.cpp" />
     <ClCompile Include="Source\Editor\Editor.cpp" />
     <ClCompile Include="Source\Renderer\GPUDrivenStats.cpp" />
@@ -54,6 +55,8 @@
     <ClCompile Include="Source\Renderer\RenderGraph\RenderGraphResourceAllocator.cpp" />
     <ClCompile Include="Source\Renderer\RenderPasses\BasePassGPUDriven.cpp" />
     <ClCompile Include="Source\Renderer\RenderPasses\HierarchicalDepthBufferPass.cpp" />
+    <ClCompile Include="Source\Renderer\RenderPasses\Lighting\GTAO.cpp" />
+    <ClCompile Include="Source\Renderer\RenderPasses\Lighting\LightingPasses.cpp" />
     <ClCompile Include="Source\Renderer\Resource\ConstantBuffer.cpp" />
     <ClCompile Include="Source\Renderer\Resource\RawBuffer.cpp" />
     <ClCompile Include="Source\Renderer\Resource\IndexBuffer.cpp" />
@@ -119,6 +122,9 @@
     <ClInclude Include="Shaders\FFX\ffx_cas.h" />
     <ClInclude Include="Shaders\FFX\ffx_spd.h" />
     <ClInclude Include="Shaders\FFX\ffx_sssr.h" />
+    <ClInclude Include="Shaders\GTAO\GTSO.hlsli" />
+    <ClInclude Include="Shaders\GTAO\XeGTAO.h" />
+    <ClInclude Include="Shaders\GTAO\XeGTAO.hlsli" />
     <ClInclude Include="Shaders\HZB\HZB.hlsl" />
     <ClInclude Include="Source\Core\Engine.h" />
     <ClInclude Include="Source\Core\GUI.h" />
@@ -139,6 +145,7 @@
     <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphResourceAllocator.h" />
     <ClInclude Include="Source\Renderer\RenderPasses\BasePassGPUDriven.h" />
     <ClInclude Include="Source\Renderer\RenderPasses\HierarchicalDepthBufferPass.h" />
+    <ClInclude Include="Source\Renderer\RenderPasses\Lighting\GTAO.h" />
     <ClInclude Include="Source\Renderer\Resource\ConstantBuffer.h" />
     <ClInclude Include="Source\Renderer\Resource\indexBuffer.h" />
     <ClInclude Include="Source\Renderer\Resource\RawBuffer.h" />
@@ -313,6 +320,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shaders\ModelShowCulledInstance.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Source\Renderer\RenderPasses\Lighting\LightingPasses.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
