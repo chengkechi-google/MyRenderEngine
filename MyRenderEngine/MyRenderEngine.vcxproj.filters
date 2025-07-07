@@ -375,9 +375,6 @@
     <ClInclude Include="Source\World\StaticMesh.h">
       <Filter>Source\World</Filter>
     </ClInclude>
-    <ClInclude Include="Source\World\VisbleObject.h">
-      <Filter>Source\World</Filter>
-    </ClInclude>
     <ClInclude Include="Source\World\World.h">
       <Filter>Source\World</Filter>
     </ClInclude>
@@ -392,9 +389,6 @@
     </ClInclude>
     <ClInclude Include="External\meshoptimizer\meshoptimizer.h">
       <Filter>External\meshoptimizer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Core\GUI.h">
-      <Filter>Source\Core</Filter>
     </ClInclude>
     <ClInclude Include="Shaders\Common.hlsli">
       <Filter>Shaders</Filter>
@@ -480,6 +474,23 @@
     <ClInclude Include="Shaders\stats.hlsl">
       <Filter>Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="External\im3d\im3d.h" />
+    <ClInclude Include="External\im3d\im3d_config.h" />
+    <ClInclude Include="External\im3d\im3d_math.h" />
+    <ClInclude Include="Shaders\GTAO\GTAO.hlsl" />
+    <ClInclude Include="Shaders\ClusteredLighting\ClusteredLightCulling.hlsl" />
+    <ClInclude Include="Shaders\BillboardSprite.hlsl" />
+    <ClInclude Include="Shaders\GTAO\GTSO.hlsli" />
+    <ClInclude Include="Shaders\GTAO\XeGTAO.h" />
+    <ClInclude Include="Shaders\GTAO\XeGTAO.hlsli" />
+    <ClInclude Include="Source\Editor\ImGuiImpl.h" />
+    <ClInclude Include="Source\Renderer\RenderPasses\Lighting\ClusteredLighting\ClusteredLightCulling.h" />
+    <ClInclude Include="Source\Renderer\RenderPasses\Lighting\GTAO.h" />
+    <ClInclude Include="Source\World\BillboardSprite.h" />
+    <ClInclude Include="Source\World\Light.h" />
+    <ClInclude Include="Source\World\PointLight.h" />
+    <ClInclude Include="Source\World\VisibleObject.h" />
+    <ClInclude Include="Shaders\ModelShowCulledInstance.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\RHI\RHI.cpp">
@@ -752,9 +763,6 @@
     <ClCompile Include="External\meshoptimizer\vfetchoptimizer.cpp">
       <Filter>External\meshoptimizer</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Core\GUI.cpp">
-      <Filter>Source\Core</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Renderer\RenderPasses\HierarchicalDepthBufferPass.cpp">
       <Filter>Source\Renderer\RenderPasses</Filter>
     </ClCompile>
@@ -764,6 +772,13 @@
     <ClCompile Include="Source\Renderer\GPUDrivenStats.cpp">
       <Filter>Source\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="External\im3d\im3d.cpp" />
+    <ClCompile Include="Source\Renderer\RenderPasses\Lighting\ClusteredLighting\ClusteredLightCulling.cpp" />
+    <ClCompile Include="Source\Renderer\RenderPasses\Lighting\GTAO.cpp" />
+    <ClCompile Include="Source\Renderer\RenderPasses\Lighting\LightingPasses.cpp" />
+    <ClCompile Include="Source\World\BillboardSprite.cpp" />
+    <ClCompile Include="Source\World\Light.cpp" />
+    <ClCompile Include="Source\World\PointLight.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="External\EASTL\EASTL.natvis">

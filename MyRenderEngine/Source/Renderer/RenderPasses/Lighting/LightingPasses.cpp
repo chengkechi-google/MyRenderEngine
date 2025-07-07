@@ -2,11 +2,13 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderPasses/BasePassGPUDriven.h"
 #include "GTAO.h"
+#include "ClusteredLighting/ClusteredLightCulling.h"
 
 LightingPasses::LightingPasses(Renderer* pRenderer)
 {
     m_pRenderer = pRenderer;
 
+    m_pClusteredLightCulling = eastl::make_unique<ClusteredLightCulling>(m_pRenderer);
     m_pGTAO = eastl::make_unique<GTAO>(m_pRenderer);
 }
 
@@ -23,7 +25,13 @@ RGHandle LightingPasses::AddPass(RenderGraph* pRenderGraph, RGHandle depthRT, RG
     RGHandle emissive = pBasePass->GetEmissiveRT();
     RGHandle customData = pBasePass->GetCustomDataRT();
 
+    // AO pass
     RGHandle gtao = m_pGTAO->AddPasse(pRenderGraph, depthRT, normal, width, height);
+
+    // Light culling pass
+    
+
+    
 
     return gtao;
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Camera.h"
-#include "VisbleObject.h"
+#include "VisibleObject.h"
 
 namespace tinyxml2
 {
@@ -15,6 +15,7 @@ public:
     ~World();
 
     Camera* GetCamera() const { return m_pCamera.get(); }
+    class BillboardSpriteRenderer* GetBillboardSpriteRenderer() const { return m_pBillboardSpriteRenderer.get(); }
 
     void LoadScene(const eastl::string& file);
     void SaveScene(const eastl::string& file);
@@ -33,5 +34,7 @@ private:
     void CreateModel(tinyxml2::XMLElement* pElement);           //< Load GLTF file
 private:
     eastl::unique_ptr<Camera> m_pCamera;
+    eastl::unique_ptr<class BillboardSpriteRenderer> m_pBillboardSpriteRenderer;
+    
     eastl::vector<eastl::unique_ptr<IVisibleObject>> m_objects;
 };

@@ -13,5 +13,6 @@ public:
 private:
     Renderer* m_pRenderer;
     
+    eastl::unique_ptr<class ClusteredLightCulling> m_pClusteredLightCulling;
     eastl::unique_ptr<class GTAO> m_pGTAO;
 };

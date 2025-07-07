@@ -1,4 +1,6 @@
 #include "Editor.h"
+#include "ImGuiImpl.h"
+#include "im3d.h"
 #include "Core/Engine.h"
 #include "Renderer/TextureLoader.h"
 #include "Utils/assert.h"
@@ -8,13 +10,18 @@
 #include "ImGuizmo/ImGuizmo.h"
 #include <fstream>
 
-Editor::Editor()
+#include "imgui_internal.h"
+
+Editor::Editor(Renderer* pRenderer)
 {
+    m_pRenderer = pRenderer;
+    m_pImGuiImpl = eastl::make_unique<ImGuiImpl>(pRenderer);
+    m_pImGuiImpl->Init();
+    
     ifd::FileDialog::Instance().CreateTexture = [this](uint8_t* data, int w, int h, char fmt) -> void*
     {
-        Renderer* pRenderer = Engine::GetInstance()->GetRenderer();
-        Texture2D* pTexture = pRenderer->CreateTexture2D(w, h, 1, fmt == 1 ? RHIFormat::RGBA8SRGB : RHIFormat::BGRA8SRGB, 0, "ImFileDialog Icon");
-        pRenderer->UploadTexture(pTexture->GetTexture(), data);
+        Texture2D* pTexture = m_pRenderer->CreateTexture2D(w, h, 1, fmt == 1 ? RHIFormat::RGBA8SRGB : RHIFormat::BGRA8SRGB, 0, "ImFileDialog Icon");
+        m_pRenderer->UploadTexture(pTexture->GetTexture(), data);
 
         m_fileDialogIcons.insert(eastl::make_pair(pTexture->GetSRV(), pTexture));
         return pTexture->GetSRV();
@@ -27,7 +34,6 @@ Editor::Editor()
     };
 
     eastl::string assetPath = Engine::GetInstance()->GetAssetPath();
-    Renderer* pRenderer = Engine::GetInstance()->GetRenderer();
     m_pTranslateIcon.reset(pRenderer->CreateTexture2D(assetPath + "ui/translate.png", true));
     m_pRotateIcon.reset(pRenderer->CreateTexture2D(assetPath + "ui/rotate.png", true));
     m_pScaleIcon.reset(pRenderer->CreateTexture2D(assetPath + "ui/scale.png", true));
@@ -42,42 +48,63 @@ Editor::~Editor()
     }
 }
 
-void Editor::Tick()
+void Editor::NewFrame()
 {
-    FlushPendingTextureDeletions();
-    m_commands.clear();
+    m_pImGuiImpl->NewFrame();
 
     ImGuiIO& io = ImGui::GetIO();
     if (!io.WantCaptureMouse && io.MouseClicked[0])
     {
         ImVec2 mousePos = io.MouseClickedPos[0];
+        mousePos.x *= io.DisplayFramebufferScale.x;
+        mousePos.y *= io.DisplayFramebufferScale.y;
 
-        Renderer* pRenderer = Engine::GetInstance()->GetRenderer();
-        pRenderer->RequestMouseHitTest((uint32_t) mousePos.x, (uint32_t) mousePos.y);
+        m_pRenderer->RequestMouseHitTest((uint32_t)mousePos.x, (uint32_t)mousePos.y);
     }
+}
 
+
+void Editor::Tick()
+{
+    FlushPendingTextureDeletions();
+    //BuildDockLayout();
+    
     DrawMenu();
     //DrawToolBar();
     //DrawGizmo();
     //DrawFrameStats();
 }
 
-void Editor::AddGUICommand(const eastl::string& window, const eastl::string& section, const eastl::function<void()>& command)
+void Editor::Render(IRHICommandList* pCommandList)
 {
-    m_commands[window].push_back({ section, command });
+    m_pImGuiImpl->Render(pCommandList);
+}
+
+void Editor::BuildDockLayout()
+{
+    m_dockSpace = ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+
+    if (m_resetLayout)
+    {
+        ImGui::DockBuilderRemoveNode(m_dockSpace);
+        ImGui::DockBuilderAddNode(m_dockSpace, ImGuiDockNodeFlags_DockSpace);
+        ImGui::DockBuilderSetNodeSize(m_dockSpace, ImGui::GetMainViewport()->WorkSize);
+    }
 }
 
 void Editor::DrawMenu()
 {
-    Renderer* pRenderer = Engine::GetInstance()->GetRenderer();
-
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))
         {
             if (ImGui::MenuItem("Open Scene"))
             {
-                ifd::FileDialog::Instance().Open("ScreenOpenDialog", "Open Scene", "XML File (*.xml){.xml},.*");
+                ifd::FileDialog::Instance().Open("SceneOpenDialog", "Open Scene", "XML File (*.xml){.xml},.*");
+            }
+
+            if (ImGui::MenuItem("Open Scene2"))
+            {
             }
 
             ImGui::EndMenu();
@@ -87,12 +114,12 @@ void Editor::DrawMenu()
         {
             if (ImGui::MenuItem("Vsync", "", &m_vsync))
             {
-                pRenderer->GetSwapChain()->SetVsyncEnabled(m_vsync);
+                m_pRenderer->GetSwapChain()->SetVsyncEnabled(m_vsync);
             }
 
             if (ImGui::MenuItem("GPU Driven Stats", "", &m_showGPUDrivenStats))
             {
-                pRenderer->SetGPUDrivenStatsEnabled(m_showGPUDrivenStats);
+                m_pRenderer->SetGPUDrivenStatsEnabled(m_showGPUDrivenStats);
             }
 
             if (ImGui::MenuItem("Debug View Frustum", "", &m_viewFrustumLocked))
@@ -105,15 +132,15 @@ void Editor::DrawMenu()
 
             }
 
-            bool asyncCompute = pRenderer->IsAsyncComputeEnabled();
+            bool asyncCompute = m_pRenderer->IsAsyncComputeEnabled();
             if (ImGui::MenuItem("Async Compute", "", &asyncCompute))
             {
-                pRenderer->SetAsyncComputeEnabled(asyncCompute);
+                m_pRenderer->SetAsyncComputeEnabled(asyncCompute);
             }
 
             if (ImGui::MenuItem("Reload Shader"))
             {
-                pRenderer->ReloadShaders();
+                m_pRenderer->ReloadShaders();
             }
 
             ImGui::EndMenu();
@@ -209,9 +236,4 @@ void Editor::FlushPendingTextureDeletions()
     }
 
     m_pendingDeletions.clear();
-}
-
-void Editor::DrawWindow(const eastl::string& window, bool* open)
-{
-
 }

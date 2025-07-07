@@ -1,6 +1,6 @@
 #pragma once
 #include "Renderer/Renderer.h"
-#include "VisbleObject.h"
+#include "VisibleObject.h"
 #include "ModelConstants.hlsli"
 
 class MeshMaterial;

@@ -46,6 +46,33 @@ struct InstanceData
 
     }
 };
+
+enum class LocalLightType : uint
+{
+    Point,
+    Spot,
+    Rect,
+};
+
+struct LocalLightData
+{
+    uint m_lightType;
+    float3 m_position;
+
+    float m_radius;
+    float3 m_color;
+
+    float m_falloff;
+    float3 m_direction;
+
+    float3 m_spotAngles;
+    float m_sourceRadius;
+
+    LocalLightType GetLocalLightType()
+    {
+        return (LocalLightType) m_lightType;
+    }
+};
     
 #ifndef __cplusplus
     
@@ -96,4 +123,8 @@ uint3 GetPrimitiveIndices(uint instanceID, uint primitiveID)
     }
 }    
 
+LocalLightData GetLocalLightData(uint lightIndex)
+{
+    return LoadSceneConstantBuffer<LocalLightData>(SceneCB.m_localLightDataAddress + sizeof(LocalLightData) * lightIndex);
+}
 #endif // __cplusplus

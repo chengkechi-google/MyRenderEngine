@@ -308,57 +308,55 @@ void MeshMaterial::UpdateConstants()
 
 void MeshMaterial::OnGUI()
 {
-    
-    GUI("Inspector", "Material", [&]()
+    if (ImGui::CollapsingHeader("Material"))
+    {
+        bool resetPSO = ImGui::Combo("Shading Model##Material", (int*)&m_shadingModel, "Default\0Anisotropy\0Sheen\0ClearCoat\0Hair\0\0", (int)ShadingModel::Max);
+
+        // todo: material textures
+        
+        if (m_bPBRMetallicRoughness)
         {
-            bool resetPSO = ImGui::Combo("Shading Model##Material", (int*)&m_shadingModel, "Default\0Anisotropy\0Sheen\0ClearCoat\0Hair\0\0", (int)ShadingModel::Max);
+            ImGui::ColorEdit3("Albedo##Material", (float*)&m_albedoColor);
+            ImGui::SliderFloat("Metallic##Material", &m_metallic, 0.0f, 1.0f);
+            ImGui::SliderFloat("Roughness##Material", &m_roughness, 0.0f, 1.0f);
+        }
+        else if (m_bPBRSpecularGlossiness)
+        {
+            ImGui::ColorEdit3("Diffuse##Material", (float*)&m_diffuseColor);
+            ImGui::ColorEdit3("Specular(F0)##Material", (float*)&m_specularColor);
+            ImGui::SliderFloat("Glossness##Material", &m_glossiness, 0.0f, 1.0f);
+        }
 
-            // todo: material textures
-            
-            if (m_bPBRMetallicRoughness)
-            {
-                ImGui::ColorEdit3("Albedo##Material", (float*)&m_albedoColor);
-                ImGui::SliderFloat("Metallic##Material", &m_metallic, 0.0f, 1.0f);
-                ImGui::SliderFloat("Roughness##Material", &m_roughness, 0.0f, 1.0f);
-            }
-            else if (m_bPBRSpecularGlossiness)
-            {
-                ImGui::ColorEdit3("Diffuse##Material", (float*)&m_diffuseColor);
-                ImGui::ColorEdit3("Specular(F0)##Material", (float*)&m_specularColor);
-                ImGui::SliderFloat("Glossness##Material", &m_glossiness, 0.0f, 1.0f);
-            }
+        if (m_bAlphaTest)
+        {
+            ImGui::SliderFloat("Alpha Cutoff##Material", &m_alphaCutoff, 0.0f, 1.0f);
+        }
 
-            if (m_bAlphaTest)
-            {
-                ImGui::SliderFloat("Alpha Cutoff##Material", &m_alphaCutoff, 0.0f, 1.0f);
-            }
+        ImGui::ColorEdit3("Emissive##Material", (float*)&m_emissiveColor);
 
-            ImGui::ColorEdit3("Emissive##Material", (float*)&m_emissiveColor);
+        switch (m_shadingModel)
+        {
+            case ShadingModel::Anisotropy:
+                ImGui::SliderFloat("Anisotropy##Material", &m_anisotropy, -1.0f, 1.0f);
+                break;
+            case ShadingModel::Sheen:
+                ImGui::ColorEdit3("Sheen Color#Material", (float*)&m_sheenColor);
+                ImGui::SliderFloat("Sheen Roughness#Material", &m_sheenRoughness, 0.0f, 1.0f);
+                break;
+            case ShadingModel::ClearCoat:
+                ImGui::SliderFloat("ClearCoat##Material", &m_clearCoat, 0.0f, 1.0f);
+                ImGui::SliderFloat("ClearCoat Roughness##Material", &m_clearCoatRoughness, 0.0f, 1.0f);
+                break;
+            default:
+                break;
+        }
 
-            switch (m_shadingModel)
-            {
-                case ShadingModel::Anisotropy:
-                    ImGui::SliderFloat("Anisotropy##Material", &m_anisotropy, -1.0f, 1.0f);
-                    break;
-                case ShadingModel::Sheen:
-                    ImGui::ColorEdit3("Sheen Color#Material", (float*)&m_sheenColor);
-                    ImGui::SliderFloat("Sheen Roughness#Material", &m_sheenRoughness, 0.0f, 1.0f);
-                    break;
-                case ShadingModel::ClearCoat:
-                    ImGui::SliderFloat("ClearCoat##Material", &m_clearCoat, 0.0f, 1.0f);
-                    ImGui::SliderFloat("ClearCoat Roughness##Material", &m_clearCoatRoughness, 0.0f, 1.0f);
-                    break;
-                default:
-                    break;
-
-            }
-
-            if (resetPSO)
-            {
-                m_pPSO = nullptr;
-                m_pMeshletPSO = nullptr;
-            }
-        });
+        if (resetPSO)
+        {
+            m_pPSO = nullptr;
+            m_pMeshletPSO = nullptr;
+        }
+    };
 }
 
 void MeshMaterial::AddMaterialDefines(eastl::vector<eastl::string>& defines)

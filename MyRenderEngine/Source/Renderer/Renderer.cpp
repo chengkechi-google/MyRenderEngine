@@ -429,6 +429,11 @@ uint32_t Renderer::AddInstance(const InstanceData& data, IRHIRayTracingBLAS* pBL
     return m_pGPUScene->AddInstance(data, pBLAS, flags);
 }
 
+uint32_t Renderer::AddLocalLight(const LocalLightData& data)
+{
+    return m_pGPUScene->AddLocalLight(data);
+}
+
 void Renderer::RequestMouseHitTest(uint32_t x, uint32_t y)
 {
     m_mouseX = x;
@@ -613,6 +618,8 @@ void Renderer::SetupGlobalConstants(IRHICommandList* pCommandList)
     sceneCB.m_mipBias = m_mipBias;
     sceneCB.m_marschnerTextureM = RHI_INVALID_RESOURCE;
     sceneCB.m_marschnerTextureN = RHI_INVALID_RESOURCE;
+    sceneCB.m_localLightDataAddress = m_pGPUScene->GetLocalLightsDataAddress();
+    sceneCB.m_localLightCount = m_pGPUScene->GetLocalLightCount();
 
     if (pCommandList->GetQueue() == RHICommandQueue::Graphics)
     {
@@ -1148,10 +1155,12 @@ void Renderer::RenderBackBufferPass(IRHICommandList* pCommandList, RGHandle colo
     pCommandList->BeginRenderPass(renderPass);
   
     CopyToBackBuffer(pCommandList, color, depth, false);
-    Engine::GetInstance()->GetGUI()->Render(pCommandList);
+
+    Engine::GetInstance()->GetEditor()->Render(pCommandList);
+    
     pCommandList->EndRenderPass();
     pCommandList->TextureBarrier(m_pSwapChain->GetBackBuffer(), 0, RHIAccessBit::RHIAccessRTV, RHIAccessBit::RHIAccessPresent);
-    pCommandList->SetPipelineState(m_pComputeTestPSO);
+    //pCommandList->SetPipelineState(m_pComputeTestPSO);
 
 }
 

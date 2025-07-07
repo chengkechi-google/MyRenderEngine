@@ -23,6 +23,9 @@ public:
     uint32_t AddInstance(const InstanceData& data, IRHIRayTracingBLAS* pBLAS, RHIRayTracingInstanceFlags flags);
     uint32_t GetInstanceCount() const { return (uint32_t)m_instanceData.size(); }
 
+    uint32_t AddLocalLight(const LocalLightData& data);
+    uint32_t GetLocalLightCount() const { return (uint32_t) m_localLightsData.size(); }
+
     void Update();
     void BuildRayTracingAS(IRHICommandList* pCommandList);
     void ResetFrameData();
@@ -41,6 +44,7 @@ public:
     IRHIDescriptor* GetSceneConstantSRV() const;
 
     uint32_t GetInstanceDataAddress() const { return m_instanceDataAddress; }
+    uint32_t GetLocalLightsDataAddress() const { return m_localLightsDataAddress; }
     
     IRHIDescriptor* GetRayTracingTLASSRV() const { return m_pSceneTLASSRV.get(); }
 
@@ -49,6 +53,9 @@ private:
     
     eastl::vector<InstanceData> m_instanceData;
     uint32_t m_instanceDataAddress = 0;
+
+    eastl::vector<LocalLightData> m_localLightsData;
+    uint32_t m_localLightsDataAddress = 0;
 
     eastl::unique_ptr<RawBuffer> m_pSceneStaticBuffer;
     eastl::unique_ptr<OffsetAllocator::Allocator> m_pSceneStaticBufferAllocator;

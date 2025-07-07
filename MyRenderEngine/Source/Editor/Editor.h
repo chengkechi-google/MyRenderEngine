@@ -6,13 +6,15 @@
 class Editor
 {
 public:
-    Editor();
+    Editor(Renderer* pRenderer);
     ~Editor();
 
+    void NewFrame();
     void Tick();
-    void AddGUICommand(const eastl::string& window, const eastl::string& section, const eastl::function<void()>& command);
+    void Render(IRHICommandList* pCommandList);
 
 private:
+    void BuildDockLayout();
     void DrawMenu();
     void DrawToolBar();
     void DrawGizmo();
@@ -21,10 +23,11 @@ private:
     void CreateGPUMemoryStas();
     void ShowRenderGraoh();
     void FlushPendingTextureDeletions();
-    
-    void DrawWindow(const eastl::string& window, bool* open);
 
 private:
+    Renderer* m_pRenderer = nullptr;
+    eastl::unique_ptr<class ImGuiImpl> m_pImGuiImpl;
+    
     bool m_showGPUMemoryStats = false;
     bool m_showImguiDemo = false;
     bool m_showGPUDrivenStats = false;
@@ -36,14 +39,15 @@ private:
     bool m_showSetting = false;
     bool m_showLighting = false;
     bool m_showPostProcess = false;
+    bool m_resetLayout = false;
+
+    unsigned int m_dockSpace = 0;
 
     struct Command
     {
         eastl::string m_section;
         eastl::function<void()> m_func;
     };
-    using WindowCommand = eastl::vector<Command>;
-    eastl::hash_map<eastl::string, WindowCommand> m_commands;
 
     eastl::hash_map<IRHIDescriptor*, Texture2D*> m_fileDialogIcons;
     eastl::vector<IRHIDescriptor*> m_pendingDeletions;

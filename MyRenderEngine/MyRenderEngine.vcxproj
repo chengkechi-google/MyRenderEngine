@@ -20,6 +20,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="External\im3d\im3d.cpp" />
     <ClCompile Include="External\ImFileDialog\ImFileDialog.cpp" />
     <ClCompile Include="External\ImGuizmo\ImGuizmo.cpp" />
     <ClCompile Include="External\lodepng\lodepng.cpp" />
@@ -41,8 +42,12 @@
     <ClCompile Include="External\meshoptimizer\vfetchoptimizer.cpp" />
     <ClCompile Include="External\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="External\xxHash\xxhash.c" />
+    <ClInclude Include="External\im3d\im3d.h" />
+    <ClInclude Include="External\im3d\im3d_config.h" />
+    <ClInclude Include="External\im3d\im3d_math.h" />
     <ClInclude Include="Shaders\GTAO\GTAO.hlsl" />
-    <ClCompile Include="Source\Core\GUI.cpp" />
+    <ClInclude Include="Shaders\ClusteredLighting\ClusteredLightCulling.hlsl" />
+    <ClInclude Include="Shaders\BillboardSprite.hlsl" />
     <ClCompile Include="Source\Editor\Editor.cpp" />
     <ClCompile Include="Source\Renderer\GPUDrivenStats.cpp" />
     <ClCompile Include="Source\Renderer\GPUScene.cpp" />
@@ -55,6 +60,7 @@
     <ClCompile Include="Source\Renderer\RenderGraph\RenderGraphResourceAllocator.cpp" />
     <ClCompile Include="Source\Renderer\RenderPasses\BasePassGPUDriven.cpp" />
     <ClCompile Include="Source\Renderer\RenderPasses\HierarchicalDepthBufferPass.cpp" />
+    <ClCompile Include="Source\Renderer\RenderPasses\Lighting\ClusteredLighting\ClusteredLightCulling.cpp" />
     <ClCompile Include="Source\Renderer\RenderPasses\Lighting\GTAO.cpp" />
     <ClCompile Include="Source\Renderer\RenderPasses\Lighting\LightingPasses.cpp" />
     <ClCompile Include="Source\Renderer\Resource\ConstantBuffer.cpp" />
@@ -79,9 +85,12 @@
     <ClCompile Include="Source\RHI\DX12\D3D12SwapChain.cpp" />
     <ClCompile Include="Source\RHI\DX12\D3D12Texture.cpp" />
     <ClCompile Include="Source\Windows\Main.cpp" />
+    <ClCompile Include="Source\World\BillboardSprite.cpp" />
     <ClCompile Include="Source\World\Camera.cpp" />
     <ClCompile Include="Source\World\GLTFLoader.cpp" />
+    <ClCompile Include="Source\World\Light.cpp" />
     <ClCompile Include="Source\World\MeshMaterial.cpp" />
+    <ClCompile Include="Source\World\PointLight.cpp" />
     <ClCompile Include="Source\World\ResourceCache.cpp" />
     <ClCompile Include="Source\World\StaticMesh.cpp" />
     <ClCompile Include="Source\World\VisibleObject.cpp" />
@@ -127,8 +136,8 @@
     <ClInclude Include="Shaders\GTAO\XeGTAO.hlsli" />
     <ClInclude Include="Shaders\HZB\HZB.hlsl" />
     <ClInclude Include="Source\Core\Engine.h" />
-    <ClInclude Include="Source\Core\GUI.h" />
     <ClInclude Include="Source\Editor\Editor.h" />
+    <ClInclude Include="Source\Editor\ImGuiImpl.h" />
     <ClInclude Include="Source\Physics\PhysicsRigidBody.h" />
     <ClInclude Include="Source\Physics\PhysicsShape.h" />
     <ClInclude Include="Source\Renderer\GPUDrivenStats.h" />
@@ -145,6 +154,7 @@
     <ClInclude Include="Source\Renderer\RenderGraph\RenderGraphResourceAllocator.h" />
     <ClInclude Include="Source\Renderer\RenderPasses\BasePassGPUDriven.h" />
     <ClInclude Include="Source\Renderer\RenderPasses\HierarchicalDepthBufferPass.h" />
+    <ClInclude Include="Source\Renderer\RenderPasses\Lighting\ClusteredLighting\ClusteredLightCulling.h" />
     <ClInclude Include="Source\Renderer\RenderPasses\Lighting\GTAO.h" />
     <ClInclude Include="Source\Renderer\Resource\ConstantBuffer.h" />
     <ClInclude Include="Source\Renderer\Resource\indexBuffer.h" />
@@ -199,12 +209,15 @@
     <ClInclude Include="Source\Utils\profiler.h" />
     <ClInclude Include="Source\Utils\string.h" />
     <ClInclude Include="Source\Utils\system.h" />
+    <ClInclude Include="Source\World\BillboardSprite.h" />
     <ClInclude Include="Source\World\Camera.h" />
     <ClInclude Include="Source\World\GLTFLoader.h" />
+    <ClInclude Include="Source\World\Light.h" />
     <ClInclude Include="Source\World\MeshMaterial.h" />
+    <ClInclude Include="Source\World\PointLight.h" />
     <ClInclude Include="Source\World\ResourceCache.h" />
     <ClInclude Include="Source\World\StaticMesh.h" />
-    <ClInclude Include="Source\World\VisbleObject.h" />
+    <ClInclude Include="Source\World\VisibleObject.h" />
     <ClInclude Include="Source\World\World.h" />
   </ItemGroup>
   <ItemGroup>
@@ -322,6 +335,7 @@
     <ClInclude Include="Shaders\ModelShowCulledInstance.hlsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Editor\ImGuiImpl.cpp" />
     <Content Include="Source\Renderer\RenderPasses\Lighting\LightingPasses.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -418,7 +432,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;MICROPROFILE_ENABLED=1;MICROPROFILE_GPU_TIMERS=0;MICROPROFILE_GPU_TIMERS_D3D12=0;EASTL_EASTDC_VSNPRINTF=0;EASTL_USER_DEFINED_ALLOCATOR=1;_CRT_SECURE_NO_WARNINGS;NOMINMAX;UNICODE;_UNICODE;_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>Default</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)Shaders/;$(ProjectDir)Source/;$(ProjectDir)External/;$(ProjectDir)External/EASTL/include;$(ProjectDir)External/fmt/include;$(ProjectDir)External/imgui;$(ProjectDir)External/stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Shaders/;$(ProjectDir)Source/;$(ProjectDir)External/;$(ProjectDir)External/EASTL/include;$(ProjectDir)External/fmt/include;$(ProjectDir)External/imgui;$(ProjectDir)External/stb;$(ProjectDir)External/im3d;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>

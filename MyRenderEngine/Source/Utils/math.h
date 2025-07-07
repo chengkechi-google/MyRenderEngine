@@ -65,6 +65,23 @@ inline float3 rotation_angles(const quaternion& q)
     return float3(rotation_pitch(q), rotation_yaw(q), rotation_roll(q));
 }
 
+inline float normalize_angle(float degree)
+{
+    degree = fmodf(degree, 360.0f);
+
+    if (degree < 0.0f)
+    {
+        degree += 360.0f;
+    }
+
+    if (degree > 180.0f)
+    {
+        degree -= 360.0f;
+    }
+
+    return degree;
+}
+
 inline void decompose(const float4x4& matrix, float3& translation, quaternion& rotation, float3& scale)
 {
     translation = matrix[3].xyz();
@@ -137,4 +154,18 @@ inline uint32_t RoundUpPow2(uint32_t a, uint32_t b)
 {
     MY_ASSERT(IsPow2(b));
     return (a + b - 1) & ~(b - 1);
+}
+
+inline float4 UnpackRGBA8Unorm(uint packed)
+{
+    return float4(((packed >> 0) & 0xFF) / 255.0f,
+        ((packed >> 8) & 0xFF) / 255.0f,
+        ((packed >> 16) & 0xFF) / 255.0f,
+        ((packed >> 24) & 0xFF) / 255.0f);
+}
+
+inline uint PackRGBA8Unorm(float4 input)
+{
+    byte4 unpacked = byte4(input * 255.0 + 0.5f); // Can use per component multiply and add
+    return (unpacked.w << 24) | (unpacked.z << 16) | (unpacked.y << 8) | unpacked.x;
 }

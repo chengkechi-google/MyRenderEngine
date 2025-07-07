@@ -133,7 +133,10 @@ struct SceneConstant
     uint m_sheenETexture;
     uint m_tonyMcMapfaceTexture;
     uint m_marschnerTextureM;
-    uint m_marschnerTextureN;    
+    uint m_marschnerTextureN;
+
+    uint m_localLightDataAddress;
+    uint m_localLightCount;
 };
 
 #ifndef __cplusplus

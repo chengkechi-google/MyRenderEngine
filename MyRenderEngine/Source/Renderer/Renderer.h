@@ -116,6 +116,8 @@ public:
     uint32_t AddInstance(const InstanceData& data, IRHIRayTracingBLAS* pBLAS, RHIRayTracingInstanceFlags flags);
     uint32_t GetInstanceCount() const { return m_pGPUScene->GetInstanceCount(); }
 
+    uint32_t AddLocalLight(const LocalLightData& data);
+
     void RequestMouseHitTest(uint32_t x, uint32_t y);
     bool IsEnableMouseHitTest() const { return m_enableObjectIDRendering; }
     uint32_t GetMouseHitObjectID() const { return m_mouseHitObjectID; }
@@ -137,6 +139,7 @@ public:
     RenderBatch& AddForwardPassBatch() { return m_forwardPassBatchs.emplace_back(*m_pCBAllocator); }
     RenderBatch& AddVelocityPassBatch() { return m_velocityPassBatchs.emplace_back(*m_pCBAllocator); }
     RenderBatch& AddObjectIDPassBatch() { return m_idPassBatchs.emplace_back(*m_pCBAllocator); }
+    RenderBatch& AddGUIPassBatch() { return m_guiBatch.emplace_back(*m_pCBAllocator); }
     ComputeBatch& AddAnimationBatch() { return m_animationBatchs.emplace_back(*m_pCBAllocator); }
 
     void SetupGlobalConstants(IRHICommandList* pCommandList);
@@ -280,6 +283,7 @@ private:
     eastl::vector<RenderBatch> m_forwardPassBatchs;
     eastl::vector<RenderBatch> m_velocityPassBatchs;
     eastl::vector<RenderBatch> m_idPassBatchs;
+    eastl::vector<RenderBatch> m_guiBatch;
 
     IRHIPipelineState* m_pCopyColorPSO = nullptr;
     IRHIPipelineState* m_pCopyDepthPSO = nullptr;

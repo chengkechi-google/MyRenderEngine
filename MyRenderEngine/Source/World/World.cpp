@@ -10,10 +10,14 @@
 #include "Utils/parallel_for.h"
 #include "tinyxml2/tinyxml2.h"
 #include "EASTL/atomic.h"
+#include "BillboardSprite.h"
 
 World::World()
 {
-    m_pCamera = eastl::make_unique<Camera>();    
+    Renderer* pRenderer = Engine::GetInstance()->GetRenderer();
+    
+    m_pCamera = eastl::make_unique<Camera>();
+    m_pBillboardSpriteRenderer = eastl::make_unique<BillboardSpriteRenderer>(pRenderer);
 }
 
 World::~World() = default;

@@ -62,8 +62,9 @@ private:
     void UpdateJitter();
     void UpdateMatrix();
     void OnWindowResize(void* pWindow, uint32_t width, uint32_t height);
-    void OnCameraSettingGUI();
-    void OnPostProcessSettingGUI();
+
+    void UpdateCameraRotation(float deltaTime);
+    void UpdateCameraPosition(float deltaTime);
 
 private:
     float3 m_pos;
@@ -89,6 +90,11 @@ private:
     float m_fov = 0.0;
     float m_zNear = 0.0f;
     float m_moveSpeed = 10.0f;
+
+    float3 m_prevMoveVelocity = {};
+    float2 m_prevRotateVelocity = {};
+    float m_moveSmoothness = 0.5f;
+    float m_rotateSmoothess = 0.5f;
 
     float m_aperture = 1.0f;
     int m_shutterSpeed = 60;

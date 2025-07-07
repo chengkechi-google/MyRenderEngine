@@ -247,6 +247,19 @@ bool ProjectSphere(float3 center, float radius, float zNear, float p00, float p1
     return true;
 }
 
+bool FrustumCulling(float3 center, float radius)
+{
+    for (uint i = 0; i < 6; ++ i)
+    {
+        if ((dot(GetCameraCB().m_culling.m_planes[i].xyz, center) + GetCameraCB().m_culling.m_planes[i].w + radius) < 0 )
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool OcclusionCulling(Texture2D<float> hzbTexture, uint2 hzbSize, float3 center, float radius)
 {
     center = mul(GetCameraCB().m_mtxView, float4(center, 1.0)).xyz;

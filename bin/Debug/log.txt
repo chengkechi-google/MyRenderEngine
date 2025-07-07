@@ -1,8 +1,8 @@
-2025-03-20 23:00:41.713 [debug] [thread 35608] Available GPUs : 
-2025-03-20 23:00:41.714 [debug] [thread 35608]  - NVIDIA GeForce RTX 2080 with Max-Q Design
-2025-03-20 23:00:41.715 [debug] [thread 35608]  - Intel(R) UHD Graphics 630
-2025-03-20 23:00:41.715 [debug] [thread 35608]  - Microsoft Basic Render Driver
-2025-03-20 23:00:41.715 [debug] [thread 35608]  - Intel(R) UHD Graphics 630
-2025-03-20 23:00:41.945 [info] [thread 35608] Vendor : NVidia
-2025-03-20 23:00:41.945 [info] [thread 35608] GPU : NVIDIA GeForce RTX 2080 with Max-Q Design
-2025-03-20 23:00:45.199 [info] [thread 35608] Loading Scene : C:\Work\MyRenderEngine\bin\Debug\../../assets/sponza.xml
+2025-07-07 22:36:37.446 [debug] [thread 42160] Available GPUs : 
+2025-07-07 22:36:37.448 [debug] [thread 42160]  - NVIDIA GeForce RTX 2080 with Max-Q Design
+2025-07-07 22:36:37.448 [debug] [thread 42160]  - Intel(R) UHD Graphics 630
+2025-07-07 22:36:37.449 [debug] [thread 42160]  - Microsoft Basic Render Driver
+2025-07-07 22:36:37.449 [debug] [thread 42160]  - Intel(R) UHD Graphics 630
+2025-07-07 22:36:37.755 [info] [thread 42160] Vendor : NVidia
+2025-07-07 22:36:37.755 [info] [thread 42160] GPU : NVIDIA GeForce RTX 2080 with Max-Q Design
+2025-07-07 22:36:40.897 [info] [thread 42160] Loading Scene : C:\Work\MyRenderEngine\bin\Debug\../../assets/sponza.xml

@@ -86,53 +86,10 @@ void Camera::EnableJitter(bool value)
 
 void Camera::Tick(float deltaTime)
 {
-    GUI("Settings", "Camera", [&]() { OnCameraSettingGUI(); });
-    GUI("PostProcess", "Physical Camera", [&]() { OnPostProcessSettingGUI(); });
-
     m_moved = false;
-    ImGuiIO& io = ImGui::GetIO();
 
-    if (!io.WantCaptureKeyboard)
-    {
-        if (ImGui::IsKeyDown('A'))
-        {
-            m_pos += GetLeft() * m_moveSpeed * deltaTime;
-            m_moved = true;
-        }
-        else if (ImGui::IsKeyDown('S'))
-        {
-            m_pos += GetBack() * m_moveSpeed * deltaTime;
-            m_moved = true;
-        }
-        else if (ImGui::IsKeyDown('D'))
-        {      
-            m_pos += GetRight() * m_moveSpeed * deltaTime;
-            m_moved = true;
-        }
-        else if (ImGui::IsKeyDown('W'))
-        {
-            m_pos += GetForward() * m_moveSpeed * deltaTime;
-            m_moved = true;
-        }
-    }
-
-    if (!io.WantCaptureMouse)
-    {
-        if (!nearly_equal(io.MouseWheel, 0.0f))
-        {
-            m_pos += GetForward() * io.MouseWheel * m_moveSpeed * deltaTime;
-            m_moved = true;
-        }
-
-        if (ImGui::IsMouseDragging(1))
-        {
-            const float rotateSpeed = 0.1f;
-            m_rotation.x = fmodf(m_rotation.x + io.MouseDelta.y * rotateSpeed, 360.0f);
-            m_rotation.y = fmodf(m_rotation.y + io.MouseDelta.x * rotateSpeed, 360.0f);
-
-            m_moved = true;
-        }
-    }
+    UpdateCameraRotation(deltaTime);
+    UpdateCameraPosition(deltaTime);
 
     UpdateJitter();
     UpdateMatrix();
@@ -314,15 +271,116 @@ void Camera::OnWindowResize(void* pWindow, uint32_t width, uint32_t height)
     SetPerspective(m_aspectRatio, m_fov, m_zNear);
 }
 
-void Camera::OnCameraSettingGUI()
+void Camera::UpdateCameraRotation(float deltaTime)
 {
+    ImGuiIO& io = ImGui::GetIO();
 
+    float2 rotateVelocity = {};
+
+    if (!io.NavActive)
+    {
+        const float rotateSpeed = 120.0f;
+        if (ImGui::IsKeyDown(ImGuiKey_GamepadRStickRight))
+        {
+            rotateVelocity.y = rotateSpeed;
+        }
+
+        if (ImGui::IsKeyDown(ImGuiKey_GamepadRStickLeft))
+        {
+            rotateVelocity.y = -rotateSpeed;
+        }
+
+        if (ImGui::IsKeyDown(ImGuiKey_GamepadRStickDown))
+        {
+            rotateVelocity.x = rotateSpeed;
+        }
+
+        if (ImGui::IsKeyDown(ImGuiKey_GamepadRStickUp))
+        {
+            rotateVelocity.x = -rotateSpeed;
+        }
+    }
+
+    if (!io.WantCaptureMouse)
+    {
+        if (ImGui::IsMouseDragging(1) && !ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+        {
+            const float rotateSpeed = 6.0f;
+
+            rotateVelocity.x = io.MouseDelta.y * rotateSpeed;
+            rotateVelocity.y = io.MouseDelta.x * rotateSpeed;
+        }
+    }
+
+    rotateVelocity = lerp(m_prevRotateVelocity, rotateVelocity, 1.0f - exp(-deltaTime * 10.0f / m_rotateSmoothess));
+    m_prevRotateVelocity = rotateVelocity;
+
+    m_rotation.x = normalize_angle(m_rotation.x + rotateVelocity.x * deltaTime);
+    m_rotation.y = normalize_angle(m_rotation.y + rotateVelocity.y * deltaTime);
+
+    m_world = mul(translation_matrix(m_pos), rotation_matrix(rotation_quat(m_rotation)));
+
+    m_moved |= length(rotateVelocity * deltaTime) > 1e-3f;
 }
 
-void Camera::OnPostProcessSettingGUI()
+void Camera::UpdateCameraPosition(float deltaTime)
 {
+    bool moveLeft = false;
+    bool moveRight = false;
+    bool moveForward = false;
+    bool moveBackward = false;
+    float moveSpeed = m_moveSpeed;
 
+    ImGuiIO& io = ImGui::GetIO();
+
+    if (!io.WantCaptureKeyboard && !io.NavActive)
+    {
+        moveLeft = ImGui::IsKeyDown(ImGuiKey_A) || ImGui::IsKeyDown(ImGuiKey_GamepadLStickLeft);
+        moveRight = ImGui::IsKeyDown(ImGuiKey_D) || ImGui::IsKeyDown(ImGuiKey_GamepadRStickRight);
+        moveForward = ImGui::IsKeyDown(ImGuiKey_W) || ImGui::IsKeyDown(ImGuiKey_GamepadLStickUp);
+        moveBackward = ImGui::IsKeyDown(ImGuiKey_S) || ImGui::IsKeyDown(ImGuiKey_GamepadRStickDown);
+    }
+
+    if (!io.WantCaptureMouse)
+    {
+        if (!nearly_equal(io.MouseWheel, 0.0f))
+        {
+            moveForward = io.MouseWheel > 0.0f;
+            moveBackward = io.MouseWheel < 0.0f;
+
+            moveSpeed *= abs(io.MouseWheel);
+        }
+
+        if (ImGui::IsMouseDragging(1) && ImGui::IsKeyDown(ImGuiKey_LeftAlt))
+        {
+            moveForward = io.MouseDelta.y > 0.0f;
+            moveBackward = io.MouseDelta.y < 0.0f;
+
+            moveSpeed *= abs(io.MouseDelta.y) * 0.1f;
+        }
+    }
+
+    float3 moveVelocity = float3(0.0f, 0.0f, 0.0f);
+    if (moveForward) moveVelocity += GetForward();
+    if (moveBackward) moveVelocity += GetBack();
+    if (moveLeft) moveVelocity += GetLeft();
+    if (moveRight) moveVelocity += GetRight();
+
+    if (length(moveVelocity) > 0.0f)
+    {
+        moveVelocity = normalize(moveVelocity) * moveSpeed;
+    }
+
+    moveVelocity = lerp(m_prevMoveVelocity, moveVelocity, 1.0f - exp(-deltaTime * 10.0f / m_moveSmoothness));
+    m_prevMoveVelocity = moveVelocity;
+
+    m_pos += moveVelocity * deltaTime;
+    m_world = mul(translation_matrix(m_pos), rotation_matrix(rotation_quat(m_rotation)));
+
+    m_moved |= length(moveVelocity * deltaTime) > 1e-3f;
 }
+
+
 
 void Camera::DrawViewFrustum(IRHICommandList* pCommandList)
 {
