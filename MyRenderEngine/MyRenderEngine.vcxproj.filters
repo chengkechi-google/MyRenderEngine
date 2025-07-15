@@ -103,6 +103,21 @@
     <Filter Include="Shaders\FFX">
       <UniqueIdentifier>{0c219901-fea8-4144-9814-87d54ee21115}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\GTAO">
+      <UniqueIdentifier>{4528949d-c8bc-4547-8b8f-a643b437d04f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\ClusteredLighting">
+      <UniqueIdentifier>{19488761-491e-4566-b022-29b720c6e44c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Renderer\RenderPasses\Lighting">
+      <UniqueIdentifier>{ab60953a-8c5f-4f84-9dc6-3ea8eaba951d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Renderer\RenderPasses\Lighting\ClusteredLighting">
+      <UniqueIdentifier>{848890d0-7615-459e-87e6-7e07cf047ced}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\im3d">
+      <UniqueIdentifier>{94663bcc-ca14-407a-81c1-6a3f80bfa3cb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\RHI\RHI.h">
@@ -474,23 +489,66 @@
     <ClInclude Include="Shaders\stats.hlsl">
       <Filter>Shaders</Filter>
     </ClInclude>
-    <ClInclude Include="External\im3d\im3d.h" />
-    <ClInclude Include="External\im3d\im3d_config.h" />
-    <ClInclude Include="External\im3d\im3d_math.h" />
-    <ClInclude Include="Shaders\GTAO\GTAO.hlsl" />
-    <ClInclude Include="Shaders\ClusteredLighting\ClusteredLightCulling.hlsl" />
-    <ClInclude Include="Shaders\BillboardSprite.hlsl" />
-    <ClInclude Include="Shaders\GTAO\GTSO.hlsli" />
-    <ClInclude Include="Shaders\GTAO\XeGTAO.h" />
-    <ClInclude Include="Shaders\GTAO\XeGTAO.hlsli" />
-    <ClInclude Include="Source\Editor\ImGuiImpl.h" />
-    <ClInclude Include="Source\Renderer\RenderPasses\Lighting\ClusteredLighting\ClusteredLightCulling.h" />
-    <ClInclude Include="Source\Renderer\RenderPasses\Lighting\GTAO.h" />
-    <ClInclude Include="Source\World\BillboardSprite.h" />
-    <ClInclude Include="Source\World\Light.h" />
-    <ClInclude Include="Source\World\PointLight.h" />
-    <ClInclude Include="Source\World\VisibleObject.h" />
-    <ClInclude Include="Shaders\ModelShowCulledInstance.hlsl" />
+    <ClInclude Include="Shaders\GTAO\GTAO.hlsl">
+      <Filter>Shaders\GTAO</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\GTAO\GTSO.hlsli">
+      <Filter>Shaders\GTAO</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\ClusteredLighting\ClusteredLightCulling.hlsl">
+      <Filter>Shaders\ClusteredLighting</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\RenderPasses\Lighting\ClusteredLighting\ClusteredLightCulling.h">
+      <Filter>Source\Renderer\RenderPasses\Lighting\ClusteredLighting</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\RenderPasses\Lighting\LightingPasses.h">
+      <Filter>Source\Renderer\RenderPasses\Lighting</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Renderer\RenderPasses\Lighting\GTAO.h">
+      <Filter>Source\Renderer\RenderPasses\Lighting</Filter>
+    </ClInclude>
+    <ClInclude Include="External\im3d\im3d.h">
+      <Filter>External\im3d</Filter>
+    </ClInclude>
+    <ClInclude Include="External\im3d\im3d_config.h">
+      <Filter>External\im3d</Filter>
+    </ClInclude>
+    <ClInclude Include="External\im3d\im3d_math.h">
+      <Filter>External\im3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\Im3D.hlsl">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\World\BillboardSprite.h">
+      <Filter>Source\World</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\BillboardSprite.hlsl">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Im3DImpl.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ImGuiImpl.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\World\PointLight.h">
+      <Filter>Source\World</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\World\Light.h">
+      <Filter>Source\World</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\ModelShowCulledInstance.hlsl">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\GTAO\XeGTAO.h">
+      <Filter>Shaders\GTAO</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\GTAO\XeGTAO.hlsli">
+      <Filter>Shaders\GTAO</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\World\VisibleObject.h">
+      <Filter>Source\World</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\RHI\RHI.cpp">
@@ -772,13 +830,30 @@
     <ClCompile Include="Source\Renderer\GPUDrivenStats.cpp">
       <Filter>Source\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="External\im3d\im3d.cpp" />
-    <ClCompile Include="Source\Renderer\RenderPasses\Lighting\ClusteredLighting\ClusteredLightCulling.cpp" />
-    <ClCompile Include="Source\Renderer\RenderPasses\Lighting\GTAO.cpp" />
-    <ClCompile Include="Source\Renderer\RenderPasses\Lighting\LightingPasses.cpp" />
-    <ClCompile Include="Source\World\BillboardSprite.cpp" />
-    <ClCompile Include="Source\World\Light.cpp" />
-    <ClCompile Include="Source\World\PointLight.cpp" />
+    <ClCompile Include="Source\Renderer\RenderPasses\Lighting\ClusteredLighting\ClusteredLightCulling.cpp">
+      <Filter>Source\Renderer\RenderPasses\Lighting\ClusteredLighting</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\RenderPasses\Lighting\LightingPasses.cpp">
+      <Filter>Source\Renderer\RenderPasses\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\RenderPasses\Lighting\GTAO.cpp">
+      <Filter>Source\Renderer\RenderPasses\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="External\im3d\im3d.cpp">
+      <Filter>External\im3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\World\BillboardSprite.cpp">
+      <Filter>Source\World</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\ImGuiImpl.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\World\PointLight.cpp">
+      <Filter>Source\World</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\World\Light.cpp">
+      <Filter>Source\World</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="External\EASTL\EASTL.natvis">

@@ -7,7 +7,7 @@
 	#include "im3d_config.h"
 #endif
 
-#define IM3D_VERSION "1.16"
+#define IM3D_VERSION "1.17"
 
 #ifndef IM3D_API
 	#define IM3D_API
@@ -145,8 +145,8 @@ IM3D_API void DrawCylinder(const Vec3& _start, const Vec3& _end, float _radius, 
 IM3D_API void DrawCapsule(const Vec3& _start, const Vec3& _end, float _radius, int _detail = -1);
 IM3D_API void DrawPrism(const Vec3& _start, const Vec3& _end, float _radius, int _sides);
 IM3D_API void DrawArrow(const Vec3& _start, const Vec3& _end, float _headLength = -1.0f, float _headThickness = -1.0f);
-IM3D_API void DrawCone(const Vec3& _origin, const Vec3& _normal,float height, float _radius, int _detail);
-IM3D_API void DrawConeFilled(const Vec3& _origin, const Vec3& _normal,float height, float _radius, int _detail);
+IM3D_API void DrawCone(const Vec3& _origin, const Vec3& _normal, float height, float _radius, int _detail);
+IM3D_API void DrawConeFilled(const Vec3& _origin, const Vec3& _normal, float height, float _radius, int _detail);
 
 // Add text. See TextFlags_ enum for _textFlags. _size is a hint to the application-side text rendering.
 IM3D_API void Text(const Vec3& _position, U32 _textFlags, const char* _text, ...); // use the current draw state for size/color
@@ -189,6 +189,9 @@ IM3D_API bool GizmoRotation(Id _id, float _rotation_[3*3], bool _local = false);
 IM3D_API bool GizmoScale(Id _id, float _scale_[3]);
 IM3D_API bool Gizmo(Id _id, float _transform_[4*4]);
 IM3D_API bool Gizmo(Id _id, float _translation_[3], float _rotation_[3*3], float _scale_[3]);
+
+// Return true once when the current gizmo is made active.
+IM3D_API bool GizmoWasActivated();
 
 // Active gizmo ID. This will match the _id parameter passed to a Gizmo* function. Return Id_Invalid if no gizmo is in use.
 IM3D_API Id GetActiveId();
@@ -661,6 +664,7 @@ struct IM3D_API Context
 	Id                  getId() const                    { return m_idStack.back();  }
 	void                pushId(Id _id)                   { m_idStack.push_back(_id); }
 	void                popId()                          { IM3D_ASSERT(m_idStack.size() > 1); m_idStack.pop_back(); }
+	bool                idWasActivated()                 { return m_appId != Id_Invalid && m_appIdActivated == m_appId; }
 
 	AppData&            getAppData()                     { return m_appData; }
 
@@ -711,6 +715,7 @@ struct IM3D_API Context
 	Id                  m_appId;              // Current ID *without* the hashing the ID stack (= _id arg to Gizmo* functions).
 	Id                  m_appActiveId;		  // Copied from m_appId for the current active gizmo.
 	Id                  m_appHotId;			  // Copied from m_appId for the current 'hot' gizmo.
+	Id                  m_appIdActivated;     // True for the first frame that an ID becomes active (useful for storing old value for undo).
 	Vec3                m_gizmoStateVec3;     // Stored state for the active gizmo.
 	Mat3                m_gizmoStateMat3;     //               "
 	float               m_gizmoStateFloat;    //               "
@@ -874,6 +879,7 @@ inline bool                GizmoRotation(const char* _id, float _rotation_[3*3],
 inline bool                GizmoScale(const char* _id, float _scale_[3])                                                    { return GizmoScale(MakeId(_id), _scale_); }
 inline bool                Gizmo(const char* _id, float _translation_[3], float _rotation_[3*3], float _scale_[3])          { return Gizmo(MakeId(_id), _translation_, _rotation_, _scale_); }
 inline bool                Gizmo(const char* _id, float _transform_[4*4])                                                   { return Gizmo(MakeId(_id), _transform_); }
+inline bool                GizmoWasActivated()                                                                              { return GetContext().idWasActivated(); }
 inline Id                  GetActiveId()                                                                                    { return GetContext().m_appActiveId;}
 inline Id                  GetHotId()                                                                                       { return GetContext().m_appHotId; }
 

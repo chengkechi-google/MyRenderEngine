@@ -48,6 +48,7 @@
     <ClInclude Include="Shaders\GTAO\GTAO.hlsl" />
     <ClInclude Include="Shaders\ClusteredLighting\ClusteredLightCulling.hlsl" />
     <ClInclude Include="Shaders\BillboardSprite.hlsl" />
+    <ClInclude Include="Shaders\Im3D.hlsl" />
     <ClCompile Include="Source\Editor\Editor.cpp" />
     <ClCompile Include="Source\Renderer\GPUDrivenStats.cpp" />
     <ClCompile Include="Source\Renderer\GPUScene.cpp" />
@@ -137,6 +138,7 @@
     <ClInclude Include="Shaders\HZB\HZB.hlsl" />
     <ClInclude Include="Source\Core\Engine.h" />
     <ClInclude Include="Source\Editor\Editor.h" />
+    <ClInclude Include="Source\Editor\Im3DImpl.h" />
     <ClInclude Include="Source\Editor\ImGuiImpl.h" />
     <ClInclude Include="Source\Physics\PhysicsRigidBody.h" />
     <ClInclude Include="Source\Physics\PhysicsShape.h" />
@@ -156,6 +158,7 @@
     <ClInclude Include="Source\Renderer\RenderPasses\HierarchicalDepthBufferPass.h" />
     <ClInclude Include="Source\Renderer\RenderPasses\Lighting\ClusteredLighting\ClusteredLightCulling.h" />
     <ClInclude Include="Source\Renderer\RenderPasses\Lighting\GTAO.h" />
+    <ClInclude Include="Source\Renderer\RenderPasses\Lighting\LightingPasses.h" />
     <ClInclude Include="Source\Renderer\Resource\ConstantBuffer.h" />
     <ClInclude Include="Source\Renderer\Resource\indexBuffer.h" />
     <ClInclude Include="Source\Renderer\Resource\RawBuffer.h" />

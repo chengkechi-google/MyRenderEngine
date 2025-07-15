@@ -1,5 +1,8 @@
 /*	CHANGE LOG
 	==========
+	2025-05-05 (v1.17) - IM3D_GIZMO_LAYER_ID forces all gizmos to be drawn to a layer when defined.
+	                   - Fix for snapping with a non-empty matrix stack.
+	                   - DrawCone()/DrawConeFilled().
 	2020-05-17 (v1.16) - Text API.
 	                   - Flip gizmo axes when viewed from behind (AppData::m_flipGizmoWhenBehind).
 	                   - Minor gizmo rendering improvements.
@@ -619,7 +622,7 @@ void Im3d::DrawArrow(const Vec3& _start, const Vec3& _end, float _headLength, fl
 	ctx.end();
 }
 
-void Im3d::DrawCone(const Vec3& _origin, const Vec3& _normal,float height, float _radius, int _detail){
+void Im3d::DrawCone(const Vec3& _origin, const Vec3& _normal, float height, float _radius, int _detail){
 
     Context& ctx = GetContext();
     #if IM3D_CULL_PRIMITIVES
@@ -659,7 +662,7 @@ void Im3d::DrawCone(const Vec3& _origin, const Vec3& _normal,float height, float
     ctx.popMatrix();
 }
 
-void Im3d::DrawConeFilled(const Vec3& _origin, const Vec3& _normal,float height, float _radius, int _detail){
+void Im3d::DrawConeFilled(const Vec3& _origin, const Vec3& _normal, float height, float _radius, int _detail){
 
     Context& ctx = GetContext();
     #if IM3D_CULL_PRIMITIVES
@@ -878,6 +881,9 @@ bool Im3d::GizmoTranslation(Id _id, float _translation_[3], bool _local)
 	bool intersects = ctx.m_appHotId == ctx.m_appId || Intersects(ray, boundingSphere);
 
  // planes
+	#ifdef IM3D_GIZMO_LAYER_ID
+		ctx.pushLayerId(IM3D_GIZMO_LAYER_ID);
+	#endif
  	ctx.pushEnableSorting(true);
 	if (_local)
 	{
@@ -966,6 +972,9 @@ bool Im3d::GizmoTranslation(Id _id, float _translation_[3], bool _local)
 	}
 	ctx.popMatrix();
 	ctx.popEnableSorting();
+	#ifdef IM3D_GIZMO_LAYER_ID
+		ctx.popLayerId();
+	#endif
 
 	if (_local)
 	{
@@ -1032,6 +1041,9 @@ bool Im3d::GizmoRotation(Id _id, float _rotation_[3*3], bool _local)
 		}
 	}
 
+	#ifdef IM3D_GIZMO_LAYER_ID
+		ctx.pushLayerId(IM3D_GIZMO_LAYER_ID);
+	#endif
 	ctx.pushMatrix(Mat4(1.0f));
 	for (int i = 0; i < 3; ++i)
 	{
@@ -1068,6 +1080,9 @@ bool Im3d::GizmoRotation(Id _id, float _rotation_[3*3], bool _local)
 		ctx.gizmoAxislAngle_Draw(viewId, origin, viewNormal, worldRadius, angle, viewId == ctx.m_activeId ? Color_GizmoHighlight : Color_White, 1.0f);
 	}
 	ctx.popMatrix();
+	#ifdef IM3D_GIZMO_LAYER_ID
+		ctx.popLayerId();
+	#endif
 
 	if (currentId != ctx.m_activeId)
 	{
@@ -1129,6 +1144,9 @@ bool Im3d::GizmoScale(Id _id, float _scale_[3])
 	Ray ray(appData.m_cursorRayOrigin, appData.m_cursorRayDirection);
 	bool intersects = ctx.m_appHotId == ctx.m_appId || Intersects(ray, boundingSphere);
 
+	#ifdef IM3D_GIZMO_LAYER_ID
+		ctx.pushLayerId(IM3D_GIZMO_LAYER_ID);
+	#endif
  	ctx.pushEnableSorting(true);
 	ctx.pushMatrix(Mat4(1.0f));
 	{ // uniform scale
@@ -1218,6 +1236,9 @@ bool Im3d::GizmoScale(Id _id, float _scale_[3])
 
 	ctx.popMatrix();
 	ctx.popEnableSorting();
+	#ifdef IM3D_GIZMO_LAYER_ID
+		ctx.popLayerId();
+	#endif
 
 	ctx.popId();
 	return ret;
@@ -1803,6 +1824,8 @@ void Context::reset()
 		m_gizmoLocal = !m_gizmoLocal;
 		resetId();
 	}
+
+	m_appIdActivated = Id_Invalid;
 }
 
 void Context::merge(const Context& _src)
@@ -1812,7 +1835,7 @@ void Context::merge(const Context& _src)
  // layer IDs
 	for (Id id : _src.m_layerIdMap)
 	{
-		pushLayerId(id); // add a new layer if id doesn't alrady exist
+		pushLayerId(id); // add a new layer if id doesn't alrady exist 
 		popLayerId();
 	}
 
@@ -2335,10 +2358,17 @@ bool Context::gizmoAxisTranslation_Behavior(Id _id, const Vec3& _origin, const V
 		{
 			float tr, tl;
 			Nearest(ray, axisLine, tr, tl);
+			const Vec3 delta = _axis * tl - storedPosition;
 			#if IM3D_RELATIVE_SNAP
-				*_out_ = *_out_ + Snap(_axis * tl - storedPosition, _snap);
+				const float dist = Dot(delta, _axis);
+				const float snappedDist = Snap(dist, _snap);
+				*_out_ = *_out_ + _axis * snappedDist;
 			#else
-				*_out_ = Snap(*_out_ + _axis * tl - storedPosition, _snap);
+				const Vec3 absPos = *_out_ + delta;
+				const float absDist = Dot(absPos, _axis);
+				const float snappedAbs = Snap(absDist, _snap);
+				const Vec3 perp = *_out_ - _axis * Dot(*_out_, _axis);
+				*_out_ = perp + _axis * snappedAbs;
 			#endif
 
 			return true;
@@ -2795,11 +2825,12 @@ void Context::makeActive(Id _id)
 {
 	m_activeId = _id;
 	m_appActiveId = _id == Id_Invalid ? Id_Invalid : m_appId;
+	m_appIdActivated = m_appActiveId;
 }
 
 void Context::resetId()
 {
-	m_activeId = m_hotId = m_appActiveId = m_appHotId = Id_Invalid;
+	m_activeId = m_hotId = m_appActiveId = m_appHotId = m_appIdActivated = Id_Invalid;
 	m_hotDepth = FLT_MAX;
 }
 

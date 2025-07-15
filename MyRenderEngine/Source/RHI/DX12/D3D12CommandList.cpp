@@ -616,7 +616,7 @@ void D3D12CommandList::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint3
 
 void D3D12CommandList::SetScissorRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 {
-    D3D12_RECT rect = { (LONG)x, (LONG)y, (LONG)x + width, (LONG)y + height };
+    D3D12_RECT rect = { (LONG)x, (LONG)y, (LONG)x + (LONG)width, (LONG)y + (LONG)height };
     m_pCommandList->RSSetScissorRects(1, &rect);
 }
 
