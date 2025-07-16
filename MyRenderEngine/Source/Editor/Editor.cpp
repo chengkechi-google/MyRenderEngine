@@ -1,6 +1,6 @@
 #include "Editor.h"
 #include "ImGuiImpl.h"
-#include "im3d.h"
+#include "Im3DImpl.h"
 #include "Core/Engine.h"
 #include "Renderer/TextureLoader.h"
 #include "Utils/assert.h"
@@ -17,6 +17,9 @@ Editor::Editor(Renderer* pRenderer)
     m_pRenderer = pRenderer;
     m_pImGuiImpl = eastl::make_unique<ImGuiImpl>(pRenderer);
     m_pImGuiImpl->Init();
+
+    m_pIm3DImpl = eastl::make_unique<Im3DImpl>(pRenderer);
+    m_pIm3DImpl->Init();
     
     ifd::FileDialog::Instance().CreateTexture = [this](uint8_t* data, int w, int h, char fmt) -> void*
     {
@@ -51,6 +54,7 @@ Editor::~Editor()
 void Editor::NewFrame()
 {
     m_pImGuiImpl->NewFrame();
+    m_pIm3DImpl->NewFrame();
 
     ImGuiIO& io = ImGui::GetIO();
     if (!io.WantCaptureMouse && io.MouseClicked[0])
@@ -78,6 +82,7 @@ void Editor::Tick()
 void Editor::Render(IRHICommandList* pCommandList)
 {
     m_pImGuiImpl->Render(pCommandList);
+    m_pIm3DImpl->Render(pCommandList);
 }
 
 void Editor::BuildDockLayout()

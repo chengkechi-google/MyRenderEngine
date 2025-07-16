@@ -854,6 +854,9 @@
     <ClCompile Include="Source\World\Light.cpp">
       <Filter>Source\World</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\Im3DImpl.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="External\EASTL\EASTL.natvis">

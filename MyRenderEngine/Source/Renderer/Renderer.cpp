@@ -895,7 +895,7 @@ void Renderer::BuildRenderGraph(RGHandle& outColor, RGHandle& outDepth)
     outDepth = sceneDepthRT;
     //m_pRenderGraph->Present(outDepth, RHIAccessBit::RHIAccessDSVReadOnly);
     m_pRenderGraph->Present(sceneDiffuseRT, RHIAccessBit::RHIAccessPixelShaderSRV);
-    m_pRenderGraph->Present(outDepth, RHIAccessBit::RHIAccessPixelShaderSRV);
+    m_pRenderGraph->Present(outDepth, RHIAccessBit::RHIAccessDSV);
     //m_pRenderGraph->Present(showCulledDiffuseRT, RHIAccessBit::RHIAccessPixelShaderSRV);
 
     m_pRenderGraph->Compile();
@@ -932,7 +932,7 @@ void Renderer::EndFrame()
     m_animationBatchs.clear();
     m_velocityPassBatchs.clear();
     m_idPassBatchs.clear();
-
+    m_guiBatchs.clear();
     m_pDevice->EndFrame();
 }
 
@@ -1142,19 +1142,24 @@ void Renderer::RenderBackBufferPass(IRHICommandList* pCommandList, RGHandle colo
     pCommandList->TextureBarrier(m_pSwapChain->GetBackBuffer(), 0, RHIAccessBit::RHIAccessPresent, RHIAccessBit::RHIAccessRTV);
     //m_pRenderGraph->GetTexture(m_prevSceneDepthHandle)->Barrier(pCommandList, 0, RHIAccessBit::RHIAccessMaskUAV, RHIAccessBit::RHIAccessMaskSRV);
     pCommandList->TextureBarrier(m_pPrevSceneDepthTexture->GetTexture(), 0, RHIAccessBit::RHIAccessMaskUAV, RHIAccessMaskSRV);
-    //RGTexture* pDepth = m_pRenderGraph->GetTexture(depth);
+    RGTexture* pDepth = m_pRenderGraph->GetTexture(depth);
 
     RHIRenderPassDesc renderPass;
     renderPass.m_color[0].m_pTexture = m_pSwapChain->GetBackBuffer();
     renderPass.m_color[0].m_loadOp = RHIRenderPassLoadOp::DontCare;
-    renderPass.m_depth.m_pTexture = nullptr;//pDepth->GetTexture();
-    renderPass.m_depth.m_loadOp = RHIRenderPassLoadOp::DontCare;
+    renderPass.m_depth.m_pTexture = pDepth->GetTexture();
+    renderPass.m_depth.m_loadOp = RHIRenderPassLoadOp::Load;
     renderPass.m_depth.m_stencilLoadOp = RHIRenderPassLoadOp::DontCare;
     renderPass.m_depth.m_storeOp = RHIRenderPassStoreOp::DontCare;
     renderPass.m_depth.m_stencilStoreOp = RHIRenderPassStoreOp::DontCare;
     pCommandList->BeginRenderPass(renderPass);
-  
+
     CopyToBackBuffer(pCommandList, color, depth, false);
+
+	for (size_t i = 0; i < m_guiBatchs.size(); ++i)
+	{
+		DrawBatch(pCommandList, m_guiBatchs[i]);;
+	}
 
     Engine::GetInstance()->GetEditor()->Render(pCommandList);
     

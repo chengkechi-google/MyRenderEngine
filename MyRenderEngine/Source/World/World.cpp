@@ -1,4 +1,5 @@
 #include "World.h"
+#include "PointLight.h"
 #include "GLTFLoader.h"
 #include "StaticMesh.h"
 #include "MeshMaterial.h"
@@ -92,6 +93,8 @@ void World::Tick(float deltaTime)
             (*iter)->Render(pRenderer);
         }
     }
+
+    m_pBillboardSpriteRenderer->Render();
 }
 
 IVisibleObject* World::GetVisibleObject(uint32_t index) const
@@ -149,6 +152,78 @@ void World::CreateVisibleObject(tinyxml2::XMLElement* pElement)
     {
         CreateModel(pElement);
     }
+    else if (strcmp(pElement->Value(), "light") == 0)
+    {
+        CreateLight(pElement);
+    }
+}
+
+inline void LoadLight(tinyxml2::XMLElement* pElement, ILight* pLight)
+{
+    LoadVisibleObject(pElement, pLight);
+
+    const tinyxml2::XMLAttribute* pIntensity = pElement->FindAttribute("intensity");
+    if (pIntensity)
+    {
+        pLight->SetLightIntensity(pIntensity->FloatValue());
+    }
+
+    const tinyxml2::XMLAttribute* pColor = pElement->FindAttribute("color");
+    if (pColor)
+    {
+        pLight->SetLightColor(str_to_float3(pColor->Value()));
+    }
+
+    const tinyxml2::XMLAttribute* pRadius = pElement->FindAttribute("radius");
+    if (pRadius)
+    {
+        pLight->SetLightRadius(pRadius->FloatValue());
+    }
+
+    const tinyxml2::XMLAttribute* pFalloff = pElement->FindAttribute("falloff");
+    if (pFalloff)
+    {
+        pLight->SetLightFalloff(pFalloff->FloatValue());
+    }
+}
+
+void World::CreateLight(tinyxml2::XMLElement* pElement)
+{
+    ILight* pLight = nullptr;
+
+    const tinyxml2::XMLAttribute* pType = pElement->FindAttribute("type");
+    MY_ASSERT(pType != nullptr);
+
+    if (strcmp(pType->Value(), "directional") == 0)
+    {
+        return;
+    }
+    else if (strcmp(pType->Value(), "point") == 0)
+    {
+        pLight = new PointLight();
+    }
+    else
+    {
+        MY_ASSERT(false);
+    }
+
+    // Load light data
+    LoadLight(pElement, pLight);
+
+    if (!pLight->Create())
+    {
+        delete pLight;
+        return;
+    }
+
+    AddObject(pLight);
+
+    const tinyxml2::XMLAttribute* pPrimary = pElement->FindAttribute("primary");
+    if (pPrimary && pPrimary->BoolValue())
+    {
+        m_pPrimaryLight = pLight;
+    }
+
 }
 
 void World::CreateCamera(tinyxml2::XMLElement* pElement)
