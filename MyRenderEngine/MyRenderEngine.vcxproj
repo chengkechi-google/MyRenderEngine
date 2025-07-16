@@ -339,6 +339,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Editor\ImGuiImpl.cpp" />
+    <Content Include="MyRenderEngine.vcxproj.filters" />
     <Content Include="Source\Renderer\RenderPasses\Lighting\LightingPasses.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
