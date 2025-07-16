@@ -27,6 +27,7 @@ private:
 private:
     Renderer* m_pRenderer = nullptr;
     eastl::unique_ptr<class ImGuiImpl> m_pImGuiImpl;
+    eastl::unique_ptr<class Im3DImpl> m_pIm3DImpl;
     
     bool m_showGPUMemoryStats = false;
     bool m_showImguiDemo = false;

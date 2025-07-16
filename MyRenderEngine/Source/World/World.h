@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Camera.h"
+#include "Light.h"
 #include "VisibleObject.h"
 
 namespace tinyxml2
@@ -30,6 +31,7 @@ private:
     void ClearScene();
 
     void CreateVisibleObject(tinyxml2::XMLElement* pElement);       
+    void CreateLight(tinyxml2::XMLElement* pElement);
     void CreateCamera(tinyxml2::XMLElement* pElement);
     void CreateModel(tinyxml2::XMLElement* pElement);           //< Load GLTF file
 private:
@@ -37,4 +39,6 @@ private:
     eastl::unique_ptr<class BillboardSpriteRenderer> m_pBillboardSpriteRenderer;
     
     eastl::vector<eastl::unique_ptr<IVisibleObject>> m_objects;
+
+    ILight* m_pPrimaryLight = nullptr;
 };

@@ -74,7 +74,7 @@ public:
     void SetTemporalUpscaleRatio(float ratio);
 
     uint32_t GetDisplayWidth() const { return m_displayWidth; }
-    uint32_t GetDispaltHeight() const { return m_displayHeight; }
+    uint32_t GetDisplayHeight() const { return m_displayHeight; }
     uint32_t GetRenderWidth() const { return m_renderWidth; }
     uint32_t GetRenderHeight() const { return m_renderHeight; }
 
@@ -139,7 +139,7 @@ public:
     RenderBatch& AddForwardPassBatch() { return m_forwardPassBatchs.emplace_back(*m_pCBAllocator); }
     RenderBatch& AddVelocityPassBatch() { return m_velocityPassBatchs.emplace_back(*m_pCBAllocator); }
     RenderBatch& AddObjectIDPassBatch() { return m_idPassBatchs.emplace_back(*m_pCBAllocator); }
-    RenderBatch& AddGUIPassBatch() { return m_guiBatch.emplace_back(*m_pCBAllocator); }
+    RenderBatch& AddGUIPassBatch() { return m_guiBatchs.emplace_back(*m_pCBAllocator); }
     ComputeBatch& AddAnimationBatch() { return m_animationBatchs.emplace_back(*m_pCBAllocator); }
 
     void SetupGlobalConstants(IRHICommandList* pCommandList);
@@ -283,7 +283,7 @@ private:
     eastl::vector<RenderBatch> m_forwardPassBatchs;
     eastl::vector<RenderBatch> m_velocityPassBatchs;
     eastl::vector<RenderBatch> m_idPassBatchs;
-    eastl::vector<RenderBatch> m_guiBatch;
+    eastl::vector<RenderBatch> m_guiBatchs;
 
     IRHIPipelineState* m_pCopyColorPSO = nullptr;
     IRHIPipelineState* m_pCopyDepthPSO = nullptr;

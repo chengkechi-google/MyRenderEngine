@@ -11,7 +11,7 @@ cbuffer CB : register(b0)
 struct Vertex
 {
     float4 m_positionSize;
-    uint m_color
+    uint m_color;
 };
 
 struct VertexOutput
@@ -20,8 +20,8 @@ struct VertexOutput
     float4 m_color : COLOR;
 #if POINTS || LINES
     float2 m_uv : TEXCOORD0;
-    noperspective float size : SIZE;
-    noperspective float edgeDistance : EDGE_DISTANCE;
+    noperspective float m_size : SIZE;
+    noperspective float m_edgeDistance : EDGE_DISTANCE;
 #endif
 };
 
@@ -69,7 +69,7 @@ void ms_main(uint3 dispatchThreadID : SV_DispatchThreadID,
         Vertex vertex = vertexBuffer.Load<Vertex>(c_vertexBufferOffset + sizeof(Vertex) * primitiveIndex);
         float4 clipPos = mul(GetCameraCB().m_mtxViewProjectionNoJitter, float4(vertex.m_positionSize.xyz, 1.0));
         float size = max(vertex.m_positionSize.w, ANTIALIASING);
-        float4 color = UnpackRGBA8Unorm(vertex.color).abgr;
+        float4 color = UnpackRGBA8Unorm(vertex.m_color).abgr;
         color.a *= smoothstep(0.0, 1.0, vertex.m_positionSize.w / ANTIALIASING);
 
         float2 scale = SceneCB.m_rcpDisplaySize * size;
@@ -113,7 +113,7 @@ void ms_main(uint3 dispatchThreadID : SV_DispatchThreadID,
         Vertex vertex0 = vertexBuffer.Load<Vertex>(c_vertexBuffeID + sizeof(Vertex) * (primitiveIndex * 2 + 0));
         Vertex vertex1 = vertexBuffer.Load<Vertex>(c_vertexBuffeID + sizeof(Vertex) * (primitiveIndex * 2 + 1));
 
-        float4 clipPos0 = mul(GetCameraCB().m_mtxViewPorjectionNoJitter, float4(vertex0.m_positionSize.xyz, 1.0));
+        float4 clipPos0 = mul(GetCameraCB().m_mtxViewProjectionNoJitter, float4(vertex0.m_positionSize.xyz, 1.0));
         float4 clipPos1 = mul(GetCameraCB().m_mtxViewProjectionNoJitter, float4(vertex1.m_positionSize.xyz, 1.0));
         float size0 = max(vertex0.m_positionSize.w, ANTIALIASING);
         float size1 = max(vertex1.m_positionSize.w, ANTIALIASING);
@@ -137,26 +137,26 @@ void ms_main(uint3 dispatchThreadID : SV_DispatchThreadID,
         uint v3 = groupIndex * 4 + 3;
 
         // Line start
-        vertices[v0].m_position = float4(pos0 - tng0) * clipPos0.w, clipPos0.zw);
+        vertices[v0].m_position = float4((pos0 - tng0) * clipPos0.w, clipPos0.zw);
         vertices[v0].m_color = color0;
         vertices[v0].m_uv = float2(0.0, 0.0);
         vertices[v0].m_size = size0;
         vertices[v0].m_edgeDistance = -size0;
 
-        vertices[v1].m_position = float4(pos0 + tng0) * clipPos0.w, clipPos0.zw);
+        vertices[v1].m_position = float4((pos0 + tng0) * clipPos0.w, clipPos0.zw);
         vertices[v1].m_color = color0;
         vertices[v1].m_uv = float2(0.0, 0.0);
         vertices[v1].m_size = size0;
         vertices[v1].m_edgeDistance = size0;
 
         // Line end
-        vertices[v2].m_position = float4(pos1 - tng1) * clipPos1.w, clipPos1.zw);
+        vertices[v2].m_position = float4((pos1 - tng1) * clipPos1.w, clipPos1.zw);
         vertices[v2].m_color = color1;
         vertices[v2].m_uv = float2(1.0, 1.0);
         vertices[v2].m_size = size1;
         vertices[v2].m_edgeDistance = -size1;
 
-        vertices[v3].m_position = float4(pos1 + tng1) * clipPos1.w, clipPos1.zw);
+        vertices[v3].m_position = float4((pos1 + tng1) * clipPos1.w, clipPos1.zw);
         vertices[v3].m_color = color1;
         vertices[v3].m_uv = float2(1.0, 1.0);
         vertices[v3].m_size = size1;
@@ -169,9 +169,9 @@ void ms_main(uint3 dispatchThreadID : SV_DispatchThreadID,
 #endif
 
 #if TRIANGLES
-        Vertex vertex0 = vertexBuffer.Load<Vertex>(c_vertexBufferOffset + sizeof(Vertex) * (PrimitiveIndex * 3 + 0));
-        Vertex vertex1 = vertexBuffer.Load<Vertex>(c_vertexBufferOffset + sizeof(Vertex) * (PrimitiveIndex * 3 + 1));
-        Vertex vertex2 = vertexBuffer.Load<Vertex>(c_vertexBufferOffset + sizeof(Vertex) * (PrimitiveIndex * 3 + 2));
+        Vertex vertex0 = vertexBuffer.Load<Vertex>(c_vertexBufferOffset + sizeof(Vertex) * (primitiveIndex * 3 + 0));
+        Vertex vertex1 = vertexBuffer.Load<Vertex>(c_vertexBufferOffset + sizeof(Vertex) * (primitiveIndex * 3 + 1));
+        Vertex vertex2 = vertexBuffer.Load<Vertex>(c_vertexBufferOffset + sizeof(Vertex) * (primitiveIndex * 3 + 2));
 
         uint v0 = groupIndex * 4 + 0;
         uint v1 = groupIndex * 4 + 1;
